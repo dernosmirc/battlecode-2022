@@ -32,3 +32,7 @@ battlecode-scaffold.iws
 .classpath
 .project
 .settings/
+
+# Sublime text files
+battlecode-2022.sublime-project
+battlecode-2022.sublime-workspace
