@@ -4,9 +4,11 @@ import battlecode.common.*;
 import java.util.Random;
 
 import static gen1.RobotPlayer.*;
+import static gen1.util.Functions.getBits;
+import static gen1.util.Functions.setBits;
 
 public strictfp class Archon {
-	private static final Random rng = new Random(21021);
+	private static final Random rng = new Random(rc.getID());
 
 	private static final int BUILD_THRESHOLD = 80; // make dynamic?
 
@@ -103,5 +105,18 @@ public strictfp class Archon {
 		}
 
 		updateLeadInArray();
+	}
+
+	public static void init() throws GameActionException {
+		for (int i = 32; i < 32 + archonCount; ++i) {
+			int value = rc.readSharedArray(i);
+			if (getBits(value, 15, 15) == 0) {
+				value = setBits(0, 15, 15, 1);
+				value = setBits(value, 6, 11, rc.getLocation().x);
+				value = setBits(value, 0, 5, rc.getLocation().y);
+				rc.writeSharedArray(i, value);
+				break;
+			}
+		}
 	}
 }
