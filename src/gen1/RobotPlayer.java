@@ -32,6 +32,9 @@ public strictfp class RobotPlayer {
 		}
 
 		switch (myType) {
+			case MINER:
+				Miner.init();
+				break;
 			case ARCHON:
 				Archon.init();
 				break;
