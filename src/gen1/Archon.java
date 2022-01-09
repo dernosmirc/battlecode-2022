@@ -11,6 +11,64 @@ public strictfp class Archon {
 	private static final int BUILD_THRESHOLD = 80; // make dynamic?
 
 	private static int buildDirectionIndex = 0;
+	private static MapLocation previousLeadLoc = new MapLocation(-1, -1);
+	private static int previousLeadRound = -100;
+
+	private static void updateLeadInArray() throws GameActionException {
+		MapLocation leadLoc = new MapLocation(-1, -1);
+		int maxLead = -1;
+		for (MapLocation loc : rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared)) {
+			int lead = rc.senseLead(loc);
+			if (lead > maxLead) {
+				if (!loc.equals(previousLeadLoc)
+					|| rc.getRoundNum() - previousLeadRound >= GameConstants.ADD_LEAD_EVERY_ROUNDS) {
+					maxLead = lead;
+					leadLoc = new MapLocation(loc.x, loc.y);
+				}
+			}
+		}
+
+		if (maxLead <= 0)
+			return;
+		// for storing in shared array
+		maxLead = (maxLead + 4) / 5; // ceil(a / b) = floor((a + b - 1) / b)
+
+		int minLead = Integer.MAX_VALUE;
+		int updateIndex = -1;
+		int freeIndex = -1;
+		for (int i = 0; i < 10; ++i) {
+			int value = rc.readSharedArray(i);
+			MapLocation loc = new MapLocation((value >> 6) & 0b111111, value & 0b111111);
+			// 1 means > 0 lead, 2 means > 5 lead, and so on
+			int lead = (((value >> 12) & 0b1111) - 1) * 5;
+
+			if (lead == 0) {
+				freeIndex = i;
+			} else if (loc.equals(leadLoc)) {
+				updateLead(i, leadLoc, maxLead);
+				return;
+			} else if (lead < minLead) {
+				minLead = lead;
+				updateIndex = i;
+			}
+		}
+
+		if (freeIndex != -1) {
+			updateLead(freeIndex, leadLoc, maxLead);
+		} else if (updateIndex != -1) { // can also include minLead < maxLead
+			updateLead(updateIndex, leadLoc, maxLead);
+		}
+	}
+
+	private static void updateLead(int index, MapLocation loc, int lead) throws GameActionException {
+		lead = Math.min(lead, 15);
+		int value = (lead << 6) | loc.x;
+		value = (value << 6) | loc.y;
+		rc.writeSharedArray(index, value);
+
+		previousLeadLoc = new MapLocation(loc.x, loc.y);
+		previousLeadRound = rc.getRoundNum();
+	}
 
 	public static void run() throws GameActionException {
 		int lead = rc.getTeamLeadAmount(myTeam);
@@ -43,5 +101,7 @@ public strictfp class Archon {
 					buildDirectionIndex = 0;
 			}
 		}
+
+		updateLeadInArray();
 	}
 }

@@ -5,6 +5,7 @@ import battlecode.common.*;
 public strictfp class RobotPlayer {
 	public static RobotController rc;
 	public static Team myTeam, enemyTeam;
+	public static RobotType myType;
 
 	public static final Direction[] directions = {
 		Direction.NORTH,
@@ -21,6 +22,7 @@ public strictfp class RobotPlayer {
 		rc = robotController;
 		myTeam = rc.getTeam();
 		enemyTeam = myTeam.opponent();
+		myType = rc.getType();
 
 		while (true) {
 			switch (rc.getType()) {
