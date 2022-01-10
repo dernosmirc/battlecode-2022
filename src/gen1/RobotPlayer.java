@@ -30,6 +30,9 @@ public strictfp class RobotPlayer {
 			case MINER:
 				Miner.init();
 				break;
+			case SOLDIER:
+				Solder.init();
+				break;
 			case ARCHON:
 				Archon.init();
 				break;
