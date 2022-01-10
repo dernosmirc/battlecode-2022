@@ -13,6 +13,8 @@ public strictfp class Miner {
 	private static int myArchonIndex;
 
 	public static void run() throws GameActionException {
+		MiningHelper.mineGold();
+
 		if (rc.isMovementReady()) {
 			MapLocation goldLocation = MiningHelper.spotGold();
 			if (goldLocation != null) {
