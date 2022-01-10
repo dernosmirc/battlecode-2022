@@ -15,9 +15,8 @@ public strictfp class Archon {
 	private static final int BUILD_THRESHOLD = 80; // make dynamic?
 
 	private static int buildDirectionIndex = 0;
-	// private static MapLocation previousLeadLoc = new MapLocation(-1, -1);
-	// private static int previousLeadRound = -100;
 	private static int myIndex;
+	private static int droidsBuilt = 0;
 
 	private static Direction getOptimalMinerSpawnDirection() throws GameActionException {
 		int[] minersInDirection = new int[8];
@@ -54,31 +53,59 @@ public strictfp class Archon {
 		return SpawnHelper.getForceSpawnDirection(optimalDirection);
 	}
 
+	public static int getBuildArchonIndex() throws GameActionException {
+		int minDroids = 100000;
+		int index = 0;
+		for (int i = 10; i < 10 + archonCount; ++i) {
+			int droids = getBits(rc.readSharedArray(i), 0, 15);
+			if (droids < minDroids) {
+				minDroids = droids;
+				index = i - 10;
+			}
+		}
+
+		return index;
+	}
+
+	public static void updateDroidsBuilt() throws GameActionException {
+		rc.writeSharedArray(10 + myIndex, droidsBuilt);
+	}
+
 	public static void run() throws GameActionException {
+		int archonIndex = getBuildArchonIndex();
+		if (archonIndex != myIndex) {
+			return;
+		}
+
 		int lead = rc.getTeamLeadAmount(myTeam);
 		if (rc.isActionReady() && lead >= BUILD_THRESHOLD) {
 			RobotType spawnType = RobotType.BUILDER;
-			switch (rng.nextInt(3)) {
+			switch (rng.nextInt(2)) {
 				case 0:
-					spawnType = RobotType.BUILDER;
-					break;
-				case 1:
 					spawnType = RobotType.MINER;
 					break;
-				case 2:
+				case 1:
 					spawnType = RobotType.SOLDIER;
 					break;
+			}
+
+			if (droidsBuilt < 5) {
+				spawnType = RobotType.MINER;
 			}
 
 			if (spawnType == RobotType.MINER) {
 				Direction spawnDirection = getOptimalMinerSpawnDirection();
 				if (spawnDirection != Direction.CENTER && rc.canBuildRobot(RobotType.MINER, spawnDirection)) {
 					rc.buildRobot(RobotType.MINER, spawnDirection);
+					++droidsBuilt;
+					updateDroidsBuilt();
 				}
 			} else {
 				for (int i = 0; i < directions.length; ++i) {
 					if (rc.canBuildRobot(spawnType, directions[buildDirectionIndex])) {
 						rc.buildRobot(spawnType, directions[buildDirectionIndex]);
+						++droidsBuilt;
+						updateDroidsBuilt();
 						break;
 					}
 
