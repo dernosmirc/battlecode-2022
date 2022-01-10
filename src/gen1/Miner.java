@@ -18,7 +18,7 @@ public strictfp class Miner {
 			int value = rc.readSharedArray(i);
 			myArchonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
 			if (rc.getLocation().distanceSquaredTo(myArchonLocation) <= 2) {
-				myArchonIndex = i;
+				myArchonIndex = i - 32;
 				break;
 			}
 		}

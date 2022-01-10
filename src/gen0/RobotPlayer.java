@@ -5,6 +5,9 @@ import battlecode.common.*;
 public strictfp class RobotPlayer {
 	public static void run(RobotController rc) throws GameActionException {
 		if (rc.getType() == RobotType.ARCHON) {
+			for (Direction dir : Direction.allDirections()) {
+				System.out.println(dir.name() + " " + dir.ordinal());
+			}
 			while (true) {
 				// System.out.println(rc.getActionCooldownTurns());
 				if (rc.canBuildRobot(RobotType.MINER, Direction.NORTH)) {
