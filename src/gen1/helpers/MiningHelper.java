@@ -10,10 +10,10 @@ public class MiningHelper {
 
     public static void mineGold() throws GameActionException {
         for (MapLocation mp: rc.senseNearbyLocationsWithGold(myType.actionRadiusSquared)) {
-            while (rc.getActionCooldownTurns() < 10 && rc.canMineGold(mp)) {
+            while (rc.isActionReady() && rc.canMineGold(mp)) {
                 rc.mineGold(mp);
             }
-            if (rc.getActionCooldownTurns() < 10) {
+            if (!rc.isActionReady()) {
                 break;
             }
         }
@@ -21,10 +21,10 @@ public class MiningHelper {
 
     public static void mineLead() throws GameActionException {
         for (MapLocation mp: rc.senseNearbyLocationsWithLead(myType.actionRadiusSquared, 2)) {
-            while (rc.getActionCooldownTurns() < 10 && rc.senseLead(mp) > 1) {
+            while (rc.isActionReady() && rc.senseLead(mp) > 1) {
                 rc.mineLead(mp);
             }
-            if (rc.getActionCooldownTurns() < 10) {
+            if (!rc.isActionReady()) {
                 break;
             }
         }

@@ -11,24 +11,19 @@ public strictfp class Miner {
 	private static MapLocation myArchonLocation;
 	private static Direction myDirection;
 	private static int myArchonIndex;
-	private static int spawnMiningCooldown = 5;
 
 	public static void run() throws GameActionException {
-
-		if (spawnMiningCooldown > 0) {
-			MovementHelper.tryMove(myDirection, false);
-			spawnMiningCooldown--;
-		}
-
-
-		MapLocation goldLocation = MiningHelper.spotGold();
-		if (goldLocation != null) {
-			MovementHelper.tryMove(rc.getLocation().directionTo(goldLocation), false);
+		if (rc.isMovementReady()) {
+			MapLocation goldLocation = MiningHelper.spotGold();
+			if (goldLocation != null) {
+				MovementHelper.tryMove(rc.getLocation().directionTo(goldLocation), false);
+			}
 		}
 
 		if (MiningHelper.canMineLead()) {
 			MiningHelper.mineLead();
-		} else {
+		}
+		if (rc.isMovementReady()) {
 			Direction leadDirection = MiningHelper.spotLead(myArchonLocation);
 			if (leadDirection != null) {
 				MovementHelper.tryMove(leadDirection, false);
