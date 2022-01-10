@@ -61,7 +61,7 @@ public strictfp class Soldier {
 
 		if (curLocation.distanceSquaredTo(calculatedEnemyAnchorLocation) <= myType.visionRadiusSquared){
 			RobotInfo[] enemyRobotInfo;
-			enemyRobotInfo = rc.senseNearbyRobots(-1, myTeam.opponent());
+			enemyRobotInfo = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam.opponent());
 			n = enemyRobotInfo.length;
 			for (int i = 0; i < n; i++){
 				// TODO: Check if two enemy robots are same sense radius, only one is set in shared array
