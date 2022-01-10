@@ -30,6 +30,12 @@ public strictfp class Soldier {
 			enemyArchonFound = true;
 			sensedEnemyAnchorLocation = new MapLocation(getBits(arrayRead, 6, 11), getBits(arrayRead, 0, 5));
 		}
+		if (enemyArchonFound && curLocation.distanceSquaredTo(sensedEnemyAnchorLocation) <= myType.visionRadiusSquared){
+			if (rc.senseRobotAtLocation(sensedEnemyAnchorLocation) == null){
+				enemyArchonFound = false;
+				rc.writeSharedArray(0, 0);
+			}
+		}
 
 		RobotInfo[] enemyRobotInfo1;
 		enemyRobotInfo1 = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam.opponent());
