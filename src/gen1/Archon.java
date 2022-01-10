@@ -53,7 +53,7 @@ public strictfp class Archon {
 		return SpawnHelper.getForceSpawnDirection(optimalDirection);
 	}
 
-	public static int getBuildArchonIndex() throws GameActionException {
+	private static int getBuildArchonIndex() throws GameActionException {
 		int minDroids = 100000;
 		int index = 0;
 		for (int i = 10; i < 10 + archonCount; ++i) {
@@ -67,17 +67,18 @@ public strictfp class Archon {
 		return index;
 	}
 
-	public static void updateDroidsBuilt() throws GameActionException {
+	private static void updateDroidsBuilt() throws GameActionException {
 		rc.writeSharedArray(10 + myIndex, droidsBuilt);
 	}
 
 	public static void run() throws GameActionException {
+		int lead = rc.getTeamLeadAmount(myTeam);
 		int archonIndex = getBuildArchonIndex();
 		if (archonIndex != myIndex) {
-			return;
+			if (lead >= 2 * BUILD_THRESHOLD) {}
+			else return;
 		}
 
-		int lead = rc.getTeamLeadAmount(myTeam);
 		if (rc.isActionReady() && lead >= BUILD_THRESHOLD) {
 			RobotType spawnType = RobotType.BUILDER;
 			switch (rng.nextInt(2)) {
