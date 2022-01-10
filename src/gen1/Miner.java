@@ -1,6 +1,7 @@
 package gen1;
 
 import battlecode.common.*;
+import gen1.helpers.MiningHelper;
 import gen1.helpers.MovementHelper;
 
 import static gen1.RobotPlayer.*;
@@ -10,9 +11,31 @@ public strictfp class Miner {
 	private static MapLocation myArchonLocation;
 	private static Direction myDirection;
 	private static int myArchonIndex;
+	private static int spawnMiningCooldown = 5;
 
 	public static void run() throws GameActionException {
-		MovementHelper.tryMove(myDirection, false);
+
+		if (spawnMiningCooldown > 0) {
+			MovementHelper.tryMove(myDirection, false);
+			spawnMiningCooldown--;
+		}
+
+
+		MapLocation goldLocation = MiningHelper.spotGold();
+		if (goldLocation != null) {
+			MovementHelper.tryMove(rc.getLocation().directionTo(goldLocation), false);
+		}
+
+		if (MiningHelper.canMineLead()) {
+			MiningHelper.mineLead();
+		} else {
+			Direction leadDirection = MiningHelper.spotLead(myArchonLocation);
+			if (leadDirection != null) {
+				MovementHelper.tryMove(leadDirection, false);
+			} else {
+				MovementHelper.tryMove(myDirection, false);
+			}
+		}
 	}
 
 	public static void init() throws GameActionException {

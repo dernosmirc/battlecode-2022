@@ -13,7 +13,16 @@ public strictfp class RobotPlayer {
 	public static int archonCount;
 	public static MapLocation[] archons;
 
-	public static final Direction[] directions = Direction.allDirections();
+	public static final Direction[] directions = {
+			Direction.NORTH,
+			Direction.NORTHEAST,
+			Direction.EAST,
+			Direction.SOUTHEAST,
+			Direction.SOUTH,
+			Direction.SOUTHWEST,
+			Direction.WEST,
+			Direction.NORTHWEST,
+	};;
 
 	public static void run (RobotController robotController) throws GameActionException {
 		rc = robotController;

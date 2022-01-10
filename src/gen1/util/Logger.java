@@ -25,7 +25,7 @@ public class Logger {
     public void log (String event) {
         if (DEBUG) {
             totalLogs++;
-            output.append(event).append(" ")
+            output.append(event).append("\t:")
                     .append(Clock.getBytecodeNum() - prev + (rc.getRoundNum() - prevRN) * myType.bytecodeLimit).append('\n');
             prev = Clock.getBytecodeNum();
             prevRN = rc.getRoundNum();
@@ -35,7 +35,7 @@ public class Logger {
     public void flush () {
         if (DEBUG) {
             if (!flushOnlyIfExceeds || startRN < rc.getRoundNum()) {
-                log("end");
+                log("end\t\t\t");
                 output.append("total ")
                         .append(Clock.getBytecodeNum() - start + (rc.getRoundNum() - startRN) * myType.bytecodeLimit);
                 pre.append(totalLogs).append(output.toString());

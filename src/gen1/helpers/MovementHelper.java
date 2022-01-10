@@ -40,13 +40,13 @@ public class MovementHelper {
                         straight = rc.canMove(dir) ? rc.senseLead(ml.add(dir)) : INFINITY,
                         right = rc.canMove(dir.rotateRight()) ? rc.senseLead(ml.add(dir.rotateRight())) : INFINITY;
 
-                if (straight > 0 && straight <= right && straight <= left) {
+                if (straight != INFINITY && straight <= right && straight <= left) {
                     rc.move(dir);
                     return true;
-                } else if (left > 0 && left <= right && straight >= left) {
+                } else if (left != INFINITY && left <= right && straight >= left) {
                     rc.move(dir.rotateLeft());
                     return true;
-                } else if (right > 0 && straight >= right && right <= left) {
+                } else if (right != INFINITY && straight >= right && right <= left) {
                     rc.move(dir.rotateRight());
                     return true;
                 }

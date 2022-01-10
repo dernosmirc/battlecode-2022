@@ -27,7 +27,7 @@ public strictfp class Archon {
 
 		boolean[] leadInDirection = new boolean[8];
 		int minMinersInDirection = 100;
-		for (MapLocation loc : rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared)) {
+		for (MapLocation loc : rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared, 2)) {
 			Direction toLead = rc.getLocation().directionTo(loc);
 			if (toLead != Direction.CENTER) {
 				leadInDirection[toLead.ordinal()] = true;
@@ -37,12 +37,10 @@ public strictfp class Archon {
 
 		int value = 0;
 		for (Direction dir : directions) {
-			if (dir != Direction.CENTER) {
-				if (leadInDirection[dir.ordinal()]) {
-					value |= (1 << dir.ordinal());
-					if (minersInDirection[dir.ordinal()] == minMinersInDirection) {
-						value |= (1 << (dir.ordinal() + 8));
-					}
+			if (leadInDirection[dir.ordinal()]) {
+				value |= (1 << dir.ordinal());
+				if (minersInDirection[dir.ordinal()] == minMinersInDirection) {
+					value |= (1 << (dir.ordinal() + 8));
 				}
 			}
 		}
@@ -53,7 +51,7 @@ public strictfp class Archon {
 		// int maxLead = -1;
 		// for (MapLocation loc : rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared)) {
 		// 	int lead = rc.senseLead(loc);
-		// 	if (lead > maxLead) {
+		// 	if (lead > maxLead) {D
 		// 		if (!loc.equals(previousLeadLoc)
 		// 			|| rc.getRoundNum() - previousLeadRound >= GameConstants.ADD_LEAD_EVERY_ROUNDS) {
 		// 			maxLead = lead;
