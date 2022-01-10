@@ -3,24 +3,19 @@ package gen1;
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {
+
+	// toggle logs
+	public static final boolean DEBUG = true;
+
 	public static RobotController rc;
 	public static Team myTeam, enemyTeam;
 	public static RobotType myType;
 	public static int archonCount;
 	public static MapLocation[] archons;
 
-	public static final Direction[] directions = {
-		Direction.NORTH,
-		Direction.NORTHEAST,
-		Direction.EAST,
-		Direction.SOUTHEAST,
-		Direction.SOUTH,
-		Direction.SOUTHWEST,
-		Direction.WEST,
-		Direction.NORTHWEST,
-	};
+	public static final Direction[] directions = Direction.allDirections();
 
-	public static void run(RobotController robotController) throws GameActionException {
+	public static void run (RobotController robotController) throws GameActionException {
 		rc = robotController;
 		myTeam = rc.getTeam();
 		enemyTeam = myTeam.opponent();
