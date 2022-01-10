@@ -24,6 +24,27 @@ public strictfp class Soldier {
 
 	public static void run() throws GameActionException {
 		MapLocation curLocation = rc.getLocation();
+
+		int arrayRead = rc.readSharedArray(0);
+		if (getBits(arrayRead, 15, 15) == 1){
+			enemyArchonFound = true;
+			sensedEnemyAnchorLocation = new MapLocation(getBits(arrayRead, 6, 11), getBits(arrayRead, 0, 5));
+		}
+
+		RobotInfo[] enemyRobotInfo1;
+		enemyRobotInfo1 = rc.senseNearbyRobots(-1, myTeam.opponent());
+		int n = enemyRobotInfo1.length;
+		for (int i = 0; i < n; i++){
+			// TODO: Check if two enemy robots are same sense radius, only one is set in shared array
+			if (enemyRobotInfo1[i].getType() == RobotType.ARCHON){
+				rc.attack(enemyRobotInfo1[i].getLocation());
+				return;
+			}
+		}
+		if (n > 0){
+			rc.attack(enemyRobotInfo1[0].getLocation());
+		}
+
 		if (enemyArchonFound) {
 			dir = curLocation.directionTo(sensedEnemyAnchorLocation);
 			if (rc.canMove(dir)){
@@ -41,7 +62,7 @@ public strictfp class Soldier {
 		if (curLocation.distanceSquaredTo(calculatedEnemyAnchorLocation) <= myType.visionRadiusSquared){
 			RobotInfo[] enemyRobotInfo;
 			enemyRobotInfo = rc.senseNearbyRobots(-1, myTeam.opponent());
-			int n = enemyRobotInfo.length;
+			n = enemyRobotInfo.length;
 			for (int i = 0; i < n; i++){
 				// TODO: Check if two enemy robots are same sense radius, only one is set in shared array
 				if (enemyRobotInfo[i].getType() == RobotType.ARCHON){
@@ -51,6 +72,7 @@ public strictfp class Soldier {
 					value = setBits(0, 15, 15, 1);
 					value = setBits(value, 6, 11, sensedEnemyAnchorLocation.x);
 					value = setBits(value, 0, 5, sensedEnemyAnchorLocation.y);
+					rc.writeSharedArray(0, value);
 					break;
 				}
 			}
