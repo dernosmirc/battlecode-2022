@@ -27,18 +27,22 @@ public strictfp class Archon {
 
 		boolean[] leadInDirection = new boolean[8];
 		int minMinersInDirection = 100;
-		for (MapLocation loc : rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared, 2)) {
+		for (MapLocation loc : rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared)) {
 			Direction toLead = rc.getLocation().directionTo(loc);
-			leadInDirection[toLead.ordinal()] = true;
-			minMinersInDirection = Math.min(minMinersInDirection, minersInDirection[toLead.ordinal()]);
+			if (toLead != Direction.CENTER) {
+				leadInDirection[toLead.ordinal()] = true;
+				minMinersInDirection = Math.min(minMinersInDirection, minersInDirection[toLead.ordinal()]);
+			}
 		}
 
 		int value = 0;
 		for (Direction dir : directions) {
-			if (leadInDirection[dir.ordinal()]) {
-				value |= (1 << dir.ordinal());
-				if (minersInDirection[dir.ordinal()] == minMinersInDirection) {
-					value |= (1 << (dir.ordinal() + 8));
+			if (dir != Direction.CENTER) {
+				if (leadInDirection[dir.ordinal()]) {
+					value |= (1 << dir.ordinal());
+					if (minersInDirection[dir.ordinal()] == minMinersInDirection) {
+						value |= (1 << (dir.ordinal() + 8));
+					}
 				}
 			}
 		}

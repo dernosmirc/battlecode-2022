@@ -36,3 +36,5 @@ battlecode-scaffold.iws
 # Sublime text files
 battlecode-2022.sublime-project
 battlecode-2022.sublime-workspace
+
+gradle.properties
