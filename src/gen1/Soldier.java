@@ -32,16 +32,16 @@ public strictfp class Soldier {
 		}
 
 		RobotInfo[] enemyRobotInfo1;
-		enemyRobotInfo1 = rc.senseNearbyRobots(-1, myTeam.opponent());
+		enemyRobotInfo1 = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam.opponent());
 		int n = enemyRobotInfo1.length;
 		for (int i = 0; i < n; i++){
 			// TODO: Check if two enemy robots are same sense radius, only one is set in shared array
 			if (enemyRobotInfo1[i].getType() == RobotType.ARCHON){
-				rc.attack(enemyRobotInfo1[i].getLocation());
+				if (rc.canAttack(enemyRobotInfo1[i].getLocation())) 	rc.attack(enemyRobotInfo1[i].getLocation());
 				return;
 			}
 		}
-		if (n > 0){
+		if (n > 0 && rc.canAttack(enemyRobotInfo1[0].getLocation())){
 			rc.attack(enemyRobotInfo1[0].getLocation());
 		}
 
@@ -61,7 +61,7 @@ public strictfp class Soldier {
 
 		if (curLocation.distanceSquaredTo(calculatedEnemyAnchorLocation) <= myType.visionRadiusSquared){
 			RobotInfo[] enemyRobotInfo;
-			enemyRobotInfo = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam.opponent());
+			enemyRobotInfo = rc.senseNearbyRobots(-1, myTeam.opponent());
 			n = enemyRobotInfo.length;
 			for (int i = 0; i < n; i++){
 				// TODO: Check if two enemy robots are same sense radius, only one is set in shared array
