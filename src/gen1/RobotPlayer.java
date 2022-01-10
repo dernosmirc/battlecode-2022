@@ -22,7 +22,7 @@ public strictfp class RobotPlayer {
 			Direction.SOUTHWEST,
 			Direction.WEST,
 			Direction.NORTHWEST,
-	};;
+	};
 
 	public static void run (RobotController robotController) throws GameActionException {
 		rc = robotController;

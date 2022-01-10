@@ -8,6 +8,9 @@ import static gen1.RobotPlayer.*;
 
 public class MiningHelper {
 
+    private static final int GRID_DIM = 4;
+    private static final int LEAD_SCALE = 16;
+
     public static void mineGold() throws GameActionException {
         for (MapLocation mp: rc.senseNearbyLocationsWithGold(myType.actionRadiusSquared)) {
             while (rc.isActionReady() && rc.canMineGold(mp)) {
