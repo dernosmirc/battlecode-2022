@@ -3,6 +3,7 @@ package gen1;
 import java.util.Random;
 import battlecode.common.*;
 import gen1.helpers.SpawnHelper;
+import gen1.util.Logger;
 
 import static gen1.RobotPlayer.*;
 import static gen1.util.Functions.getBits;
@@ -41,6 +42,9 @@ public strictfp class Archon {
 		Direction optimalDirection = Direction.NORTHEAST;
 		for (Direction dir : directions) {
 			double priority = theta1 * leadInDirection[dir.ordinal()] - theta2 * minersInDirection[dir.ordinal()];
+			Logger logger = new Logger("", false);
+			logger.log(dir.name() + " " + priority);
+
 			if (priority > maxPriority) {
 				maxPriority = priority;
 				optimalDirection = dir;
@@ -52,11 +56,7 @@ public strictfp class Archon {
 
 	public static void run() throws GameActionException {
 		int lead = rc.getTeamLeadAmount(myTeam);
-		if (rc.getRoundNum() == 1) {
-			if (rc.canBuildRobot(RobotType.MINER, Direction.NORTHWEST)) {
-				rc.buildRobot(RobotType.MINER, Direction.NORTHWEST);
-			}
-		} else if (rc.isActionReady() && lead >= BUILD_THRESHOLD) {
+		if (rc.isActionReady() && lead >= BUILD_THRESHOLD) {
 			RobotType spawnType = RobotType.BUILDER;
 			switch (rng.nextInt(3)) {
 				case 0:
@@ -70,15 +70,22 @@ public strictfp class Archon {
 					break;
 			}
 
-			for (int i = 0; i < directions.length; ++i) {
-				if (rc.canBuildRobot(spawnType, directions[buildDirectionIndex])) {
-					rc.buildRobot(spawnType, directions[buildDirectionIndex]);
-					break;
+			if (spawnType == RobotType.MINER) {
+				Direction spawnDirection = getOptimalMinerSpawnDirection();
+				if (spawnDirection != Direction.CENTER && rc.canBuildRobot(RobotType.MINER, spawnDirection)) {
+					rc.buildRobot(RobotType.MINER, spawnDirection);
 				}
+			} else {
+				for (int i = 0; i < directions.length; ++i) {
+					if (rc.canBuildRobot(spawnType, directions[buildDirectionIndex])) {
+						rc.buildRobot(spawnType, directions[buildDirectionIndex]);
+						break;
+					}
 
-				++buildDirectionIndex;
-				if (buildDirectionIndex == directions.length)
-					buildDirectionIndex = 0;
+					++buildDirectionIndex;
+					if (buildDirectionIndex == directions.length)
+						buildDirectionIndex = 0;
+				}
 			}
 		}
 	}
