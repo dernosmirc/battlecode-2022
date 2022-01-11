@@ -10,9 +10,12 @@ import static gen2.RobotPlayer.*;
 import static gen2.util.Functions.getBits;
 
 public strictfp class Miner {
+	private static final double GOLD_MINER_RATIO = 0.2;
+
 	private static MapLocation myArchonLocation;
 	public static Direction myDirection;
 	private static int myArchonIndex;
+	private static boolean isGoldMiner = false;
 
 	public static void run() throws GameActionException {
 		Logger logger = new Logger("Miner", true);
@@ -27,7 +30,7 @@ public strictfp class Miner {
 			Direction goldDirection = GoldMiningHelper.spotGold();
 			if (goldDirection != null) {
 				MovementHelper.tryMove(goldDirection, false);
-			} else {
+			} else if (isGoldMiner) {
 				goldDirection = GoldMiningHelper.spotGoldOnGrid();
 				if (goldDirection != null) {
 					MovementHelper.tryMove(goldDirection, false);
@@ -59,6 +62,7 @@ public strictfp class Miner {
 	}
 
 	public static void init() throws GameActionException {
+		isGoldMiner = Math.random() < GOLD_MINER_RATIO;
 		for (int i = 32; i < 32 + archonCount; ++i) {
 			int value = rc.readSharedArray(i);
 			myArchonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
