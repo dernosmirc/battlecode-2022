@@ -1,6 +1,7 @@
 package gen2;
 
 import battlecode.common.*;
+import gen2.helpers.MovementHelper;
 import gen2.util.Functions;
 
 import static gen2.RobotPlayer.*;
@@ -26,10 +27,12 @@ public strictfp class Builder {
 		if (nextBuilding != null) {
 			Direction buildDirection = rc.getLocation().directionTo(nextBuilding.location);
 			if (
-					rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 2) &&
+					rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 8) &&
 							rc.canBuildRobot(nextBuilding.type, buildDirection)
 			) {
 				rc.buildRobot(nextBuilding.type, buildDirection);
+			} else {
+				MovementHelper.tryMove(rc.getLocation().directionTo(nextBuilding.location), false);
 			}
 		}
 	}
@@ -44,15 +47,15 @@ public strictfp class Builder {
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
 					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
 					myArchonIndex = i - 32;
+					myDirection = myArchonLocation.directionTo(rc.getLocation());
+					nextBuilding = new ConstructionInfo(
+							RobotType.WATCHTOWER,
+							Functions.translate(myArchonLocation, myDirection, 2)
+					);
 				}
 			} else {
 				break;
 			}
 		}
-		myDirection = myArchonLocation.directionTo(rc.getLocation());
-		nextBuilding = new ConstructionInfo(
-				RobotType.WATCHTOWER,
-				Functions.translate(myArchonLocation, myDirection, 2)
-		);
 	}
 }

@@ -3,6 +3,8 @@ package gen2.helpers;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import gen2.RobotPlayer;
+import gen2.util.Functions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,6 +19,16 @@ public class MovementHelper {
     private static final double[] DIRECTION_WEIGHTS = {1, 8, 64, 8, 1};
 
     public static final List<Direction> directionList = Arrays.asList(directions);
+
+    private static final double DIRECTION_BETA = 0.334;
+    private static double dx = 0, dy = 0;
+    public static Direction getInstantaneousDirection() {
+        return Functions.directionTo(dx, dy);
+    }
+    public static void updateMovement(Direction d) {
+        dx = DIRECTION_BETA * d.dx + (1-DIRECTION_BETA) * dx;
+        dy = DIRECTION_BETA * d.dy + (1-DIRECTION_BETA) * dy;
+    }
 
     public static boolean moveAndAvoid(
             Direction direction, MapLocation location, int distanceSquared
@@ -73,11 +85,13 @@ public class MovementHelper {
                 }
                 if (opt != null) {
                     rc.move(opt);
+                    updateMovement(opt);
                     return true;
                 }
             } else {
                 if (rc.canMove(dir)) {
                     rc.move(dir);
+                    updateMovement(dir);
                     return true;
                 }
             }

@@ -4,41 +4,66 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotType;
-import gen2.Miner;
 import gen2.util.Functions;
 import gen2.util.MetalInfo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Objects;
 
 import static gen2.RobotPlayer.*;
 
 public class LeadMiningHelper {
 
-    private static final int GRID_DIM = 4;
-    private static final int LEAD_SCALE = 16;
+    private static final int GRID_DIM = 3;
 
     private static final int SA_START = 36;
     private static final int SA_COUNT = 8;
 
     private static final double DISTANCE_FACTOR = -0.5;
 
+    private static final int MAX_7BITS = 127;
+    private static final double COMPRESSION = 0.001;
+    private static int scaleLeadTo7Bits(int lead) {
+        return (int) Math.floor(127 * (1 - Math.exp(-COMPRESSION * lead)));
+    }
+    private static int scale7BitsToLead(int bits) {
+        return (int) Math.floor(-Math.log(1 - bits / (double) MAX_7BITS) / COMPRESSION);
+    }
+
+    private static MapLocation getLocationFrom9Bits(int bits) {
+        int grid_x = bits / 22;
+        int grid_y = bits % 22;
+        return new MapLocation(
+                grid_x * GRID_DIM + GRID_DIM / 2,
+                grid_y * GRID_DIM + GRID_DIM / 2
+        );
+    }
+    private static int get9BitsFromLocation(MapLocation loc) {
+        int grid_x = loc.x / GRID_DIM;
+        int grid_y = loc.y / GRID_DIM;
+        return grid_x * 22 + grid_y;
+    }
+
+    private static int getInt16FromInfo(MetalInfo info) {
+        int v = Functions.setBits(0, 0, 8, get9BitsFromLocation(info.location));
+        v = Functions.setBits(v, 9, 15, scaleLeadTo7Bits(info.amount));
+        return v;
+    }
+    private static MetalInfo getInfoFromInt16(int bits) {
+        return new MetalInfo(
+                scale7BitsToLead(Functions.getBits(bits, 9, 15)),
+                getLocationFrom9Bits(Functions.getBits(bits, 0, 8))
+        );
+    }
+
     private static MetalInfo[] getLeadOnGrid() throws GameActionException {
         MetalInfo[] infos = new MetalInfo[SA_COUNT];
         for (int i = SA_START; i < SA_START + SA_COUNT; i++) {
-            int val = rc.readSharedArray(i);
-            int amount = Functions.getBits(val, 8, 15) * LEAD_SCALE;
-            if (amount != 0) {
-                int grid_x = Functions.getBits(val, 0, 3);
-                int grid_y = Functions.getBits(val, 4, 7);
-                infos[i - SA_START] = (
-                        new MetalInfo(
-                                amount,
-                                new MapLocation(
-                                        grid_x * GRID_DIM + GRID_DIM/2,
-                                        grid_y * GRID_DIM + GRID_DIM/2
-                                )
-                        )
-                );
+            MetalInfo info = getInfoFromInt16(rc.readSharedArray(i));
+            if (info.amount != 0) {
+                infos[i - SA_START] = info;
             }
         }
         /*if (DEBUG) {
@@ -83,8 +108,8 @@ public class LeadMiningHelper {
         if (!rc.canSenseLocation(center) || !rc.onTheMap(center)) return null;
 
         int count = 0;
-        for (int x = -2; x < 2; x++) {
-            for (int y = -2; y < 2; y++) {
+        for (int x = -GRID_DIM/2; x < (GRID_DIM+1)/2; x++) {
+            for (int y = -GRID_DIM/2; y < (GRID_DIM+1)/2; y++) {
                 MapLocation loc = new MapLocation(center.x + x, center.y + y);
                 if (rc.canSenseLocation(loc)) {
                     count += Math.max(rc.senseLead(loc) - 1, 0);
@@ -98,12 +123,14 @@ public class LeadMiningHelper {
         MapLocation now = rc.getLocation();
         ArrayList<MapLocation> adj = new ArrayList<>();
         adj.add(new MapLocation(now.x, now.y));
-        if (myType != RobotType.MINER) {
-                adj.add(new MapLocation(now.x, now.y + GRID_DIM));
-                adj.add(new MapLocation(now.x, now.y - GRID_DIM));
-                adj.add(new MapLocation(now.x + GRID_DIM, now.y));
-                adj.add(new MapLocation(now.x - GRID_DIM, now.y));
-        }
+
+        // TODO OPTIMISE
+        /*if (myType != RobotType.MINER) {
+            adj.add(new MapLocation(now.x, now.y + GRID_DIM));
+            adj.add(new MapLocation(now.x, now.y - GRID_DIM));
+            adj.add(new MapLocation(now.x + GRID_DIM, now.y));
+            adj.add(new MapLocation(now.x - GRID_DIM, now.y));
+        }*/
         for (MapLocation loc : adj) {
             MetalInfo mInfo = getLeadInfoCell(loc);
             if (mInfo != null) {
@@ -127,11 +154,7 @@ public class LeadMiningHelper {
                     }
                 }
                 if (foundLocation || minInfo.amount < mInfo.amount) {
-                    int scaled = Math.min(mInfo.amount / LEAD_SCALE, 255);
-                    int val = Functions.setBits(0, 8, 15, scaled);
-                    val = Functions.setBits(val, 0, 3, mInfo.location.x / GRID_DIM);
-                    val = Functions.setBits(val, 4, 7, mInfo.location.y / GRID_DIM);
-                    rc.writeSharedArray(index + SA_START, val);
+                    rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
                 }
             }
         }

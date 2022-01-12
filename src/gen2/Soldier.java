@@ -3,6 +3,7 @@ package gen2;
 import battlecode.common.*;
 import gen2.helpers.GoldMiningHelper;
 import gen2.helpers.LeadMiningHelper;
+import gen2.util.Logger;
 
 import static gen2.RobotPlayer.*;
 import static gen2.util.Functions.getBits;
@@ -23,6 +24,8 @@ public strictfp class Soldier {
 
 
 	public static void run() throws GameActionException {
+		Logger logger = new Logger("Soldier", true);
+
 		MapLocation curLocation = rc.getLocation();
 
 		int arrayRead = rc.readSharedArray(0);
@@ -37,9 +40,12 @@ public strictfp class Soldier {
 			}
 		}
 
+		logger.log("Updating Lead");
 		// Update lead and gold sources nearby to help miners
 		LeadMiningHelper.updateLeadAmountInGridCell();
+		logger.log("Updating Gold");
 		GoldMiningHelper.updateGoldAmountInGridCell();
+		logger.log("Updated gold");
 
 		RobotInfo[] enemyRobotInfo1;
 		enemyRobotInfo1 = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam.opponent());
@@ -99,6 +105,8 @@ public strictfp class Soldier {
 		else if(rc.canMove(dir.rotateRight())){
 			rc.move(dir.rotateRight());
 		}
+
+		logger.flush();
 	}
 
 	public static void preCalculate(){
