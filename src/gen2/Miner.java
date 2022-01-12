@@ -63,12 +63,18 @@ public strictfp class Miner {
 
 	public static void init() throws GameActionException {
 		isGoldMiner = Math.random() < GOLD_MINER_RATIO;
-		for (int i = 32; i < 32 + archonCount; ++i) {
+		archonCount = 0;
+		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
-			myArchonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
-			myDirection = myArchonLocation.directionTo(rc.getLocation());
-			if (rc.getLocation().distanceSquaredTo(myArchonLocation) <= 2) {
-				myArchonIndex = i - 32;
+			if (getBits(value, 15, 15) == 1) {
+				++archonCount;
+				MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
+				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
+					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
+					myDirection = myArchonLocation.directionTo(rc.getLocation());
+					myArchonIndex = i - 32;
+				}
+			} else {
 				break;
 			}
 		}

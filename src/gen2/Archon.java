@@ -135,6 +135,7 @@ public strictfp class Archon {
 	}
 
 	public static void init() throws GameActionException {
+		archonCount = rc.getArchonCount();
 		for (int i = 32; i < 32 + archonCount; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 0) {

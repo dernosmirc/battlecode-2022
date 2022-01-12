@@ -11,7 +11,6 @@ public strictfp class RobotPlayer {
 	public static Team myTeam, enemyTeam;
 	public static RobotType myType;
 	public static int archonCount;
-	public static MapLocation[] archons;
 
 	public static final Direction[] directions = {
 			Direction.NORTH,
@@ -29,12 +28,7 @@ public strictfp class RobotPlayer {
 		myTeam = rc.getTeam();
 		enemyTeam = myTeam.opponent();
 		myType = rc.getType();
-		archonCount = rc.getArchonCount();
-		archons = new MapLocation[archonCount];
-		for (MapLocation archon : archons) {
-			archon = new MapLocation(-1, -1);
-		}
-
+		
 		switch (myType) {
 			case MINER:
 				Miner.init();

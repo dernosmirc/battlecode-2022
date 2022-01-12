@@ -33,14 +33,21 @@ public strictfp class Builder {
 	}
 
 	public static void init() throws GameActionException {
-		for (int i = 32; i < 32 + archonCount; ++i) {
+		archonCount = 0;
+		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
-			myArchonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
-			if (rc.getLocation().distanceSquaredTo(myArchonLocation) <= 2) {
-				myArchonIndex = i - 32;
+			if (getBits(value, 15, 15) == 1) {
+				++archonCount;
+				MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
+				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
+					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
+					myArchonIndex = i - 32;
+				}
+			} else {
 				break;
 			}
 		}
+		
 		myDirection = myArchonLocation.directionTo(rc.getLocation());
 		nextBuilding = new ConstructionInfo(
 				RobotType.WATCHTOWER,
