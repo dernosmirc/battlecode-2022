@@ -38,4 +38,4 @@ battlecode-2022.sublime-project
 battlecode-2022.sublime-workspace
 
 gradle.properties
-/src/gen0/
+src/gen0/
