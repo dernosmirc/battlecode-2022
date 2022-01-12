@@ -9,7 +9,6 @@ import java.util.List;
 
 import static gen2.RobotPlayer.directions;
 import static gen2.RobotPlayer.rc;
-import static gen2.util.Functions.getRandom;
 
 public class MovementHelper {
 
@@ -17,16 +16,22 @@ public class MovementHelper {
 
     public static final List<Direction> directionList = Arrays.asList(directions);
 
-    public static Direction getRandomDirection() {
-        return (Direction) getRandom(directions);
-    }
-
-    public static Direction vectorAddition(Direction ... dirs) {
-        MapLocation yeah = new MapLocation(0,0);
-        for (Direction d : dirs) {
-            yeah = yeah.add(d);
+    public static boolean moveAndAvoid(
+            Direction direction, MapLocation location, int distanceSquared
+    ) throws GameActionException {
+        Direction[] dirs = {
+                direction,
+                direction.rotateLeft(),
+                direction.rotateRight(),
+        };
+        for (Direction dir: dirs) {
+            if (!rc.getLocation().add(dir).isWithinDistanceSquared(location, distanceSquared)) {
+                if (tryMove(dir, true)) {
+                    return true;
+                }
+            }
         }
-        return (new MapLocation(0,0)).directionTo(yeah);
+        return false;
     }
 
     public static boolean tryMove (Direction dir, boolean force) throws GameActionException {

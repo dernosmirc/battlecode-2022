@@ -46,16 +46,16 @@ public strictfp class Miner {
 			Direction leadDirection = LeadMiningHelper.spotLeadOnGrid();
 			logger.log("spotted lead on grid");
 			if (leadDirection != null) {
-				MovementHelper.tryMove(leadDirection, false);
+				MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
 			}
 		}
 		if (rc.isMovementReady()) {
-			Direction leadDirection = LeadMiningHelper.spotLead(myArchonLocation);
+			Direction leadDirection = LeadMiningHelper.spotLead();
 			logger.log("spotted lead nearby");
 			if (leadDirection != null) {
-				MovementHelper.tryMove(leadDirection, false);
+				MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
 			} else {
-				MovementHelper.tryMove(myDirection, false);
+				MovementHelper.moveAndAvoid(myDirection, myArchonLocation, 2);
 			}
 		}
 		logger.flush();

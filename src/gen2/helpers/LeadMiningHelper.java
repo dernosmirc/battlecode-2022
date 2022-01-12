@@ -104,7 +104,7 @@ public class LeadMiningHelper {
         }
         for (MapLocation loc : adj) {
             MetalInfo mInfo = getLeadInfoCell(loc);
-            if (mInfo != null && mInfo.amount / LEAD_SCALE > 0) {
+            if (mInfo != null) {
                 MetalInfo[] infos = getLeadOnGrid();
                 MetalInfo minInfo = new MetalInfo(0, new MapLocation(-1, -1));
                 int index = 0;
@@ -151,17 +151,15 @@ public class LeadMiningHelper {
         return rc.senseNearbyLocationsWithLead(myType.actionRadiusSquared, 2).length > 0;
     }
 
-    public static Direction spotLead(MapLocation archonLocation) throws GameActionException {
+    public static Direction spotLead() throws GameActionException {
         MapLocation location = rc.getLocation();
         Direction best = null;
         double bestFactor = 0;
         for (MapLocation mp: rc.senseNearbyLocationsWithLead(8)) {
-            if (!archonLocation.isWithinDistanceSquared(mp, 13)) {
-                double factor = (rc.senseLead(mp) - 1) / Math.pow (location.distanceSquaredTo(mp) + 1, 1) ;
-                if (factor > bestFactor) {
-                    best = location.directionTo(mp);
-                    bestFactor = factor;
-                }
+            double factor = (rc.senseLead(mp) - 1) / Math.pow (location.distanceSquaredTo(mp) + 1, 1) ;
+            if (factor > bestFactor) {
+                best = location.directionTo(mp);
+                bestFactor = factor;
             }
         }
         return best;

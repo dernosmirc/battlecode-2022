@@ -42,6 +42,9 @@ public strictfp class RobotPlayer {
 			case SOLDIER:
 				Soldier.init();
 				break;
+			case BUILDER:
+				Builder.init();
+				break;
 			case ARCHON:
 				Archon.init();
 				break;
