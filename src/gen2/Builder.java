@@ -3,10 +3,13 @@ package gen2;
 import battlecode.common.*;
 import gen2.util.Functions;
 
+import java.util.Random;
+
 import static gen2.RobotPlayer.*;
 import static gen2.util.Functions.getBits;
 
 public strictfp class Builder {
+	private static final Random rng = new Random(rc.getID());
 
 	public static class ConstructionInfo {
 		public MapLocation location;
@@ -23,7 +26,10 @@ public strictfp class Builder {
 	private static ConstructionInfo nextBuilding;
 
 	public static void run() throws GameActionException {
-
+		Direction dir = directions[rng.nextInt(directions.length)];
+		if (rc.canMove(dir)) {
+			rc.move(dir);
+		}
 	}
 
 	public static void init() throws GameActionException {
