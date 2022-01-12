@@ -32,4 +32,24 @@ public enum SymmetryType {
 		locations[2] = new MapLocation(rc.getMapWidth() - location.x - 1, rc.getMapHeight() - location.y - 1);
 		return locations;
 	}
+
+	public static MapLocation getSymmetricalLocation(MapLocation location, SymmetryType symmetryType) throws GameActionException {
+		MapLocation symmetricalLocation = new MapLocation(-1, -1);
+		switch (symmetryType) {
+			case HORIZONTAL:
+				symmetricalLocation = new MapLocation(location.x, rc.getMapHeight() - location.y - 1);
+				break;
+			case VERTICAL:
+				symmetricalLocation = new MapLocation(rc.getMapWidth() - location.x - 1, location.y);
+				break;
+			case ROTATIONAL:
+				symmetricalLocation = new MapLocation(rc.getMapWidth() - location.x - 1, rc.getMapHeight() - location.y - 1);
+				break;
+			case NONE:
+				symmetricalLocation = new MapLocation(location.x, location.y);
+				break;
+		}
+
+		return symmetricalLocation;
+	}
 }
