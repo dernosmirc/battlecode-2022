@@ -29,7 +29,7 @@ public strictfp class Miner {
 		if (rc.isMovementReady()) {
 			Direction goldDirection = GoldMiningHelper.spotGold();
 			if (goldDirection != null) {
-				MovementHelper.tryMove(goldDirection, false);
+				MovementHelper.tryMove(goldDirection, true);
 			} else if (isGoldMiner) {
 				goldDirection = GoldMiningHelper.spotGoldOnGrid();
 				if (goldDirection != null) {
