@@ -14,9 +14,17 @@ public strictfp class Archon {
 
 	private static final int BUILD_THRESHOLD = 80; // make dynamic?
 
+	private static double minersRatio = 0.3;
+	private static double soldiersRatio = 0.5;
+	private static double buildersRatio = 0.2;
+
 	private static int buildDirectionIndex = 0;
 	private static int myIndex;
+
 	private static int droidsBuilt = 0;
+	private static int minersBuilt = 0;
+	private static int soldiersBuilt = 0;
+	private static int buildersBuilt = 0;
 
 	private static Direction getOptimalMinerSpawnDirection() throws GameActionException {
 		int[] minersInDirection = new int[8];
@@ -81,17 +89,19 @@ public strictfp class Archon {
 
 		if (rc.isActionReady() && lead >= BUILD_THRESHOLD) {
 			RobotType spawnType = RobotType.BUILDER;
-			switch (rng.nextInt(2)) {
-				case 0:
-					spawnType = RobotType.MINER;
-					break;
-				case 1:
-					spawnType = RobotType.SOLDIER;
-					break;
-			}
-
-			if (droidsBuilt < 5) {
+			if (droidsBuilt < 2) {
 				spawnType = RobotType.MINER;
+			} else if (soldiersBuilt < 3) {
+				spawnType = RobotType.SOLDIER;
+			} else {
+				double randomNumber = rng.nextDouble();
+				if (randomNumber < soldiersRatio) {
+					spawnType = RobotType.SOLDIER;
+				} else if (randomNumber < soldiersRatio + minersRatio) {
+					spawnType = RobotType.MINER;
+				} else {
+					spawnType = RobotType.BUILDER;
+				}
 			}
 
 			if (spawnType == RobotType.MINER) {
@@ -99,6 +109,7 @@ public strictfp class Archon {
 				if (spawnDirection != Direction.CENTER && rc.canBuildRobot(RobotType.MINER, spawnDirection)) {
 					rc.buildRobot(RobotType.MINER, spawnDirection);
 					++droidsBuilt;
+					++minersBuilt;
 					updateDroidsBuilt();
 				}
 			} else {
@@ -106,6 +117,11 @@ public strictfp class Archon {
 					if (rc.canBuildRobot(spawnType, directions[buildDirectionIndex])) {
 						rc.buildRobot(spawnType, directions[buildDirectionIndex]);
 						++droidsBuilt;
+						if (spawnType == RobotType.SOLDIER) {
+							++soldiersBuilt;
+						} else if (spawnType == RobotType.BUILDER) {
+							++buildersBuilt;
+						}
 						updateDroidsBuilt();
 						break;
 					}
