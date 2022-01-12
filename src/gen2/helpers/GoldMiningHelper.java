@@ -11,29 +11,54 @@ import static gen2.RobotPlayer.rc;
 
 public class GoldMiningHelper {
 
-    private static final int GRID_DIM = 4;
-    private static final int GOLD_SCALE = 16;
+    private static final int GRID_DIM = 3;
 
     private static final int SA_START = 44;
     private static final int SA_COUNT = 2;
 
+
+    private static final int MAX_7BITS = 127;
+    private static final double COMPRESSION = 0.01;
+    private static int scaleGoldTo7Bits(int gold) {
+        return (int) Math.floor(127 * (1 - Math.exp(-COMPRESSION * gold)));
+    }
+    private static int scale7BitsToGold(int bits) {
+        return (int) Math.floor(-Math.log(1 - bits / (double) MAX_7BITS) / COMPRESSION);
+    }
+
+    private static MapLocation getLocationFrom9Bits(int bits) {
+        int grid_x = bits / 22;
+        int grid_y = bits % 22;
+        return new MapLocation(
+                grid_x * GRID_DIM + GRID_DIM / 2,
+                grid_y * GRID_DIM + GRID_DIM / 2
+        );
+    }
+    private static int get9BitsFromLocation(MapLocation loc) {
+        int grid_x = loc.x / GRID_DIM;
+        int grid_y = loc.y / GRID_DIM;
+        return grid_x * 22 + grid_y;
+    }
+
+    private static int getInt16FromInfo(MetalInfo info) {
+        int v = Functions.setBits(0, 0, 8, get9BitsFromLocation(info.location));
+        v = Functions.setBits(v, 9, 15, scaleGoldTo7Bits(info.amount));
+        return v;
+    }
+    private static MetalInfo getInfoFromInt16(int bits) {
+        return new MetalInfo(
+                scale7BitsToGold(Functions.getBits(bits, 9, 15)),
+                getLocationFrom9Bits(Functions.getBits(bits, 0, 8))
+        );
+    }
+
+
     private static MetalInfo[] getGoldOnGrid() throws GameActionException {
         MetalInfo[] infos = new MetalInfo[SA_COUNT];
         for (int i = SA_START; i < SA_START + SA_COUNT; i++) {
-            int val = rc.readSharedArray(i);
-            int amount = Functions.getBits(val, 8, 15) * GOLD_SCALE;
-            if (amount != 0) {
-                int grid_x = Functions.getBits(val, 0, 3);
-                int grid_y = Functions.getBits(val, 4, 7);
-                infos[i - SA_START] = (
-                        new MetalInfo(
-                                amount,
-                                new MapLocation(
-                                        grid_x * GRID_DIM + GRID_DIM/2,
-                                        grid_y * GRID_DIM + GRID_DIM/2
-                                )
-                        )
-                );
+            MetalInfo info = getInfoFromInt16(rc.readSharedArray(i));
+            if (info.amount != 0) {
+                infos[i - SA_START] = info;
             }
         }
         return infos;
@@ -78,11 +103,7 @@ public class GoldMiningHelper {
             }
         }
         if (foundLocation || minInfo.amount < mInfo.amount) {
-            int scaled = Math.min(mInfo.amount / GOLD_SCALE, 255);
-            int val = Functions.setBits(0, 8, 15, scaled);
-            val = Functions.setBits(val, 0, 3, mInfo.location.x / GRID_DIM);
-            val = Functions.setBits(val, 4, 7, mInfo.location.y / GRID_DIM);
-            rc.writeSharedArray(index + SA_START, val);
+            rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
         }
     }
 
@@ -129,12 +150,6 @@ public class GoldMiningHelper {
         }
         if (goldLoc == null) return null;
         else return location.directionTo(goldLoc);
-    }
-
-    public static void clearGoldAmountInGrid() throws GameActionException {
-        for (int i = SA_START; i < SA_START + SA_COUNT; i++) {
-            rc.writeSharedArray(i, 0);
-        }
     }
 
     public static void mineGold() throws GameActionException {

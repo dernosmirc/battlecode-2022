@@ -2,6 +2,8 @@ package gen2;
 
 import battlecode.common.*;
 
+import static gen2.helpers.MovementHelper.getInstantaneousDirection;
+
 public strictfp class RobotPlayer {
 
 	// toggle logs
@@ -45,6 +47,7 @@ public strictfp class RobotPlayer {
 		}
 
 		while (true) {
+			rc.setIndicatorString(getInstantaneousDirection().name());
 			switch (myType) {
 				case LABORATORY:
 					Laboratory.run();

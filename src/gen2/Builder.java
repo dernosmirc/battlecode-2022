@@ -44,16 +44,15 @@ public strictfp class Builder {
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
 					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
 					myArchonIndex = i - 32;
+					myDirection = myArchonLocation.directionTo(rc.getLocation());
+					nextBuilding = new ConstructionInfo(
+							RobotType.WATCHTOWER,
+							Functions.translate(myArchonLocation, myDirection, 2)
+					);
 				}
 			} else {
 				break;
 			}
 		}
-		
-		myDirection = myArchonLocation.directionTo(rc.getLocation());
-		nextBuilding = new ConstructionInfo(
-				RobotType.WATCHTOWER,
-				Functions.translate(myArchonLocation, myDirection, 2)
-		);
 	}
 }

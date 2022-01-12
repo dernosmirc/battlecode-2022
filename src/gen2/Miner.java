@@ -4,6 +4,7 @@ import battlecode.common.*;
 import gen2.helpers.GoldMiningHelper;
 import gen2.helpers.LeadMiningHelper;
 import gen2.helpers.MovementHelper;
+import gen2.util.Functions;
 import gen2.util.Logger;
 
 import static gen2.RobotPlayer.*;
@@ -63,6 +64,7 @@ public strictfp class Miner {
 
 	public static void init() throws GameActionException {
 		isGoldMiner = Math.random() < GOLD_MINER_RATIO;
+		myDirection = Functions.getRandomDirection();
 		archonCount = 0;
 		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
@@ -71,7 +73,6 @@ public strictfp class Miner {
 				MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
 					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
-					myDirection = myArchonLocation.directionTo(rc.getLocation());
 					myArchonIndex = i - 32;
 				}
 			} else {

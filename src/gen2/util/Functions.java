@@ -57,4 +57,33 @@ public strictfp class Functions {
 		}
 		return out;
 	}
+
+	public static Direction directionTo(double dx, double dy) {
+		double deg = Math.toDegrees(Math.atan(dx/dy));
+		if (dx >= 0) {
+			if (-90 + 22.5 >= deg) {
+				return Direction.SOUTH;
+			} else if (-45 + 22.5 >= deg) {
+				return Direction.SOUTHEAST;
+		    } else if (0 + 22.5 >= deg) {
+				return Direction.EAST;
+			} else if (45 + 22.5 >= deg) {
+				return Direction.NORTHEAST;
+			} else {
+				return Direction.NORTH;
+			}
+		} else {
+			if (-90 + 22.5 >= deg) {
+				return Direction.NORTH;
+			} else if (-45 + 22.5 >= deg) {
+				return Direction.NORTHWEST;
+			} else if (0 + 22.5 >= deg) {
+				return Direction.WEST;
+			} else if (45 + 22.5 >= deg) {
+				return Direction.SOUTHWEST;
+			} else {
+				return Direction.SOUTH;
+			}
+		}
+	}
 }
