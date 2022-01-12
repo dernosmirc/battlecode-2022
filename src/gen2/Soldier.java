@@ -25,14 +25,12 @@ public strictfp class Soldier {
 	private static Logger logger;
 
 	public static void run() throws GameActionException {
-		MapLocation curLocation = rc.getLocation();
-
 		int arrayRead = rc.readSharedArray(0);
 		if (getBits(arrayRead, 15, 15) == 1){
 			enemyArchonFound = true;
 			sensedEnemyArchonLocation = new MapLocation(getBits(arrayRead, 6, 11), getBits(arrayRead, 0, 5));
 		}
-		if (enemyArchonFound && curLocation.distanceSquaredTo(sensedEnemyArchonLocation) <= myType.visionRadiusSquared){
+		if (enemyArchonFound && rc.getLocation().distanceSquaredTo(sensedEnemyArchonLocation) <= myType.visionRadiusSquared){
 			if (rc.senseRobotAtLocation(sensedEnemyArchonLocation) == null){
 				enemyArchonFound = false;
 				rc.writeSharedArray(0, 0);
@@ -48,6 +46,10 @@ public strictfp class Soldier {
 		int n = enemyRobotInfo1.length;
 		for (int i = 0; i < n; i++){
 			if (enemyRobotInfo1[i].getType() == RobotType.ARCHON){
+				calculateEnemyArchonLocations(enemyRobotInfo1[i]);
+				sensedEnemyArchonLocation = enemyRobotInfo1[i].location;
+				enemyArchonFound = true;
+
 				if (rc.canAttack(enemyRobotInfo1[i].getLocation())) 	rc.attack(enemyRobotInfo1[i].getLocation());
 				return;
 			}
@@ -57,7 +59,7 @@ public strictfp class Soldier {
 		}
 
 		if (enemyArchonFound) {
-			dir = curLocation.directionTo(sensedEnemyArchonLocation);
+			dir = rc.getLocation().directionTo(sensedEnemyArchonLocation);
 			if (rc.canMove(dir)){
 				rc.move(dir);
 			}
@@ -70,59 +72,7 @@ public strictfp class Soldier {
 			return;
 		}
 
-		if (curLocation.distanceSquaredTo(calculatedEnemyArchonLocation) <= myType.visionRadiusSquared){
-			RobotInfo[] enemyRobotInfo;
-			enemyRobotInfo = rc.senseNearbyRobots(-1, myTeam.opponent());
-			n = enemyRobotInfo.length;
-			for (int i = 0; i < n; i++){
-				// TODO: Check if two enemy robots are same sense radius, only one is set in shared array
-				if (enemyRobotInfo[i].getType() == RobotType.ARCHON){
-					enemyArchonFound = true;
-					SymmetryType symType = SymmetryType.NONE;
-					int index = 32;
-					for (int j = 0; j < archonCount; j++){
-						int value = rc.readSharedArray(index + j);
-						if (getBits(value, 15, 15) == 0){
-							continue;
-						}
-						MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
-						symType = SymmetryType.getSymmetryType(archonLocation, enemyRobotInfo[i].getLocation());
-						if (symType != SymmetryType.NONE){
-							break;
-						}
-					}
-					if (symType == SymmetryType.NONE){
-						logger.log("Err, No Symmetry Detected");
-						sensedEnemyArchonLocation = enemyRobotInfo[i].getLocation();
-						int value = 0;
-						value = setBits(0, 15, 15, 1);
-						value = setBits(value, 6, 11, sensedEnemyArchonLocation.x);
-						value = setBits(value, 0, 5, sensedEnemyArchonLocation.y);
-						rc.writeSharedArray(0, value);
-					}
-					else{
-						for (int j = 0; j < archonCount; j++){
-							int value = rc.readSharedArray(index + j);
-							if (getBits(value, 15, 15) == 0){
-								continue;
-							}
-							MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
-							MapLocation enemyArchonLoc = SymmetryType.getSymmetricalLocation(archonLocation, symType);
-							int setValue = 0;
-							setValue = setBits(0, 15, 15, 1);
-							setValue = setBits(setValue, 6, 11, enemyArchonLoc.x);
-							setValue = setBits(setValue, 0, 5, enemyArchonLoc.y);
-							rc.writeSharedArray(j, setValue);
-						}
-					}
-
-					break;
-				}
-			}
-		}
-
-
-		dir = curLocation.directionTo(calculatedEnemyArchonLocation);
+		dir = rc.getLocation().directionTo(calculatedEnemyArchonLocation);
 		if (rc.canMove(dir)){
 			rc.move(dir);
 		}
@@ -134,12 +84,71 @@ public strictfp class Soldier {
 		}
 	}
 
-	public static void preCalculate() throws GameActionException {
-		enemyArchonFound = false;
-		MapLocation[] possibleEnemyArchonLocations = SymmetryType.getSymmetricalLocations(myArchonLocation);
-		int randomNumber = rng.nextInt(3);
-		calculatedEnemyArchonLocation = new MapLocation(possibleEnemyArchonLocations[randomNumber].x,
-														possibleEnemyArchonLocations[randomNumber].y);
+	private static void calculateEnemyArchonLocations(RobotInfo archon) throws GameActionException {
+		boolean alreadyUpdated = false;
+		boolean foundThisArchon = false;
+		for (int i = 0; i < archonCount; ++i) {
+			int value = rc.readSharedArray(i);
+			if (getBits(value, 15, 15) == 1) {
+				alreadyUpdated = true;
+				MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
+				if (archonLocation.equals(archon.location)) {
+					foundThisArchon = true;
+				}
+			}
+		}
+
+		if (alreadyUpdated) {
+			if (!foundThisArchon) {
+				for (int i = 0; i < archonCount; ++i) {
+					if (getBits(rc.readSharedArray(i), 15, 15) == 0) {
+						int value = setBits(0, 15, 15, 1);
+						value = setBits(value, 6, 11, archon.location.x);
+						value = setBits(value, 0, 5, archon.location.y);
+						rc.writeSharedArray(i, value);
+						return;
+					}
+				}
+			}
+
+			if (!foundThisArchon) {
+				int value = setBits(0, 15, 15, 1);
+				value = setBits(value, 6, 11, archon.location.x);
+				value = setBits(value, 0, 5, archon.location.y);
+				rc.writeSharedArray(0, value);
+			}
+
+			return;
+		}
+
+		SymmetryType symType = SymmetryType.NONE;
+		int index = 32;
+		for (int j = 0; j < archonCount; j++) {
+			int value = rc.readSharedArray(index + j);
+			MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
+			symType = SymmetryType.getSymmetryType(archonLocation, archon.location);
+			if (symType != SymmetryType.NONE) {
+				break;
+			}
+		}
+
+		if (symType == SymmetryType.NONE) {
+			int value = setBits(0, 15, 15, 1);
+			value = setBits(value, 6, 11, archon.location.x);
+			value = setBits(value, 0, 5, archon.location.y);
+			rc.writeSharedArray(0, value);
+		} else {
+			for (int j = 0; j < archonCount; j++) {
+				int value = rc.readSharedArray(index + j);
+				MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
+				MapLocation enemyArchonLocation = SymmetryType.getSymmetricalLocation(archonLocation, symType);
+				int setValue = 0;
+				setValue = setBits(0, 15, 15, 1);
+				setValue = setBits(setValue, 6, 11, enemyArchonLocation.x);
+				setValue = setBits(setValue, 0, 5, enemyArchonLocation.y);
+				rc.writeSharedArray(j, setValue);
+			}
+		}
 	}
 
 	public static void init() throws GameActionException {
@@ -157,7 +166,11 @@ public strictfp class Soldier {
 				break;
 			}
 		}
-		preCalculate();
-		logger = new Logger("soldier", false);
+
+		enemyArchonFound = false;
+		MapLocation[] possibleEnemyArchonLocations = SymmetryType.getSymmetricalLocations(myArchonLocation);
+		int randomNumber = rng.nextInt(3);
+		calculatedEnemyArchonLocation = new MapLocation(possibleEnemyArchonLocations[randomNumber].x,
+														possibleEnemyArchonLocations[randomNumber].y);
 	}
 }
