@@ -36,7 +36,7 @@ public strictfp class Builder {
 
 	public static void init() throws GameActionException {
 		archonCount = 0;
-		for (int i = 32; i < 32 + archonCount; ++i) {
+		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
 				++archonCount;
@@ -49,6 +49,7 @@ public strictfp class Builder {
 				break;
 			}
 		}
+		
 		myDirection = myArchonLocation.directionTo(rc.getLocation());
 		nextBuilding = new ConstructionInfo(
 				RobotType.WATCHTOWER,

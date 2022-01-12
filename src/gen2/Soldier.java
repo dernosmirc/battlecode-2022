@@ -3,6 +3,7 @@ package gen2;
 import battlecode.common.*;
 import gen2.helpers.GoldMiningHelper;
 import gen2.helpers.LeadMiningHelper;
+import gen2.util.SymmetryType;
 
 import static gen2.RobotPlayer.*;
 import static gen2.util.Functions.getBits;
@@ -17,8 +18,8 @@ public strictfp class Soldier {
 	private static int mapWidth, mapHeight;
 	private static final Random rng = new Random(rc.getID());
 	private static boolean enemyArchonFound;
-	private static MapLocation calculatedEnemyAnchorLocation;
-	private static MapLocation sensedEnemyAnchorLocation;
+	private static MapLocation calculatedEnemyArchonLocation;
+	private static MapLocation sensedEnemyArchonLocation;
 	private static Direction dir;
 
 
@@ -28,10 +29,10 @@ public strictfp class Soldier {
 		int arrayRead = rc.readSharedArray(0);
 		if (getBits(arrayRead, 15, 15) == 1){
 			enemyArchonFound = true;
-			sensedEnemyAnchorLocation = new MapLocation(getBits(arrayRead, 6, 11), getBits(arrayRead, 0, 5));
+			sensedEnemyArchonLocation = new MapLocation(getBits(arrayRead, 6, 11), getBits(arrayRead, 0, 5));
 		}
-		if (enemyArchonFound && curLocation.distanceSquaredTo(sensedEnemyAnchorLocation) <= myType.visionRadiusSquared){
-			if (rc.senseRobotAtLocation(sensedEnemyAnchorLocation) == null){
+		if (enemyArchonFound && curLocation.distanceSquaredTo(sensedEnemyArchonLocation) <= myType.visionRadiusSquared){
+			if (rc.senseRobotAtLocation(sensedEnemyArchonLocation) == null){
 				enemyArchonFound = false;
 				rc.writeSharedArray(0, 0);
 			}
@@ -56,7 +57,7 @@ public strictfp class Soldier {
 		}
 
 		if (enemyArchonFound) {
-			dir = curLocation.directionTo(sensedEnemyAnchorLocation);
+			dir = curLocation.directionTo(sensedEnemyArchonLocation);
 			if (rc.canMove(dir)){
 				rc.move(dir);
 			}
@@ -69,7 +70,7 @@ public strictfp class Soldier {
 			return;
 		}
 
-		if (curLocation.distanceSquaredTo(calculatedEnemyAnchorLocation) <= myType.visionRadiusSquared){
+		if (curLocation.distanceSquaredTo(calculatedEnemyArchonLocation) <= myType.visionRadiusSquared){
 			RobotInfo[] enemyRobotInfo;
 			enemyRobotInfo = rc.senseNearbyRobots(-1, myTeam.opponent());
 			n = enemyRobotInfo.length;
@@ -77,11 +78,11 @@ public strictfp class Soldier {
 				// TODO: Check if two enemy robots are same sense radius, only one is set in shared array
 				if (enemyRobotInfo[i].getType() == RobotType.ARCHON){
 					enemyArchonFound = true;
-					sensedEnemyAnchorLocation = enemyRobotInfo[i].getLocation();
+					sensedEnemyArchonLocation = enemyRobotInfo[i].getLocation();
 					int value = 0;
 					value = setBits(0, 15, 15, 1);
-					value = setBits(value, 6, 11, sensedEnemyAnchorLocation.x);
-					value = setBits(value, 0, 5, sensedEnemyAnchorLocation.y);
+					value = setBits(value, 6, 11, sensedEnemyArchonLocation.x);
+					value = setBits(value, 0, 5, sensedEnemyArchonLocation.y);
 					rc.writeSharedArray(0, value);
 					break;
 				}
@@ -89,7 +90,7 @@ public strictfp class Soldier {
 		}
 
 
-		dir = curLocation.directionTo(calculatedEnemyAnchorLocation);
+		dir = curLocation.directionTo(calculatedEnemyArchonLocation);
 		if (rc.canMove(dir)){
 			rc.move(dir);
 		}
@@ -101,20 +102,12 @@ public strictfp class Soldier {
 		}
 	}
 
-	public static void preCalculate(){
-		mapHeight = rc.getMapHeight();
-		mapWidth = rc.getMapWidth();
+	public static void preCalculate() throws GameActionException {
 		enemyArchonFound = false;
+		MapLocation[] possibleEnemyArchonLocations = SymmetryType.getSymmetricalLocations(myArchonLocation);
 		int randomNumber = rng.nextInt(3);
-		if (randomNumber == 0){
-			calculatedEnemyAnchorLocation = new MapLocation(myArchonLocation.x, mapHeight - myArchonLocation.y - 1);
-		}
-		else if (randomNumber == 1){
-			calculatedEnemyAnchorLocation = new MapLocation(mapWidth - myArchonLocation.x - 1, myArchonLocation.y);
-		}
-		else{
-			calculatedEnemyAnchorLocation = new MapLocation(mapWidth - myArchonLocation.x - 1, mapHeight - myArchonLocation.y - 1);
-		}
+		calculatedEnemyArchonLocation = new MapLocation(possibleEnemyArchonLocations[randomNumber].x,
+														possibleEnemyArchonLocations[randomNumber].y);
 	}
 
 	public static void init() throws GameActionException {
