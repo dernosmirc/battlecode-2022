@@ -20,6 +20,8 @@ public class LeadMiningHelper {
     private static final int SA_START = 36;
     private static final int SA_COUNT = 8;
 
+    private static final double DISTANCE_FACTOR = -0.5;
+
     private static MetalInfo[] getLeadOnGrid() throws GameActionException {
         MetalInfo[] infos = new MetalInfo[SA_COUNT];
         for (int i = SA_START; i < SA_START + SA_COUNT; i++) {
@@ -61,7 +63,7 @@ public class LeadMiningHelper {
         for (int i = 0; i < SA_COUNT; i++) {
             MetalInfo o = infos[i];
             if (o != null && o.amount > 0) {
-                 double fac = o.amount / Math.pow(o.location.distanceSquaredTo(location), 0.5);
+                 double fac = o.amount * Math.pow(o.location.distanceSquaredTo(location), DISTANCE_FACTOR);
                  if (fac > maxFac) {
                      leadLoc = o.location;
                      maxFac = fac;

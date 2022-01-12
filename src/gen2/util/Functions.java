@@ -46,4 +46,15 @@ public strictfp class Functions {
 		}
 		return yeah;
 	}
+
+	public static double[] convolveCircularly (double[] array, double[] filter) {
+		int sz = array.length, fsz = filter.length;
+		double[] out = new double[sz];
+		for (int i = 0; i < sz; i++) {
+			for (int j = 0; j < fsz; j++) {
+				out[i] += filter[j] * array[Math.floorMod(j-fsz/2+i, sz)];
+			}
+		}
+		return out;
+	}
 }

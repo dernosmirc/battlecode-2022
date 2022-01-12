@@ -14,6 +14,8 @@ public class MovementHelper {
 
     private static final int INFINITY = 101;
 
+    private static final double[] DIRECTION_WEIGHTS = {1, 8, 64, 8, 1};
+
     public static final List<Direction> directionList = Arrays.asList(directions);
 
     public static boolean moveAndAvoid(
@@ -23,11 +25,24 @@ public class MovementHelper {
                 direction,
                 direction.rotateLeft(),
                 direction.rotateRight(),
+                direction.rotateLeft().rotateLeft(),
+                direction.rotateRight().rotateRight(),
         };
+        boolean allFree = true;
         for (Direction dir: dirs) {
             if (!rc.getLocation().add(dir).isWithinDistanceSquared(location, distanceSquared)) {
-                if (tryMove(dir, true)) {
-                    return true;
+                allFree = false;
+                break;
+            }
+        }
+        if (allFree) {
+            tryMove(direction, false);
+        } else {
+            for (Direction dir: dirs) {
+                if (!rc.getLocation().add(dir).isWithinDistanceSquared(location, distanceSquared)) {
+                    if (tryMove(direction, true)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -35,39 +50,35 @@ public class MovementHelper {
     }
 
     public static boolean tryMove (Direction dir, boolean force) throws GameActionException {
-        if (rc.getMovementCooldownTurns() < 10) {
+        if (rc.isMovementReady()) {
             if (!force) {
+                Direction[] dirs = {
+                        dir.rotateRight().rotateRight(),
+                        dir.rotateRight(),
+                        dir,
+                        dir.rotateLeft(),
+                        dir.rotateLeft().rotateLeft(),
+                };
                 MapLocation ml = rc.getLocation();
-                int left = rc.canMove(dir.rotateLeft()) ? rc.senseRubble(ml.add(dir.rotateLeft())) : INFINITY,
-                        straight = rc.canMove(dir) ? rc.senseLead(ml.add(dir)) : INFINITY,
-                        right = rc.canMove(dir.rotateRight()) ? rc.senseLead(ml.add(dir.rotateRight())) : INFINITY;
-
-                if (straight != INFINITY && straight <= right && straight <= left) {
-                    rc.move(dir);
-                    return true;
-                } else if (left != INFINITY && left <= right && straight >= left) {
-                    rc.move(dir.rotateLeft());
-                    return true;
-                } else if (right != INFINITY && straight >= right && right <= left) {
-                    rc.move(dir.rotateRight());
+                Direction opt = null;
+                double bestFact = 0;
+                for (int i = 0; i < dirs.length; i++) {
+                    if (rc.canMove(dirs[i])) {
+                        double fact = DIRECTION_WEIGHTS[i] / rc.senseRubble(ml.add(dirs[i]));
+                        if (fact > bestFact) {
+                            opt = dirs[i];
+                            bestFact = fact;
+                        }
+                    }
+                }
+                if (opt != null) {
+                    rc.move(opt);
                     return true;
                 }
-            }
-
-            if (rc.getMovementCooldownTurns() < 10) {
-                int dirInt = directionList.indexOf(dir);
-                // if blocked by another robot, find the next best direction
-                for (int i = force ? 0 : 2; i < 5; i++) {
-                    Direction got = directions[Math.floorMod(dirInt + i, 8)];
-                    if (rc.canMove(got)) {
-                        rc.move(got);
-                        return true;
-                    }
-                    got = directions[Math.floorMod(dirInt - i, 8)];
-                    if (rc.canMove(got)) {
-                        rc.move(got);
-                        return true;
-                    }
+            } else {
+                if (rc.canMove(dir)) {
+                    rc.move(dir);
+                    return true;
                 }
             }
         }
