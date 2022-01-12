@@ -4,6 +4,7 @@ import battlecode.common.*;
 import gen2.helpers.GoldMiningHelper;
 import gen2.helpers.LeadMiningHelper;
 import gen2.util.SymmetryType;
+import gen2.util.Logger;
 
 import static gen2.RobotPlayer.*;
 import static gen2.util.Functions.getBits;
@@ -21,7 +22,7 @@ public strictfp class Soldier {
 	private static MapLocation calculatedEnemyArchonLocation;
 	private static MapLocation sensedEnemyArchonLocation;
 	private static Direction dir;
-
+	private static Logger logger;
 
 	public static void run() throws GameActionException {
 		MapLocation curLocation = rc.getLocation();
@@ -46,7 +47,6 @@ public strictfp class Soldier {
 		enemyRobotInfo1 = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam.opponent());
 		int n = enemyRobotInfo1.length;
 		for (int i = 0; i < n; i++){
-			// TODO: Check if two enemy robots are same sense radius, only one is set in shared array
 			if (enemyRobotInfo1[i].getType() == RobotType.ARCHON){
 				if (rc.canAttack(enemyRobotInfo1[i].getLocation())) 	rc.attack(enemyRobotInfo1[i].getLocation());
 				return;
@@ -78,12 +78,44 @@ public strictfp class Soldier {
 				// TODO: Check if two enemy robots are same sense radius, only one is set in shared array
 				if (enemyRobotInfo[i].getType() == RobotType.ARCHON){
 					enemyArchonFound = true;
-					sensedEnemyArchonLocation = enemyRobotInfo[i].getLocation();
-					int value = 0;
-					value = setBits(0, 15, 15, 1);
-					value = setBits(value, 6, 11, sensedEnemyArchonLocation.x);
-					value = setBits(value, 0, 5, sensedEnemyArchonLocation.y);
-					rc.writeSharedArray(0, value);
+					SymmetryType symType = SymmetryType.NONE;
+					int index = 32;
+					for (int j = 0; j < archonCount; j++){
+						int value = rc.readSharedArray(index + j);
+						if (getBits(value, 15, 15) == 0){
+							continue;
+						}
+						MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
+						symType = SymmetryType.getSymmetryType(archonLocation, enemyRobotInfo[i].getLocation());
+						if (symType != SymmetryType.NONE){
+							break;
+						}
+					}
+					if (symType == SymmetryType.NONE){
+						logger.log("Err, No Symmetry Detected");
+						sensedEnemyArchonLocation = enemyRobotInfo[i].getLocation();
+						int value = 0;
+						value = setBits(0, 15, 15, 1);
+						value = setBits(value, 6, 11, sensedEnemyArchonLocation.x);
+						value = setBits(value, 0, 5, sensedEnemyArchonLocation.y);
+						rc.writeSharedArray(0, value);
+					}
+					else{
+						for (int j = 0; j < archonCount; j++){
+							int value = rc.readSharedArray(index + j);
+							if (getBits(value, 15, 15) == 0){
+								continue;
+							}
+							MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
+							MapLocation enemyArchonLoc = SymmetryType.getSymmetricalLocation(archonLocation, symType);
+							int setValue = 0;
+							setValue = setBits(0, 15, 15, 1);
+							setValue = setBits(setValue, 6, 11, enemyArchonLoc.x);
+							setValue = setBits(setValue, 0, 5, enemyArchonLoc.y);
+							rc.writeSharedArray(j, setValue);
+						}
+					}
+
 					break;
 				}
 			}
@@ -126,5 +158,6 @@ public strictfp class Soldier {
 			}
 		}
 		preCalculate();
+		logger = new Logger("soldier", false);
 	}
 }
