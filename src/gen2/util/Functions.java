@@ -59,7 +59,12 @@ public strictfp class Functions {
 	}
 
 	public static Direction directionTo(double dx, double dy) {
-		double deg = Math.toDegrees(Math.atan(dx/dy));
+		if (dx == 0) {
+			if (dy == 0) return Direction.CENTER;
+			else if (dy > 0) return Direction.NORTH;
+			else return Direction.SOUTH;
+		}
+		double deg = Math.toDegrees(Math.atan(dy/dx));
 		if (dx >= 0) {
 			if (-90 + 22.5 >= deg) {
 				return Direction.SOUTH;

@@ -3,14 +3,10 @@ package gen2.helpers;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import battlecode.common.RobotType;
 import gen2.util.Functions;
 import gen2.util.MetalInfo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Objects;
 
 import static gen2.RobotPlayer.*;
 
@@ -25,9 +21,11 @@ public class LeadMiningHelper {
 
     private static final int MAX_7BITS = 127;
     private static final double COMPRESSION = 0.001;
+
     private static int scaleLeadTo7Bits(int lead) {
         return (int) Math.floor(127 * (1 - Math.exp(-COMPRESSION * lead)));
     }
+
     private static int scale7BitsToLead(int bits) {
         return (int) Math.floor(-Math.log(1 - bits / (double) MAX_7BITS) / COMPRESSION);
     }
@@ -51,6 +49,7 @@ public class LeadMiningHelper {
         v = Functions.setBits(v, 9, 15, scaleLeadTo7Bits(info.amount));
         return v;
     }
+
     private static MetalInfo getInfoFromInt16(int bits) {
         return new MetalInfo(
                 scale7BitsToLead(Functions.getBits(bits, 9, 15)),
@@ -66,47 +65,13 @@ public class LeadMiningHelper {
                 infos[i - SA_START] = info;
             }
         }
-        /*if (DEBUG) {
-            String out = "Lead -> ";
-            for (Object i : Arrays.stream(infos)
-                    .filter(Objects::nonNull)
-                    .sorted(Comparator.comparingInt(o -> -o.amount))
-                    .map(i -> i.location.toString() + ": " + i.amount + ", ")
-                    .toArray()
-            ) {
-                out += i;
-            }
-            System.out.println(out);
-        }*/
         return infos;
     }
 
-    public static Direction spotLeadOnGrid() throws GameActionException {
-        MapLocation location = rc.getLocation(), leadLoc = null;
-        double maxFac = 0;
-        MetalInfo[] infos = getLeadOnGrid();
-        for (int i = 0; i < SA_COUNT; i++) {
-            MetalInfo o = infos[i];
-            if (o != null && o.amount > 0) {
-                 double fac = o.amount * Math.pow(o.location.distanceSquaredTo(location), DISTANCE_FACTOR);
-                 if (fac > maxFac) {
-                     leadLoc = o.location;
-                     maxFac = fac;
-                 }
-            }
+    private static MetalInfo getLeadInfoCell(MapLocation center) throws GameActionException {
+        if (!rc.canSenseLocation(center) || !rc.onTheMap(center)) {
+            return null;
         }
-        if (leadLoc == null) return null;
-        else return location.directionTo(leadLoc);
-    }
-
-    private static MetalInfo getLeadInfoCell(MapLocation location) throws GameActionException {
-        MapLocation center = new MapLocation(
-                location.x - (location.x % GRID_DIM) + GRID_DIM / 2,
-                location.y - (location.y % GRID_DIM) + GRID_DIM / 2
-        );
-
-        if (!rc.canSenseLocation(center) || !rc.onTheMap(center)) return null;
-
         int count = 0;
         for (int x = -GRID_DIM/2; x < (GRID_DIM+1)/2; x++) {
             for (int y = -GRID_DIM/2; y < (GRID_DIM+1)/2; y++) {
@@ -119,22 +84,56 @@ public class LeadMiningHelper {
         return new MetalInfo(count, center);
     }
 
-    public static void updateLeadAmountInGridCell() throws GameActionException {
+    private static ArrayList<MapLocation> getAdjacentCells() {
         MapLocation now = rc.getLocation();
+        MapLocation center = new MapLocation(
+                now.x - (now.x % GRID_DIM) + GRID_DIM / 2,
+                now.y - (now.y % GRID_DIM) + GRID_DIM / 2
+        );
         ArrayList<MapLocation> adj = new ArrayList<>();
-        adj.add(new MapLocation(now.x, now.y));
+        adj.add(new MapLocation(center.x, center.y));
+        Direction direction = MovementHelper.getInstantaneousDirection();
+        if (direction == Direction.EAST || direction == Direction.WEST) {
+            adj.add(new MapLocation(center.x, center.y + GRID_DIM));
+            adj.add(new MapLocation(center.x, center.y - GRID_DIM));
+        } else if (direction == Direction.NORTH || direction == Direction.SOUTH) {
+            adj.add(new MapLocation(center.x + GRID_DIM, center.y));
+            adj.add(new MapLocation(center.x - GRID_DIM, center.y));
+        } else if (direction == Direction.NORTHEAST || direction == Direction.SOUTHWEST) {
+            adj.add(new MapLocation(center.x + GRID_DIM, center.y - GRID_DIM));
+            adj.add(new MapLocation(center.x - GRID_DIM, center.y + GRID_DIM));
+        } else if (direction == Direction.NORTHWEST || direction == Direction.SOUTHEAST) {
+            adj.add(new MapLocation(center.x + GRID_DIM, center.y + GRID_DIM));
+            adj.add(new MapLocation(center.x - GRID_DIM, center.y - GRID_DIM));
+        }
+        return adj;
+    }
 
-        // TODO OPTIMISE
-        /*if (myType != RobotType.MINER) {
-            adj.add(new MapLocation(now.x, now.y + GRID_DIM));
-            adj.add(new MapLocation(now.x, now.y - GRID_DIM));
-            adj.add(new MapLocation(now.x + GRID_DIM, now.y));
-            adj.add(new MapLocation(now.x - GRID_DIM, now.y));
-        }*/
+    public static Direction spotLeadOnGrid() throws GameActionException {
+        MapLocation location = rc.getLocation(), leadLoc = null;
+        double maxFac = 0;
+        MetalInfo[] infos = getLeadOnGrid();
+        for (int i = 0; i < SA_COUNT; i++) {
+            MetalInfo o = infos[i];
+            if (o != null && o.amount > 0) {
+                double fac = o.amount * Math.pow(o.location.distanceSquaredTo(location), DISTANCE_FACTOR);
+                if (fac > maxFac) {
+                    leadLoc = o.location;
+                    maxFac = fac;
+                }
+            }
+        }
+        if (leadLoc == null) return null;
+        else return location.directionTo(leadLoc);
+    }
+
+
+    public static void updateLeadAmountInGridCell() throws GameActionException {
+        ArrayList<MapLocation> adj = getAdjacentCells();
+        MetalInfo[] infos = getLeadOnGrid();
         for (MapLocation loc : adj) {
             MetalInfo mInfo = getLeadInfoCell(loc);
             if (mInfo != null) {
-                MetalInfo[] infos = getLeadOnGrid();
                 MetalInfo minInfo = new MetalInfo(0, new MapLocation(-1, -1));
                 int index = 0;
                 boolean foundLocation = false;
@@ -154,12 +153,12 @@ public class LeadMiningHelper {
                     }
                 }
                 if (foundLocation || minInfo.amount < mInfo.amount) {
+                    infos[index] = mInfo;
                     rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
                 }
             }
         }
     }
-
 
     public static void mineLead() throws GameActionException {
         for (MapLocation mp: rc.senseNearbyLocationsWithLead(myType.actionRadiusSquared, 2)) {
@@ -188,5 +187,35 @@ public class LeadMiningHelper {
             }
         }
         return best;
+    }
+
+    public static Direction getAntiCornerDirection() {
+        if (
+                rc.getLocation().isWithinDistanceSquared(
+                        new MapLocation(0, 0), 5
+                )
+        ) {
+            return Direction.NORTHEAST;
+        } else if (
+                rc.getLocation().isWithinDistanceSquared(
+                        new MapLocation(rc.getMapWidth() - 1, 0), 5
+                )
+        ) {
+            return Direction.NORTHWEST;
+        } else if (
+                rc.getLocation().isWithinDistanceSquared(
+                        new MapLocation(0, rc.getMapHeight() - 1), 5
+                )
+        ) {
+            return Direction.SOUTHEAST;
+        } else if (
+                rc.getLocation().isWithinDistanceSquared(
+                        new MapLocation(rc.getMapWidth() - 1, rc.getMapHeight() - 1), 5
+                )
+        ) {
+            return Direction.SOUTHWEST;
+        } else {
+            return null;
+        }
     }
 }

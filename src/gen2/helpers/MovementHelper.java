@@ -16,7 +16,7 @@ public class MovementHelper {
 
     private static final int INFINITY = 101;
 
-    private static final double[] DIRECTION_WEIGHTS = {1, 8, 64, 8, 1};
+    private static final double[] DIRECTION_WEIGHTS = {1, 8, 32, 8, 1};
 
     public static final List<Direction> directionList = Arrays.asList(directions);
 

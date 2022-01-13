@@ -22,7 +22,6 @@ public strictfp class Soldier {
 	private static MapLocation calculatedEnemyArchonLocation;
 	private static MapLocation sensedEnemyArchonLocation;
 	private static Direction dir;
-	private static Logger logger;
 
 	public static void run() throws GameActionException {
 		int arrayRead = rc.readSharedArray(0);
