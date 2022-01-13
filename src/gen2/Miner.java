@@ -11,7 +11,7 @@ import static gen2.RobotPlayer.*;
 import static gen2.util.Functions.getBits;
 
 public strictfp class Miner {
-	private static final double GOLD_MINER_RATIO = 0.2;
+	private static final double GOLD_MINER_RATIO = 0.8;
 
 	private static MapLocation myArchonLocation;
 	public static Direction myDirection;
