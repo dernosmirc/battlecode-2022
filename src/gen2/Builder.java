@@ -26,21 +26,36 @@ public strictfp class Builder {
 
 	public static void run() throws GameActionException {
 		if (rc.isActionReady()) {
-			if (nextBuilding != null) {
-				Direction buildDirection = rc.getLocation().directionTo(nextBuilding.location);
-				if (
-						rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 2) &&
-								rc.canBuildRobot(nextBuilding.type, buildDirection)
-				) {
-					rc.buildRobot(nextBuilding.type, buildDirection);
+			MapLocation repair = BuildingHelper.getRepairLocation();
+			if (repair != null && rc.canRepair(repair)) {
+				rc.repair(repair);
+			} else {
+				if (nextBuilding != null) {
+					Direction buildDirection = rc.getLocation().directionTo(nextBuilding.location);
+					if (
+							rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 2) &&
+									rc.canBuildRobot(nextBuilding.type, buildDirection)
+					) {
+						rc.buildRobot(nextBuilding.type, buildDirection);
+					}
 				}
 			}
 		}
 
 		if (rc.isMovementReady()) {
-			Direction antiArchon = BuildingHelper.getAntiArchonDirection(myArchonLocation);
-			if (antiArchon != null) {
-				MovementHelper.tryMove(antiArchon, false);
+			Direction direction = BuildingHelper.getAntiArchonDirection(myArchonLocation);
+			if (direction != null) {
+				MovementHelper.tryMove(direction, false);
+			} else {
+				direction = BuildingHelper.getRepairDirection();
+				if (direction != null) {
+					MovementHelper.tryMove(direction, false);
+				} else {
+					direction = BuildingHelper.getPerpendicular(myArchonLocation);
+					if (direction != null) {
+						MovementHelper.tryMove(direction, false);
+					}
+				}
 			}
 		}
 	}

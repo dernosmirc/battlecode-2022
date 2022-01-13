@@ -13,9 +13,7 @@ import static gen2.RobotPlayer.rc;
 
 public class MovementHelper {
 
-    private static final int INFINITY = 101;
-
-    private static final double[] DIRECTION_WEIGHTS = {1, 20, 80, 20, 1};
+    private static final double[] DIRECTION_WEIGHTS = {0, 1, 4, 1, 0};
 
     public static final List<Direction> directionList = Arrays.asList(directions);
 
@@ -39,6 +37,9 @@ public class MovementHelper {
                 direction.rotateLeft().rotateLeft(),
                 direction.rotateRight().rotateRight(),
         };
+        if (rc.getLocation().isWithinDistanceSquared(location, distanceSquared)) {
+            return tryMove(location.directionTo(rc.getLocation()), false);
+        }
         boolean allFree = true;
         for (Direction dir: dirs) {
             if (!rc.getLocation().add(dir).isWithinDistanceSquared(location, distanceSquared)) {
