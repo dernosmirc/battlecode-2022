@@ -18,7 +18,7 @@ public class LeadMiningHelper {
     private static final int SA_START = 36;
     private static final int SA_COUNT = 8;
 
-    private static final double DISTANCE_FACTOR = -0.5;
+    private static final double DISTANCE_FACTOR = -3;
 
     private static final int MAX_7BITS = 127;
     private static final double COMPRESSION = 0.001;
@@ -65,13 +65,6 @@ public class LeadMiningHelper {
             if (info.amount != 0) {
                 infos[i - SA_START] = info;
             }
-        }
-        if (DEBUG) {
-            String out = "Lead -> ";
-            for (int i = 0; i < SA_COUNT; i++) if (infos[i] != null) {
-                out += infos[i] + ", ";
-            }
-            rc.setIndicatorString(out);
         }
         return infos;
     }

@@ -15,7 +15,7 @@ public class MetalInfo {
     public String toString() {
         return "{" +
                 "a=" + amount +
-                ", loc=" + location +
+                ",l=" + location +
                 '}';
     }
 }

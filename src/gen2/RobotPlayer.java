@@ -1,6 +1,7 @@
 package gen2;
 
 import battlecode.common.*;
+import gen2.util.Functions;
 
 import static gen2.helpers.MovementHelper.getInstantaneousDirection;
 
