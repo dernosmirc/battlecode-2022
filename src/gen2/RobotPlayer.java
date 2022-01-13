@@ -1,9 +1,6 @@
 package gen2;
 
 import battlecode.common.*;
-import gen2.util.Functions;
-
-import static gen2.helpers.MovementHelper.getInstantaneousDirection;
 
 public strictfp class RobotPlayer {
 
@@ -14,6 +11,8 @@ public strictfp class RobotPlayer {
 	public static Team myTeam, enemyTeam;
 	public static RobotType myType;
 	public static int archonCount;
+	public static double leadIncome = 0;
+	public static double goldIncome = 0;
 
 	public static final Direction[] directions = {
 			Direction.NORTH,
@@ -25,6 +24,18 @@ public strictfp class RobotPlayer {
 			Direction.WEST,
 			Direction.NORTHWEST,
 	};
+
+	private static final double LEAD_BETA = 0.33;
+	private static final double GOLD_BETA = 0.33;
+
+	private static int lastRoundLead = 0;
+	private static int lastRoundGold = 0;
+	private static void updateIncome() {
+		leadIncome = LEAD_BETA * (rc.getTeamLeadAmount(myTeam) - lastRoundLead) + (1 - LEAD_BETA) * leadIncome;
+		goldIncome = GOLD_BETA * (rc.getTeamGoldAmount(myTeam) - lastRoundGold) + (1 - GOLD_BETA) * goldIncome;
+		lastRoundLead = rc.getTeamLeadAmount(myTeam);
+		lastRoundGold = rc.getTeamGoldAmount(myTeam);
+	}
 
 	public static void run (RobotController robotController) throws GameActionException {
 		rc = robotController;
@@ -71,6 +82,8 @@ public strictfp class RobotPlayer {
 					Archon.run();
 					break;
 			}
+
+			updateIncome();
 
 			Clock.yield();
 		}
