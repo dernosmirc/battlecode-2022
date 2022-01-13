@@ -144,7 +144,7 @@ public strictfp class Soldier {
 			return;
 		}
 
-		int symmetryIndex = SymmetryType.getSymmetryType(myArchonLocation, robot.location).ordinal();
+		int symmetryIndex = SymmetryType.getSymmetryType(myArchonLocation, guessedEnemyArchonLocation).ordinal();
 		int value = rc.readSharedArray(5);
 		int bit = 3 * myArchonIndex + symmetryIndex;
 		if (getBits(value, bit, bit) == 0) {
