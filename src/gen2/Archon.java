@@ -15,8 +15,8 @@ public strictfp class Archon {
 	private static final int BUILD_THRESHOLD = 80; // make dynamic?
 
 	private static double minersRatio = 0.3;
-	private static double soldiersRatio = 0.5;
-	private static double buildersRatio = 0.2;
+	private static double soldiersRatio = 0.65;
+	private static double buildersRatio = 0.05;
 
 	private static int buildDirectionIndex = 0;
 	private static int myIndex;
