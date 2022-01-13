@@ -3,6 +3,7 @@ package gen2;
 import battlecode.common.*;
 import gen2.helpers.GoldMiningHelper;
 import gen2.helpers.LeadMiningHelper;
+import gen2.helpers.CommsHelper;
 import gen2.util.SymmetryType;
 import gen2.util.Logger;
 
@@ -13,52 +14,53 @@ import static gen2.util.Functions.setBits;
 import java.util.Random;
 
 public strictfp class Soldier {
+	private static final Random rng = new Random(rc.getID());
+
 	private static MapLocation myArchonLocation;
 	private static int myArchonIndex;
-	private static MapLocation enemyArchon;
-	private static int mapWidth, mapHeight;
-	private static final Random rng = new Random(rc.getID());
-	private static boolean enemyArchonFound;
-	private static MapLocation calculatedEnemyArchonLocation;
-	private static MapLocation sensedEnemyArchonLocation;
-	private static Direction dir;
+	private static MapLocation guessedEnemyArchonLocation;
 
-	public static void run() throws GameActionException {
-		int arrayRead = rc.readSharedArray(0);
-		if (getBits(arrayRead, 15, 15) == 1){
-			enemyArchonFound = true;
-			sensedEnemyArchonLocation = new MapLocation(getBits(arrayRead, 6, 11), getBits(arrayRead, 0, 5));
+	private static void updateEnemyArchonLocations() throws GameActionException {
+		for (int i = 0; i < archonCount; ++i) {
+			int value = rc.readSharedArray(i);
+			if (getBits(value, 15, 15) == 1) {
+				MapLocation archonLocation = CommsHelper.getLocationFrom12Bits(value);
+				if (rc.getLocation().distanceSquaredTo(archonLocation) <= myType.visionRadiusSquared) {
+					RobotInfo robot = rc.senseRobotAtLocation(archonLocation);
+					if (robot == null || robot.type != RobotType.ARCHON || robot.team != enemyTeam) {
+						// Enemy archon is dead or has run away
+						rc.writeSharedArray(i, 0);
+					}
+				}
+			}
 		}
-		if (enemyArchonFound && rc.getLocation().distanceSquaredTo(sensedEnemyArchonLocation) <= myType.visionRadiusSquared){
-			if (rc.senseRobotAtLocation(sensedEnemyArchonLocation) == null){
-				enemyArchonFound = false;
-				rc.writeSharedArray(0, 0);
+	}
+
+	private static void attack() throws GameActionException {
+		if (!rc.isActionReady()) {
+			return;
+		}
+
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.actionRadiusSquared, enemyTeam);
+		for (RobotInfo robot : enemyRobots) {
+			if (robot.type == RobotType.ARCHON) {
+				if (rc.canAttack(robot.location)) {
+					rc.attack(robot.location);
+					break;
+				}
 			}
 		}
 
-		// Update lead and gold sources nearby to help miners
-		LeadMiningHelper.updateLeadAmountInGridCell();
-		GoldMiningHelper.updateGoldAmountInGridCell();
-
-		RobotInfo[] enemyRobotInfo1;
-		enemyRobotInfo1 = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam.opponent());
-		int n = enemyRobotInfo1.length;
-		for (int i = 0; i < n; i++){
-			if (enemyRobotInfo1[i].getType() == RobotType.ARCHON){
-				calculateEnemyArchonLocations(enemyRobotInfo1[i]);
-				sensedEnemyArchonLocation = enemyRobotInfo1[i].location;
-				enemyArchonFound = true;
-
-				if (rc.canAttack(enemyRobotInfo1[i].getLocation())) 	rc.attack(enemyRobotInfo1[i].getLocation());
-				return;
-			}
+		if (enemyRobots.length > 0 && rc.canAttack(enemyRobots[0].location)) {
+			rc.attack(enemyRobots[0].location);
 		}
-		if (n > 0 && rc.canAttack(enemyRobotInfo1[0].getLocation())){
-			rc.attack(enemyRobotInfo1[0].getLocation());
-		}
+	}
 
-		if (enemyArchonFound) {
-			dir = rc.getLocation().directionTo(sensedEnemyArchonLocation);
+	private static void move() throws GameActionException {
+		MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
+
+		if (enemyArchonLocation != null) {
+			Direction dir = rc.getLocation().directionTo(enemyArchonLocation);
 			if (rc.canMove(dir)){
 				rc.move(dir);
 			}
@@ -71,7 +73,7 @@ public strictfp class Soldier {
 			return;
 		}
 
-		dir = rc.getLocation().directionTo(calculatedEnemyArchonLocation);
+		Direction dir = rc.getLocation().directionTo(guessedEnemyArchonLocation);
 		if (rc.canMove(dir)){
 			rc.move(dir);
 		}
@@ -83,6 +85,23 @@ public strictfp class Soldier {
 		}
 	}
 
+	public static void run() throws GameActionException {
+		updateEnemyArchonLocations();
+		attack();
+
+		for (RobotInfo robot : rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
+			if (robot.type == RobotType.ARCHON) {
+				calculateEnemyArchonLocations(robot);
+			}
+		}
+
+		// Update lead and gold sources nearby to help miners
+		LeadMiningHelper.updateLeadAmountInGridCell();
+		GoldMiningHelper.updateGoldAmountInGridCell();
+
+		move();
+	}
+
 	private static void calculateEnemyArchonLocations(RobotInfo archon) throws GameActionException {
 		boolean alreadyUpdated = false;
 		boolean foundThisArchon = false;
@@ -90,8 +109,7 @@ public strictfp class Soldier {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
 				alreadyUpdated = true;
-				MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
-				if (archonLocation.equals(archon.location)) {
+				if (CommsHelper.getLocationFrom12Bits(value).equals(archon.location)) {
 					foundThisArchon = true;
 				}
 			}
@@ -166,10 +184,9 @@ public strictfp class Soldier {
 			}
 		}
 
-		enemyArchonFound = false;
 		MapLocation[] possibleEnemyArchonLocations = SymmetryType.getSymmetricalLocations(myArchonLocation);
 		int randomNumber = rng.nextInt(3);
-		calculatedEnemyArchonLocation = new MapLocation(possibleEnemyArchonLocations[randomNumber].x,
+		guessedEnemyArchonLocation = new MapLocation(possibleEnemyArchonLocations[randomNumber].x,
 														possibleEnemyArchonLocations[randomNumber].y);
 	}
 }
