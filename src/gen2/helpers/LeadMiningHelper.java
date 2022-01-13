@@ -18,7 +18,7 @@ public class LeadMiningHelper {
     private static final int SA_START = 36;
     private static final int SA_COUNT = 8;
 
-    private static final double DISTANCE_FACTOR = -3;
+    private static final double DISTANCE_FACTOR = -1;
 
     private static final int MAX_7BITS = 127;
     private static final double COMPRESSION = 0.001;
