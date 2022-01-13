@@ -49,7 +49,7 @@ public strictfp class Builder {
 			} else {
 				direction = BuildingHelper.getRepairDirection();
 				if (direction != null) {
-					MovementHelper.tryMove(direction, false);
+					MovementHelper.tryMove(direction, true);
 				} else {
 					direction = BuildingHelper.getPerpendicular(myArchonLocation);
 					if (direction != null) {
