@@ -10,6 +10,7 @@ import gen2.util.Logger;
 import static gen2.RobotPlayer.*;
 import static gen2.util.Functions.getBits;
 import static gen2.util.Functions.setBits;
+import static gen2.helpers.MovementHelper.updateMovement;
 
 import java.util.Random;
 
@@ -58,30 +59,59 @@ public strictfp class Soldier {
 
 	private static void move() throws GameActionException {
 		MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
-
 		if (enemyArchonLocation != null) {
 			Direction dir = rc.getLocation().directionTo(enemyArchonLocation);
-			if (rc.canMove(dir)){
+			if (rc.canMove(dir)) {
 				rc.move(dir);
-			}
-			else if (rc.canMove(dir.rotateLeft())){
+				updateMovement(dir);
+			} else if (rc.canMove(dir.rotateLeft())) {
 				rc.move(dir.rotateLeft());
-			}
-			else if(rc.canMove(dir.rotateRight())){
+				updateMovement(dir);
+			} else if (rc.canMove(dir.rotateRight())) {
 				rc.move(dir.rotateRight());
+				updateMovement(dir);
 			}
+
+			return;
+		}
+
+		if (guessedEnemyArchonLocation != null) {
+			int symmetryIndex = SymmetryType.getSymmetryType(myArchonLocation, guessedEnemyArchonLocation).ordinal();
+			int value = rc.readSharedArray(5);
+			int bit = 3 * myArchonIndex + symmetryIndex;
+			if (getBits(value, bit, bit) == 1) {
+				updateGuessedEnemyArchonLocation();
+			}
+		}
+
+		// TODO: Use MovementHelper's pathing
+		if (guessedEnemyArchonLocation == null) {
+			// TODO: Go to nearest alive archon instead
+			Direction dir = rc.getLocation().directionTo(myArchonLocation);
+			if (rc.canMove(dir)) {
+				rc.move(dir);
+				updateMovement(dir);
+			} else if (rc.canMove(dir.rotateLeft())) {
+				rc.move(dir.rotateLeft());
+				updateMovement(dir);
+			} else if(rc.canMove(dir.rotateRight())) {
+				rc.move(dir.rotateRight());
+				updateMovement(dir);
+			}
+
 			return;
 		}
 
 		Direction dir = rc.getLocation().directionTo(guessedEnemyArchonLocation);
-		if (rc.canMove(dir)){
+		if (rc.canMove(dir)) {
 			rc.move(dir);
-		}
-		else if (rc.canMove(dir.rotateLeft())){
+			updateMovement(dir);
+		} else if (rc.canMove(dir.rotateLeft())) {
 			rc.move(dir.rotateLeft());
-		}
-		else if(rc.canMove(dir.rotateRight())){
+			updateMovement(dir);
+		} else if(rc.canMove(dir.rotateRight())) {
 			rc.move(dir.rotateRight());
+			updateMovement(dir);
 		}
 	}
 
@@ -95,11 +125,43 @@ public strictfp class Soldier {
 			}
 		}
 
+		updateGuessedEnemyArchonSymmetry();
+		move();
+
 		// Update lead and gold sources nearby to help miners
 		LeadMiningHelper.updateLeadAmountInGridCell();
 		GoldMiningHelper.updateGoldAmountInGridCell();
+	}
 
-		move();
+	private static void updateGuessedEnemyArchonSymmetry() throws GameActionException {
+		if (guessedEnemyArchonLocation == null
+			|| rc.getLocation().distanceSquaredTo(guessedEnemyArchonLocation) > myType.visionRadiusSquared) {
+			return;
+		}
+
+		RobotInfo robot = rc.senseRobotAtLocation(guessedEnemyArchonLocation);
+		if (robot != null && robot.type == RobotType.ARCHON && robot.team == enemyTeam) {
+			return;
+		}
+
+		int symmetryIndex = SymmetryType.getSymmetryType(myArchonLocation, robot.location).ordinal();
+		int value = rc.readSharedArray(5);
+		int bit = 3 * myArchonIndex + symmetryIndex;
+		if (getBits(value, bit, bit) == 0) {
+			value = setBits(value, bit, bit, 1);
+			rc.writeSharedArray(5, value);
+		}
+
+		updateGuessedEnemyArchonLocation();
+	}
+
+	private static void updateGuessedEnemyArchonLocation() throws GameActionException {
+		SymmetryType symmetryType = CommsHelper.getPossibleSymmetry(myArchonIndex);
+		if (symmetryType == SymmetryType.NONE) {
+			guessedEnemyArchonLocation = null;
+		} else {
+			guessedEnemyArchonLocation = SymmetryType.getSymmetricalLocation(myArchonLocation, symmetryType);
+		}
 	}
 
 	private static void calculateEnemyArchonLocations(RobotInfo archon) throws GameActionException {
@@ -184,9 +246,11 @@ public strictfp class Soldier {
 			}
 		}
 
-		MapLocation[] possibleEnemyArchonLocations = SymmetryType.getSymmetricalLocations(myArchonLocation);
-		int randomNumber = rng.nextInt(3);
-		guessedEnemyArchonLocation = new MapLocation(possibleEnemyArchonLocations[randomNumber].x,
-														possibleEnemyArchonLocations[randomNumber].y);
+		SymmetryType symmetryType = CommsHelper.getBroadcastedSymmetry(myArchonIndex);
+		if (symmetryType == SymmetryType.NONE) {
+			guessedEnemyArchonLocation = null;
+		} else {
+			guessedEnemyArchonLocation = SymmetryType.getSymmetricalLocation(myArchonLocation, symmetryType);
+		}
 	}
 }

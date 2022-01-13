@@ -3,6 +3,7 @@ package gen2;
 import java.util.Random;
 import battlecode.common.*;
 import gen2.helpers.SpawnHelper;
+import gen2.helpers.CommsHelper;
 import gen2.util.Logger;
 
 import static gen2.RobotPlayer.*;
@@ -15,8 +16,8 @@ public strictfp class Archon {
 	private static final int BUILD_THRESHOLD = 80; // make dynamic?
 
 	private static double minersRatio = 0.3;
-	private static double soldiersRatio = 0.5;
-	private static double buildersRatio = 0.2;
+	private static double soldiersRatio = 0.65;
+	private static double buildersRatio = 0.05;
 
 	private static int buildDirectionIndex = 0;
 	private static int myIndex;
@@ -25,6 +26,9 @@ public strictfp class Archon {
 	private static int minersBuilt = 0;
 	private static int soldiersBuilt = 0;
 	private static int buildersBuilt = 0;
+
+	private static boolean[] isPossibleEnemyArchonSymmetry;
+	private static int symmetryIndex = 0;
 
 	private static Direction getOptimalMinerSpawnDirection() throws GameActionException {
 		int[] minersInDirection = new int[8];
@@ -119,6 +123,7 @@ public strictfp class Archon {
 						++droidsBuilt;
 						if (spawnType == RobotType.SOLDIER) {
 							++soldiersBuilt;
+							broadcastSymmetry();
 						} else if (spawnType == RobotType.BUILDER) {
 							++buildersBuilt;
 						}
@@ -134,6 +139,38 @@ public strictfp class Archon {
 		}
 	}
 
+	private static void broadcastSymmetry() throws GameActionException {
+		if (CommsHelper.foundEnemyArchon()) {
+			return;
+		}
+
+		int value = getBits(rc.readSharedArray(5), 3 * myIndex, 3 * myIndex + 2);
+		if ((value & 0b1) != 0) {
+			isPossibleEnemyArchonSymmetry[0] = false;
+		}
+		if ((value & 0b10) != 0) {
+			isPossibleEnemyArchonSymmetry[1] = false;
+		}
+		if ((value & 0b100) != 0) {
+			isPossibleEnemyArchonSymmetry[2] = false;
+		}
+
+		for (int i = 0; i < 3; ++i) {
+			if (symmetryIndex == 3) {
+				symmetryIndex = 0;
+			}
+			if (isPossibleEnemyArchonSymmetry[symmetryIndex]) {
+				CommsHelper.updateSymmetry(myIndex, symmetryIndex);
+				++symmetryIndex;
+				return;
+			}
+
+			++symmetryIndex;
+		}
+
+		CommsHelper.updateSymmetry(myIndex, 3);
+	}
+
 	public static void init() throws GameActionException {
 		archonCount = rc.getArchonCount();
 		for (int i = 32; i < 32 + archonCount; ++i) {
@@ -147,5 +184,8 @@ public strictfp class Archon {
 				break;
 			}
 		}
+
+		isPossibleEnemyArchonSymmetry = new boolean[3];
+		isPossibleEnemyArchonSymmetry[0] = isPossibleEnemyArchonSymmetry[1] = isPossibleEnemyArchonSymmetry[2] = true;
 	}
 }

@@ -2,9 +2,11 @@ package gen2.helpers;
 
 import battlecode.common.MapLocation;
 import battlecode.common.GameActionException;
+import gen2.util.SymmetryType;
 
 import static gen2.RobotPlayer.*;
 import static gen2.util.Functions.getBits;
+import static gen2.util.Functions.setBits;
 
 public strictfp class CommsHelper {
 
@@ -21,5 +23,39 @@ public strictfp class CommsHelper {
 		}
 
 		return null;
+	}
+
+	public static boolean foundEnemyArchon() throws GameActionException {
+		for (int i = 0; i < archonCount; ++i) {
+			if (getBits(rc.readSharedArray(i), 15, 15) == 1) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static void updateSymmetry(int archonIndex, int value) throws GameActionException {
+		value = setBits(rc.readSharedArray(4), 2 * archonIndex, 2 * archonIndex + 1, value);
+		rc.writeSharedArray(4, value);
+	}
+
+	public static SymmetryType getBroadcastedSymmetry(int archonIndex) throws GameActionException {
+		int value = rc.readSharedArray(4);
+		return SymmetryType.values()[getBits(value, 2 * archonIndex, 2 * archonIndex + 1)];
+	}
+
+	public static SymmetryType getPossibleSymmetry(int archonIndex) throws GameActionException {
+		int value = getBits(rc.readSharedArray(5), 3 * archonIndex, 3 * archonIndex + 2);
+		// TODO: store values array inside SymmetryType
+		if ((value & 0b1) == 0) {
+			return SymmetryType.values()[0];
+		} else if ((value & 0b10) == 0) {
+			return SymmetryType.values()[1];
+		} else if ((value & 0b100) == 0) {
+			return SymmetryType.values()[2];
+		} else {
+			return SymmetryType.NONE;
+		}
 	}
 }
