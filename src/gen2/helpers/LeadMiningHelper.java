@@ -3,6 +3,7 @@ package gen2.helpers;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.RobotType;
 import gen2.util.Functions;
 import gen2.util.MetalInfo;
 
@@ -65,6 +66,13 @@ public class LeadMiningHelper {
                 infos[i - SA_START] = info;
             }
         }
+        if (DEBUG) {
+            String out = "Lead -> ";
+            for (int i = 0; i < SA_COUNT; i++) if (infos[i] != null) {
+                out += infos[i] + ", ";
+            }
+            rc.setIndicatorString(out);
+        }
         return infos;
     }
 
@@ -105,6 +113,11 @@ public class LeadMiningHelper {
         } else if (direction == Direction.NORTHWEST || direction == Direction.SOUTHEAST) {
             adj.add(new MapLocation(center.x + GRID_DIM, center.y + GRID_DIM));
             adj.add(new MapLocation(center.x - GRID_DIM, center.y - GRID_DIM));
+        } else if (myType == RobotType.SOLDIER) {
+            adj.add(new MapLocation(center.x, center.y + GRID_DIM));
+            adj.add(new MapLocation(center.x, center.y - GRID_DIM));
+            adj.add(new MapLocation(center.x + GRID_DIM, center.y));
+            adj.add(new MapLocation(center.x - GRID_DIM, center.y));
         }
         return adj;
     }
@@ -127,6 +140,14 @@ public class LeadMiningHelper {
         else return location.directionTo(leadLoc);
     }
 
+    private static int getLocationIndex(MetalInfo[] infos, MapLocation location) {
+        for (int i = 0; i < SA_COUNT; i++) {
+            if (infos[i] != null && infos[i].location.equals(location)) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     public static void updateLeadAmountInGridCell() throws GameActionException {
         ArrayList<MapLocation> adj = getAdjacentCells();
@@ -134,27 +155,25 @@ public class LeadMiningHelper {
         for (MapLocation loc : adj) {
             MetalInfo mInfo = getLeadInfoCell(loc);
             if (mInfo != null) {
-                MetalInfo minInfo = new MetalInfo(0, new MapLocation(-1, -1));
-                int index = 0;
-                boolean foundLocation = false;
-                for (int i = 0; i < SA_COUNT; i++) {
-                    if (infos[i] == null) {
-                        index = i;
-                        break;
-                    }
-                    if (infos[i].amount < minInfo.amount) {
-                        minInfo = infos[i];
-                        index = i;
-                    }
-                    if (infos[i].location.equals(mInfo.location)) {
-                        foundLocation = true;
-                        index = i;
-                        break;
-                    }
-                }
-                if (foundLocation || minInfo.amount < mInfo.amount) {
+                int index = getLocationIndex(infos, mInfo.location);
+                if (index != -1) {
                     infos[index] = mInfo;
                     rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
+                } else if (mInfo.amount > 0) {
+                    int minAmount = Integer.MAX_VALUE;
+                    for (int i = 0; i < SA_COUNT; i++) {
+                        if (infos[i] == null) {
+                            index = i;
+                            break;
+                        } else if (infos[i].amount < minAmount) {
+                            index = i;
+                            minAmount = infos[i].amount;
+                        }
+                    }
+                    if (minAmount == Integer.MAX_VALUE || minAmount < mInfo.amount) {
+                        infos[index] = mInfo;
+                        rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
+                    }
                 }
             }
         }
@@ -189,7 +208,7 @@ public class LeadMiningHelper {
         return best;
     }
 
-    public static Direction getAntiCornerDirection() {
+    public static Direction getAntiEdgeDirection() {
         if (
                 rc.getLocation().isWithinDistanceSquared(
                         new MapLocation(0, 0), 5
@@ -214,6 +233,22 @@ public class LeadMiningHelper {
                 )
         ) {
             return Direction.SOUTHWEST;
+        } else if (
+                rc.getLocation().x < 2
+        ) {
+            return Direction.EAST;
+        } else if (
+                rc.getLocation().x > rc.getMapWidth() - 3
+        ) {
+            return Direction.WEST;
+        } else if (
+                rc.getLocation().y < 2
+        ) {
+            return Direction.NORTH;
+        } else if (
+                rc.getLocation().y > rc.getMapHeight() - 3
+        ) {
+            return Direction.SOUTH;
         } else {
             return null;
         }

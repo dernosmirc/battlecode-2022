@@ -3,7 +3,6 @@ package gen2.helpers;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import gen2.RobotPlayer;
 import gen2.util.Functions;
 
 import java.util.Arrays;
@@ -16,7 +15,7 @@ public class MovementHelper {
 
     private static final int INFINITY = 101;
 
-    private static final double[] DIRECTION_WEIGHTS = {1, 8, 32, 8, 1};
+    private static final double[] DIRECTION_WEIGHTS = {1, 20, 80, 20, 1};
 
     public static final List<Direction> directionList = Arrays.asList(directions);
 

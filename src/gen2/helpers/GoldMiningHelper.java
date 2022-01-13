@@ -16,13 +16,14 @@ public class GoldMiningHelper {
     private static final int SA_START = 44;
     private static final int SA_COUNT = 2;
 
-
     private static final int MAX_7BITS = 127;
     private static final double COMPRESSION = 0.01;
     private static int scaleGoldTo7Bits(int gold) {
+        if (gold == 0) return 0;
         return (int) Math.floor(127 * (1 - Math.exp(-COMPRESSION * gold)));
     }
     private static int scale7BitsToGold(int bits) {
+        if (bits == 0) return 0;
         return (int) Math.floor(-Math.log(1 - bits / (double) MAX_7BITS) / COMPRESSION);
     }
 
@@ -64,10 +65,20 @@ public class GoldMiningHelper {
         return infos;
     }
 
+    private static int getLocationIndex(MetalInfo[] infos, MapLocation location) {
+        for (int i = 0; i < SA_COUNT; i++) {
+            if (infos[i] != null && infos[i].location.equals(location)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public static void updateGoldAmountInGridCell() throws GameActionException {
-        MapLocation goldLocation = getGoldLocation(), mloc = rc.getLocation();
+        MapLocation goldLocation = getGoldLocation();
         MetalInfo mInfo;
         if (goldLocation == null) {
+            MapLocation mloc = rc.getLocation();
             mInfo = new MetalInfo(0,
                     new MapLocation(
                             mloc.x - (mloc.x % GRID_DIM) + GRID_DIM / 2,
@@ -84,26 +95,23 @@ public class GoldMiningHelper {
         }
 
         MetalInfo[] infos = getGoldOnGrid();
-        MetalInfo minInfo = new MetalInfo(0, new MapLocation(-1, -1));
-        int index = 0;
-        boolean foundLocation = false;
-        for (int i = 0; i < SA_COUNT; i++) {
-            if (infos[i] == null) {
-                index = i;
-                break;
-            }
-            if (infos[i].amount < minInfo.amount) {
-                minInfo = infos[i];
-                index = i;
-            }
-            if (infos[i].location.equals(mInfo.location)) {
-                foundLocation = true;
-                index = i;
-                break;
-            }
-        }
-        if (foundLocation || minInfo.amount < mInfo.amount) {
+        int index = getLocationIndex(infos, mInfo.location);
+        if (index != -1) {
             rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
+        } else {
+            int minAmount = Integer.MAX_VALUE;
+            for (int i = 0; i < SA_COUNT; i++) {
+                if (infos[i] == null) {
+                    index = i;
+                    break;
+                } else if (infos[i].amount < minAmount) {
+                    minAmount = infos[i].amount;
+                    index = i;
+                }
+            }
+            if (minAmount == Integer.MAX_VALUE || minAmount < mInfo.amount) {
+                rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
+            }
         }
     }
 

@@ -10,4 +10,12 @@ public class MetalInfo {
         this.amount = amount;
         location = loc;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "a=" + amount +
+                ", loc=" + location +
+                '}';
+    }
 }

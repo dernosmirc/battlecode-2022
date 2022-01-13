@@ -1,6 +1,8 @@
 package gen2;
 
 import battlecode.common.*;
+import gen2.helpers.BuildingHelper;
+import gen2.helpers.MovementHelper;
 import gen2.util.Functions;
 
 import static gen2.RobotPlayer.*;
@@ -23,13 +25,22 @@ public strictfp class Builder {
 	private static ConstructionInfo nextBuilding;
 
 	public static void run() throws GameActionException {
-		if (nextBuilding != null) {
-			Direction buildDirection = rc.getLocation().directionTo(nextBuilding.location);
-			if (
-					rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 2) &&
-							rc.canBuildRobot(nextBuilding.type, buildDirection)
-			) {
-				rc.buildRobot(nextBuilding.type, buildDirection);
+		if (rc.isActionReady()) {
+			if (nextBuilding != null) {
+				Direction buildDirection = rc.getLocation().directionTo(nextBuilding.location);
+				if (
+						rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 2) &&
+								rc.canBuildRobot(nextBuilding.type, buildDirection)
+				) {
+					rc.buildRobot(nextBuilding.type, buildDirection);
+				}
+			}
+		}
+
+		if (rc.isMovementReady()) {
+			Direction antiArchon = BuildingHelper.getAntiArchonDirection(myArchonLocation);
+			if (antiArchon != null) {
+				MovementHelper.tryMove(antiArchon, false);
 			}
 		}
 	}

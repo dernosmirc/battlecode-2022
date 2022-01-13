@@ -47,7 +47,6 @@ public strictfp class RobotPlayer {
 		}
 
 		while (true) {
-			rc.setIndicatorString(getInstantaneousDirection().name());
 			switch (myType) {
 				case LABORATORY:
 					Laboratory.run();

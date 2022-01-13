@@ -56,7 +56,7 @@ public strictfp class Miner {
 			if (leadDirection != null) {
 				MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
 			} else {
-				Direction antiCorner = LeadMiningHelper.getAntiCornerDirection();
+				Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
 				if (antiCorner != null) {
 					myDirection = antiCorner;
 				}
