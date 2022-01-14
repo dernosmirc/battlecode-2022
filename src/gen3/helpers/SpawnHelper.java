@@ -10,11 +10,11 @@ import static gen3.util.Functions.getBits;
 public strictfp class SpawnHelper {
 
 	private static double getSoldierWeight() {
-		if (rc.getRoundNum() < 250) return 0.65;
-		if (rc.getRoundNum() < 500) return 0.65;
-		if (rc.getRoundNum() < 750) return 0.65;
-		if (rc.getRoundNum() < 1000) return 0.65;
-		return 0.65;
+		if (rc.getRoundNum() < 250) return 0.80;
+		if (rc.getRoundNum() < 500) return 0.80;
+		if (rc.getRoundNum() < 750) return 0.80;
+		if (rc.getRoundNum() < 1000) return 0.80;
+		return 0.80;
 	}
 
 	private static double getMinerWeight() {
@@ -149,12 +149,12 @@ public strictfp class SpawnHelper {
 		if (rc.getTeamLeadAmount(myTeam) < threshold * getArchonPriority()) {
 			return null;
 		}
-		if (droidsBuilt < 2) {
-			return RobotType.MINER;
-		}
-		if (soldiersBuilt < 3) {
-			return RobotType.SOLDIER;
-		}
+		if (minersBuilt < 2) return RobotType.MINER;
+		if (soldiersBuilt < 3) return RobotType.SOLDIER;
+		if (minersBuilt < 4) return RobotType.MINER;
+		if (soldiersBuilt < 7) return RobotType.SOLDIER;
+		if (minersBuilt < 6) return RobotType.MINER;
+		if (soldiersBuilt < 9) return RobotType.SOLDIER;
 
 		double sol = getSoldierWeight(),
 				min = getMinerWeight(),
