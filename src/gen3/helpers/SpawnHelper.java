@@ -26,17 +26,17 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getBuilderWeight() {
-		if (rc.getRoundNum() < 250) return 0.00;
-		if (rc.getRoundNum() < 1000) return 0.05;
-		return 0.00;
+		if (rc.getRoundNum() < 750) return 0.00;
+		if (rc.getRoundNum() < 1000) return 0.20;
+		return 0.20;
 	}
 
 	private static double getSkipWeight() {
 		if (rc.getRoundNum() < 250)  return 0.00;
-		if (rc.getRoundNum() < 500)  return 0.35;
+		if (rc.getRoundNum() < 500)  return 0.00;
 		if (rc.getRoundNum() < 750)  return 0.35;
-		if (rc.getRoundNum() < 1000) return 0.35;
-		return 1;
+		if (rc.getRoundNum() < 1000) return 0.80;
+		return 3;
 	}
 
 	private static double getLeadThreshold() {
@@ -149,11 +149,12 @@ public strictfp class SpawnHelper {
 		if (rc.getTeamLeadAmount(myTeam) < threshold * getArchonPriority()) {
 			return null;
 		}
-		if (minersBuilt < 2) return RobotType.MINER;
+
+		if (minersBuilt < 3) return RobotType.MINER;
 		if (soldiersBuilt < 3) return RobotType.SOLDIER;
-		if (minersBuilt < 4) return RobotType.MINER;
-		if (soldiersBuilt < 7) return RobotType.SOLDIER;
-		if (minersBuilt < 6) return RobotType.MINER;
+		if (minersBuilt < 5) return RobotType.MINER;
+		if (soldiersBuilt < 6) return RobotType.SOLDIER;
+		if (minersBuilt < 7) return RobotType.MINER;
 		if (soldiersBuilt < 9) return RobotType.SOLDIER;
 
 		double sol = getSoldierWeight(),
