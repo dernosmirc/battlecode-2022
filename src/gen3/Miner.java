@@ -1,72 +1,73 @@
-package gen2;
+package gen3;
 
 import battlecode.common.*;
-import gen2.helpers.GoldMiningHelper;
-import gen2.helpers.LeadMiningHelper;
-import gen2.helpers.MovementHelper;
-import gen2.util.Functions;
-import gen2.util.Logger;
+import gen3.helpers.GoldMiningHelper;
+import gen3.helpers.LeadMiningHelper;
+import gen3.common.MovementHelper;
+import gen3.util.Functions;
+import gen3.util.Logger;
 
-import static gen2.RobotPlayer.*;
-import static gen2.util.Functions.getBits;
+import static gen3.RobotPlayer.*;
+import static gen3.util.Functions.getBits;
+import static gen3.util.Functions.sigmoid;
 
 public strictfp class Miner {
-	private static final double GOLD_MINER_RATIO = 0.8;
+	private static final double GOLD_MINER_RATIO = 0.25;
+	private static double getExplorerRatio() {
+		return 0.75 * sigmoid((300-rc.getRoundNum())/200.0);
+	}
 
 	private static MapLocation myArchonLocation;
 	public static Direction myDirection;
 	private static int myArchonIndex;
 	private static boolean isGoldMiner = false;
+	private static boolean isExplorer = false;
 
 	public static void run() throws GameActionException {
 		Logger logger = new Logger("Miner", true);
+
 		GoldMiningHelper.mineGold();
-		logger.log("Mined gold");
 		GoldMiningHelper.updateGoldAmountInGridCell();
-		logger.log("Updated Gold");
 		LeadMiningHelper.updateLeadAmountInGridCell();
-		logger.log("Updated lead");
 
 		if (rc.isMovementReady()) {
 			Direction goldDirection = GoldMiningHelper.spotGold();
 			if (goldDirection != null) {
 				MovementHelper.tryMove(goldDirection, true);
-			} else if (isGoldMiner) {
+			} else if (!isExplorer && isGoldMiner) {
 				goldDirection = GoldMiningHelper.spotGoldOnGrid();
 				if (goldDirection != null) {
 					MovementHelper.tryMove(goldDirection, false);
 				}
 			}
+			if (rc.isMovementReady()) {
+				Direction leadDirection = LeadMiningHelper.spotLead();
+				if (leadDirection != null) {
+					MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
+				} else {
+					if (!isExplorer && (leadDirection = LeadMiningHelper.spotLeadOnGrid()) != null) {
+						MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
+					} else {
+						Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
+						if (antiCorner != null) {
+							myDirection = antiCorner;
+						}
+						MovementHelper.moveAndAvoid(myDirection, myArchonLocation, 2);
+					}
+				}
+			}
 		}
-		logger.log("moved towards gold");
 
 		if (LeadMiningHelper.canMineLead()) {
 			LeadMiningHelper.mineLead();
 		}
 
-		if (rc.isMovementReady()) {
-			Direction leadDirection = LeadMiningHelper.spotLead();
-			logger.log("spotted lead nearby");
-			if (leadDirection != null) {
-				MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
-			} else {
-				if ((leadDirection = LeadMiningHelper.spotLeadOnGrid()) != null) {
-					logger.log("spotted lead on grid");
-					MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
-				} else {
-					Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
-					if (antiCorner != null) {
-						myDirection = antiCorner;
-					}
-					MovementHelper.moveAndAvoid(myDirection, myArchonLocation, 2);
-				}
-			}
-		}
 		logger.flush();
 	}
 
 	public static void init() throws GameActionException {
 		isGoldMiner = Math.random() < GOLD_MINER_RATIO;
+		isExplorer = Math.random() < getExplorerRatio();
 		myDirection = Functions.getRandomDirection();
 		archonCount = 0;
 		for (int i = 32; i < 36; ++i) {
@@ -76,6 +77,7 @@ public strictfp class Miner {
 				MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
 					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
+					myDirection = myArchonLocation.directionTo(rc.getLocation());
 					myArchonIndex = i - 32;
 				}
 			} else {
