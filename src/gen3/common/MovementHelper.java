@@ -4,16 +4,11 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import gen3.util.Functions;
-import gen3.util.Vector;
-
-import static gen3.RobotPlayer.directions;
 import static gen3.RobotPlayer.rc;
 
 public class MovementHelper {
 
     private static final double[] DIRECTION_WEIGHTS = {0, 1, 4, 1, 0};
-
-    public static final Vector<Direction> directionVector = new Vector<>(directions);
 
     private static final double DIRECTION_BETA = 0.334;
     private static double dx = 0, dy = 0;

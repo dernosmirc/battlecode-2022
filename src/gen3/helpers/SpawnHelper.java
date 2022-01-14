@@ -4,7 +4,6 @@ import battlecode.common.*;
 import gen3.Archon;
 
 import static gen3.RobotPlayer.*;
-import static gen3.common.MovementHelper.directionVector;
 import static gen3.util.Functions.getBits;
 
 public strictfp class SpawnHelper {
@@ -85,6 +84,29 @@ public strictfp class SpawnHelper {
 		return p;
 	}
 
+	private static final Boolean[] builderSpawned = new Boolean[8];
+	private static Direction getOptimalBuilderSpawnDirection() throws GameActionException {
+		MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+		int ideal = rc.getLocation().directionTo(center).ordinal();
+		for (int i = 0; i <= 5; i++) {
+			int l = (ideal + i) % 8, r = (ideal - i + 8) % 8;
+			if (!builderSpawned[l] && rc.isLocationOccupied(rc.getLocation().add(directions[l]))) {
+				builderSpawned[l] = true;
+				return directions[l];
+			}
+			if (!builderSpawned[r] && rc.isLocationOccupied(rc.getLocation().add(directions[r]))) {
+				builderSpawned[r] = true;
+				return directions[r];
+			}
+		}
+		return null;
+	}
+
+	private static Direction getOptimalSoldierSpawnDirection() {
+		MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+		return rc.getLocation().directionTo(center);
+	}
+
 	private static Direction getOptimalMinerSpawnDirection() throws GameActionException {
 		int[] minersInDirection = new int[8];
 		for (RobotInfo robot : rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam)) {
@@ -119,14 +141,19 @@ public strictfp class SpawnHelper {
 	}
 
 	public static Direction getOptimalDirection (Direction to, RobotType type) throws GameActionException {
+		if (type == RobotType.BUILDER) {
+			return getOptimalBuilderSpawnDirection();
+		}
 		if (type == RobotType.MINER) {
 			to = getOptimalMinerSpawnDirection();
+		} else if (type == RobotType.SOLDIER) {
+			to = getOptimalSoldierSpawnDirection();
 		}
 		MapLocation current = rc.getLocation();
 		if (to == null) {
 			to = Direction.SOUTHEAST;
 		}
-		int dirInt = directionVector.indexOf(to);
+		int dirInt = to.ordinal();
 		// if blocked by another robot, find the next best direction
 		for (int i = 0; i < 5; i++) {
 			Direction got = directions[Math.floorMod(dirInt + i, 8)];
