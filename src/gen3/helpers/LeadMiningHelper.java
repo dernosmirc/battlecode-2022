@@ -62,11 +62,11 @@ public class LeadMiningHelper {
     }
 
     private static MetalInfo[] getLeadOnGrid() throws GameActionException {
-        MetalInfo[] infos = new MetalInfo[SA_COUNT];
+        MetalInfo[] infos = new MetalInfo[8];
         for (int i = SA_START; i < SA_START + SA_COUNT; i++) {
             MetalInfo info = getInfoFromInt16(rc.readSharedArray(i));
             if (info.amount != 0) {
-                infos[i - SA_START] = info;
+                infos[i-SA_START] = info;
             }
         }
         return infos;
@@ -122,8 +122,7 @@ public class LeadMiningHelper {
         MapLocation location = rc.getLocation(), leadLoc = null;
         double maxFac = 0;
         MetalInfo[] infos = getLeadOnGrid();
-        for (int i = 0; i < SA_COUNT; i++) {
-            MetalInfo o = infos[i];
+        for (MetalInfo o: infos) {
             if (o != null && o.amount > 0) {
                 double fac = o.amount * Math.pow(o.location.distanceSquaredTo(location), DISTANCE_FACTOR);
                 if (fac > maxFac) {
@@ -145,62 +144,22 @@ public class LeadMiningHelper {
         return -1;
     }
 
-    private static void addSymmetricPositions(Vector<MetalInfo> infos, MetalInfo info) throws GameActionException {
-        if (info.amount >= LEAD_SYMMETRY_THRESHOLD) {
-            infos.add(
-                    new MetalInfo(
-                            info.amount,
-                            SymmetryType.getSymmetricalLocation(info.location, SymmetryType.HORIZONTAL)
-                    )
-            );
-            infos.add(
-                    new MetalInfo(
-                            info.amount,
-                            SymmetryType.getSymmetricalLocation(info.location, SymmetryType.VERTICAL)
-                    )
-            );
-            infos.add(
-                    new MetalInfo(
-                            info.amount,
-                            SymmetryType.getSymmetricalLocation(info.location, SymmetryType.ROTATIONAL)
-                    )
-            );
-        }
-    }
-
-    public static void updateLeadAmountInGridCell() throws GameActionException {
-        Vector<MapLocation> adj = getAdjacentCells();
-        Vector<MetalInfo> symmetrical = new Vector<>(8);
-        MetalInfo[] infos = getLeadOnGrid();
-        for (MapLocation loc : adj) {
-            MetalInfo mInfo = getLeadInfoCell(loc);
-            if (mInfo != null) {
-                int index = getLocationIndex(infos, mInfo.location);
-                if (index != -1) {
-                    infos[index] = mInfo;
-                    rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
-                    addSymmetricPositions(symmetrical, mInfo);
-                } else if (mInfo.amount > 0) {
-                    int minAmount = Integer.MAX_VALUE;
-                    for (int i = 0; i < SA_COUNT; i++) {
-                        if (infos[i] == null) {
-                            index = i;
-                            break;
-                        } else if (infos[i].amount < minAmount) {
-                            index = i;
-                            minAmount = infos[i].amount;
-                        }
-                    }
-                    if (minAmount == Integer.MAX_VALUE || minAmount < mInfo.amount) {
-                        infos[index] = mInfo;
-                        rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
-                        addSymmetricPositions(symmetrical, mInfo);
-                    }
-                }
-            }
-        }
-
-        for (MetalInfo mInfo: symmetrical) {
+    private static void addSymmetricPositions(MetalInfo[] infos, MetalInfo info) throws GameActionException {
+        MetalInfo[] arr = {
+                new MetalInfo(
+                        info.amount,
+                        SymmetryType.getSymmetricalLocation(info.location, SymmetryType.HORIZONTAL)
+                ),
+                new MetalInfo(
+                        info.amount,
+                        SymmetryType.getSymmetricalLocation(info.location, SymmetryType.VERTICAL)
+                ),
+                new MetalInfo(
+                        info.amount,
+                        SymmetryType.getSymmetricalLocation(info.location, SymmetryType.ROTATIONAL)
+                )
+        };
+        for (MetalInfo mInfo : arr) {
             int index = getLocationIndex(infos, mInfo.location);
             if (index == -1) {
                 int minAmount = Integer.MAX_VALUE;
@@ -218,6 +177,43 @@ public class LeadMiningHelper {
                     rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
                 }
             }
+        }
+    }
+
+    public static void updateLeadAmountInGridCell() throws GameActionException {
+        Vector<MapLocation> adj = getAdjacentCells();
+        MetalInfo[] infos = getLeadOnGrid();
+        MetalInfo bestCandidate = new MetalInfo(0, rc.getLocation());
+        int globalMin = 0;
+        for (MapLocation loc : adj) {
+            MetalInfo mInfo = getLeadInfoCell(loc);
+            if (mInfo != null) {
+                int index = getLocationIndex(infos, mInfo.location);
+                if (index == -1 && mInfo.amount > globalMin) {
+                    int minAmount = Integer.MAX_VALUE;
+                    for (int i = 0; i < SA_COUNT; i++) {
+                        if (infos[i] == null) {
+                            index = i;
+                            break;
+                        } else if (infos[i].amount < minAmount) {
+                            index = i;
+                            minAmount = infos[i].amount;
+                        }
+                    }
+                    globalMin = Math.max(minAmount, globalMin);
+                }
+                if (index != -1) {
+                    infos[index] = mInfo;
+                    rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
+                    if (mInfo.amount > bestCandidate.amount) {
+                        bestCandidate = mInfo;
+                    }
+                }
+            }
+        }
+
+        if (bestCandidate.getAmount() > LEAD_SYMMETRY_THRESHOLD) {
+            addSymmetricPositions(infos, bestCandidate);
         }
     }
 

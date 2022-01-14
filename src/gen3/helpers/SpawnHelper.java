@@ -9,37 +9,27 @@ import static gen3.util.Functions.getBits;
 public strictfp class SpawnHelper {
 
 	private static double getSoldierWeight() {
-		if (rc.getRoundNum() < 250) return 0.80;
-		if (rc.getRoundNum() < 500) return 0.80;
-		if (rc.getRoundNum() < 750) return 0.80;
-		if (rc.getRoundNum() < 1000) return 0.80;
-		return 0.80;
+		return 0.8;
 	}
 
 	private static double getMinerWeight() {
-		if (rc.getRoundNum() < 250) return 0.30;
-		if (rc.getRoundNum() < 500) return 0.30;
-		if (rc.getRoundNum() < 750) return 0.30;
-		if (rc.getRoundNum() < 1000) return 0.30;
 		return 0.30;
 	}
 
 	private static double getBuilderWeight() {
-		if (rc.getRoundNum() < 750) return 0.00;
-		if (rc.getRoundNum() < 1000) return 0.20;
-		return 0.20;
+		if (rc.getRoundNum() < 250) return 0.00;
+		return 0.05;
 	}
 
 	private static double getSkipWeight() {
-		if (rc.getRoundNum() < 250)  return 0.00;
-		if (rc.getRoundNum() < 500)  return 0.00;
-		if (rc.getRoundNum() < 750)  return 0.35;
-		if (rc.getRoundNum() < 1000) return 0.80;
-		return 3;
+		return 0.0;
 	}
 
 	private static double getLeadThreshold() {
-		return 75;
+		if (rc.getRoundNum() < 1000) return 75;
+		if (rc.getRoundNum() < 1250) return 200;
+		if (rc.getRoundNum() < 1500) return 400;
+		return 500;
 	}
 
 	private static double getLeadIncomeThreshold() {
@@ -84,7 +74,7 @@ public strictfp class SpawnHelper {
 		return p;
 	}
 
-	private static final Boolean[] builderSpawned = new Boolean[8];
+	private static final boolean[] builderSpawned = new boolean[8];
 	private static Direction getOptimalBuilderSpawnDirection() throws GameActionException {
 		MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
 		int ideal = rc.getLocation().directionTo(center).ordinal();
@@ -179,9 +169,9 @@ public strictfp class SpawnHelper {
 
 		if (minersBuilt < 3) return RobotType.MINER;
 		if (soldiersBuilt < 3) return RobotType.SOLDIER;
-		if (minersBuilt < 5) return RobotType.MINER;
+		if (minersBuilt < 4) return RobotType.MINER;
 		if (soldiersBuilt < 6) return RobotType.SOLDIER;
-		if (minersBuilt < 7) return RobotType.MINER;
+		if (minersBuilt < 5) return RobotType.MINER;
 		if (soldiersBuilt < 9) return RobotType.SOLDIER;
 
 		double sol = getSoldierWeight(),

@@ -8,7 +8,11 @@ public class MetalInfo {
 
     public MetalInfo(int amount, MapLocation loc) {
         this.amount = amount;
-        location = loc;
+        this.location = loc;
+    }
+
+    public int getAmount() {
+        return amount;
     }
 
     @Override
