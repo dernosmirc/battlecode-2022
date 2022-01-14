@@ -8,7 +8,7 @@ import static gen3.RobotPlayer.rc;
 
 public class MovementHelper {
 
-    private static final double[] DIRECTION_WEIGHTS = {0, 1, 4, 1, 0};
+    private static final double[] DIRECTION_WEIGHTS = {0, 1, 6, 1, 0};
 
     private static final double DIRECTION_BETA = 0.334;
     private static double dx = 0, dy = 0;
