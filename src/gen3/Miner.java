@@ -14,7 +14,7 @@ import static gen3.util.Functions.sigmoid;
 public strictfp class Miner {
 	private static final double GOLD_MINER_RATIO = 0.25;
 	private static double getExplorerRatio() {
-		return 0.75 * sigmoid((300-rc.getRoundNum())/200.0);
+		return 0.70 * sigmoid((300-rc.getRoundNum())/200.0);
 	}
 
 	private static MapLocation myArchonLocation;
