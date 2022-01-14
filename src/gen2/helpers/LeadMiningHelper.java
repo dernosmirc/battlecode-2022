@@ -205,41 +205,25 @@ public class LeadMiningHelper {
         if (
                 rc.getLocation().isWithinDistanceSquared(
                         new MapLocation(0, 0), 5
-                )
-        ) {
-            return Direction.NORTHEAST;
-        } else if (
-                rc.getLocation().isWithinDistanceSquared(
-                        new MapLocation(rc.getMapWidth() - 1, 0), 5
-                )
-        ) {
-            return Direction.NORTHWEST;
-        } else if (
-                rc.getLocation().isWithinDistanceSquared(
-                        new MapLocation(0, rc.getMapHeight() - 1), 5
-                )
-        ) {
-            return Direction.SOUTHEAST;
-        } else if (
-                rc.getLocation().isWithinDistanceSquared(
-                        new MapLocation(rc.getMapWidth() - 1, rc.getMapHeight() - 1), 5
-                )
-        ) {
-            return Direction.SOUTHWEST;
-        } else if (
-                rc.getLocation().x < 2
-        ) {
-            return Direction.EAST;
-        } else if (
-                rc.getLocation().x > rc.getMapWidth() - 3
-        ) {
-            return Direction.WEST;
-        } else if (
-                rc.getLocation().y < 2
+                ) || rc.getLocation().x < 2
         ) {
             return Direction.NORTH;
         } else if (
-                rc.getLocation().y > rc.getMapHeight() - 3
+                rc.getLocation().isWithinDistanceSquared(
+                        new MapLocation(rc.getMapWidth() - 1, 0), 5
+                ) || rc.getLocation().y < 2
+        ) {
+            return Direction.WEST;
+        } else if (
+                rc.getLocation().isWithinDistanceSquared(
+                        new MapLocation(0, rc.getMapHeight() - 1), 5
+                ) || rc.getLocation().y > rc.getMapHeight() - 3
+        ) {
+            return Direction.EAST;
+        } else if (
+                rc.getLocation().isWithinDistanceSquared(
+                        new MapLocation(rc.getMapWidth() - 1, rc.getMapHeight() - 1), 5
+                ) || rc.getLocation().x > rc.getMapWidth() - 3
         ) {
             return Direction.SOUTH;
         } else {

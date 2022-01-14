@@ -11,12 +11,14 @@ import static gen2.RobotPlayer.*;
 import static gen2.util.Functions.getBits;
 
 public strictfp class Miner {
-	private static final double GOLD_MINER_RATIO = 0.8;
+	private static final double GOLD_MINER_RATIO = 0.5;
+	private static final double EXPLORER_RATIO = 0.2;
 
 	private static MapLocation myArchonLocation;
 	public static Direction myDirection;
 	private static int myArchonIndex;
 	private static boolean isGoldMiner = false;
+	private static boolean isExplorer = false;
 
 	public static void run() throws GameActionException {
 		Logger logger = new Logger("Miner", true);
@@ -31,7 +33,7 @@ public strictfp class Miner {
 			Direction goldDirection = GoldMiningHelper.spotGold();
 			if (goldDirection != null) {
 				MovementHelper.tryMove(goldDirection, true);
-			} else if (isGoldMiner) {
+			} else if (!isExplorer && isGoldMiner) {
 				goldDirection = GoldMiningHelper.spotGoldOnGrid();
 				if (goldDirection != null) {
 					MovementHelper.tryMove(goldDirection, false);
@@ -42,25 +44,24 @@ public strictfp class Miner {
 
 		if (LeadMiningHelper.canMineLead()) {
 			LeadMiningHelper.mineLead();
-		} else {
-			logger.log("spotting lead on grid");
-			Direction leadDirection = LeadMiningHelper.spotLeadOnGrid();
-			logger.log("spotted lead on grid");
-			if (leadDirection != null) {
-				MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
-			}
 		}
+
 		if (rc.isMovementReady()) {
 			Direction leadDirection = LeadMiningHelper.spotLead();
 			logger.log("spotted lead nearby");
 			if (leadDirection != null) {
 				MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
 			} else {
-				Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
-				if (antiCorner != null) {
-					myDirection = antiCorner;
+				if (!isExplorer && (leadDirection = LeadMiningHelper.spotLeadOnGrid()) != null) {
+					logger.log("spotted lead on grid");
+					MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
+				} else {
+					Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
+					if (antiCorner != null) {
+						myDirection = antiCorner;
+					}
+					MovementHelper.moveAndAvoid(myDirection, myArchonLocation, 2);
 				}
-				MovementHelper.moveAndAvoid(myDirection, myArchonLocation, 2);
 			}
 		}
 		logger.flush();
@@ -68,6 +69,7 @@ public strictfp class Miner {
 
 	public static void init() throws GameActionException {
 		isGoldMiner = Math.random() < GOLD_MINER_RATIO;
+		isExplorer = Math.random() < EXPLORER_RATIO;
 		myDirection = Functions.getRandomDirection();
 		archonCount = 0;
 		for (int i = 32; i < 36; ++i) {
