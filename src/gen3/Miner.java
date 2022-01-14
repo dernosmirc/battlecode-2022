@@ -32,7 +32,6 @@ public strictfp class Miner {
 		GoldMiningHelper.mineGold();
 
 		GoldMiningHelper.updateGoldAmountInGridCell();
-		LeadMiningHelper.updateLeadAmountInGridCell();
 
 		if (rc.isMovementReady()) {
 			move();
@@ -42,14 +41,12 @@ public strictfp class Miner {
 			LeadMiningHelper.mineLead();
 		}
 
+		LeadMiningHelper.updateLeadAmountInGridCell();
+
 		logger.flush();
 	}
 
 	private static boolean move() throws GameActionException {
-		if (rc.getID() == 11802 && rc.getRoundNum() > 130) {
-			MovementHelper.getInstantaneousDirection();
-		}
-
 		Direction goldDirection = GoldMiningHelper.spotGold();
 		if (goldDirection != null) {
 			return MovementHelper.tryMove(goldDirection, false);

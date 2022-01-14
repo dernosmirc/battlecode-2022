@@ -24,7 +24,7 @@ public class LeadMiningHelper {
     private static final int MAX_7BITS = 127;
     private static final double COMPRESSION = 0.001;
     
-    private static final int LEAD_SYMMETRY_THRESHOLD = 90;
+    private static final int LEAD_SYMMETRY_THRESHOLD = 75;
 
     private static int scaleLeadTo7Bits(int lead) {
         return (int) Math.floor(127 * (1 - Math.exp(-COMPRESSION * lead)));
