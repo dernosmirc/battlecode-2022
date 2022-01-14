@@ -2,10 +2,6 @@ package gen3.helpers;
 
 import battlecode.common.*;
 import gen3.Archon;
-import gen3.util.Pair;
-import gen3.util.Vector;
-
-import java.util.Comparator;
 
 import static gen3.RobotPlayer.*;
 import static gen3.common.MovementHelper.directionVector;
@@ -18,7 +14,7 @@ public strictfp class SpawnHelper {
 		if (rc.getRoundNum() < 500) return 0.65;
 		if (rc.getRoundNum() < 750) return 0.65;
 		if (rc.getRoundNum() < 1000) return 0.65;
-		return 1.00;
+		return 0.80;
 	}
 
 	private static double getMinerWeight() {
@@ -26,7 +22,7 @@ public strictfp class SpawnHelper {
 		if (rc.getRoundNum() < 500) return 0.30;
 		if (rc.getRoundNum() < 750) return 0.30;
 		if (rc.getRoundNum() < 1000) return 0.30;
-		return 0.25;
+		return 0.30;
 	}
 
 	private static double getBuilderWeight() {
@@ -77,17 +73,16 @@ public strictfp class SpawnHelper {
 		rc.writeSharedArray(10 + Archon.myIndex, droidsBuilt);
 	}
 
-	private static Vector<Integer> getArchonPriority() throws GameActionException {
-		Vector<Pair<Integer, Integer>> v = new Vector<>(4);
-		for (int i = 10; i < 10 + archonCount; ++i) {
-			v.add(new Pair<>(i-10, getBits(rc.readSharedArray(i), 0, 15)));
+	private static int getArchonPriority() throws GameActionException {
+		int p = 1;
+		for (int i = 0; i < archonCount; ++i) {
+			if (Archon.myIndex != i &&
+					getBits(rc.readSharedArray(10 + i), 0, 15) < droidsBuilt
+			) {
+				p++;
+			}
 		}
-		v.sort(Comparator.comparingInt(Pair::getValue));
-		Vector<Integer> r = new Vector<>(4);
-		for (Pair<Integer, Integer> a: v){
-			r.add(a.getKey());
-		}
-		return r;
+		return p;
 	}
 
 	private static Direction getOptimalMinerSpawnDirection() throws GameActionException {
@@ -151,8 +146,7 @@ public strictfp class SpawnHelper {
 
 	public static RobotType getNextDroid() throws GameActionException {
 		double threshold = getLeadThreshold();
-		int priority = getArchonPriority().indexOf(Archon.myIndex) + 1;
-		if (rc.getTeamLeadAmount(myTeam) < threshold * priority) {
+		if (rc.getTeamLeadAmount(myTeam) < threshold * getArchonPriority()) {
 			return null;
 		}
 		if (droidsBuilt < 2) {

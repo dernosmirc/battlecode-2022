@@ -1,6 +1,9 @@
 package gen3;
 
 import battlecode.common.*;
+import gen3.util.Vector;
+
+import java.util.Comparator;
 
 public strictfp class RobotPlayer {
 
@@ -26,8 +29,8 @@ public strictfp class RobotPlayer {
 			Direction.NORTHWEST,
 	};
 
-	private static final double LEAD_BETA = 0.33;
-	private static final double GOLD_BETA = 0.33;
+	private static final double LEAD_BETA = 0.1;
+	private static final double GOLD_BETA = 0.1;
 
 	private static int lastRoundLead = 0;
 	private static int lastRoundGold = 0;
@@ -36,7 +39,6 @@ public strictfp class RobotPlayer {
 		goldIncome = GOLD_BETA * (rc.getTeamGoldAmount(myTeam) - lastRoundGold) + (1 - GOLD_BETA) * goldIncome;
 		lastRoundLead = rc.getTeamLeadAmount(myTeam);
 		lastRoundGold = rc.getTeamGoldAmount(myTeam);
-		rc.setIndicatorString("Au:"+goldIncome+" ,Pb:"+leadIncome);
 	}
 
 	public static void run (RobotController robotController) throws GameActionException {
@@ -44,6 +46,10 @@ public strictfp class RobotPlayer {
 		myTeam = rc.getTeam();
 		enemyTeam = myTeam.opponent();
 		myType = rc.getType();
+
+		Integer[] arr = {5 ,6 ,2 ,4 ,9, -1, 4, 5,};
+		Vector<Integer> v = new Vector<>(arr);
+		v.sort(Comparator.comparingInt(o -> o));
 		
 		switch (myType) {
 			case MINER:

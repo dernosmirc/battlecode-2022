@@ -7,6 +7,8 @@ import gen3.common.MovementHelper;
 import gen3.util.Functions;
 import gen3.util.Logger;
 
+import java.util.Random;
+
 import static gen3.RobotPlayer.*;
 import static gen3.util.Functions.getBits;
 import static gen3.util.Functions.sigmoid;
@@ -14,7 +16,7 @@ import static gen3.util.Functions.sigmoid;
 public strictfp class Miner {
 	private static final double GOLD_MINER_RATIO = 0.25;
 	private static double getExplorerRatio() {
-		return 0.65 * sigmoid((300-rc.getRoundNum())/100.0);
+		return 0.65 * sigmoid((300-rc.getRoundNum())/200.0);
 	}
 
 	private static MapLocation myArchonLocation;
@@ -22,40 +24,18 @@ public strictfp class Miner {
 	private static int myArchonIndex;
 	private static boolean isGoldMiner = false;
 	private static boolean isExplorer = false;
+	private static final Random random = new Random(rc.getID());
 
 	public static void run() throws GameActionException {
 		Logger logger = new Logger("Miner", true);
 
 		GoldMiningHelper.mineGold();
+
 		GoldMiningHelper.updateGoldAmountInGridCell();
 		LeadMiningHelper.updateLeadAmountInGridCell();
 
 		if (rc.isMovementReady()) {
-			Direction goldDirection = GoldMiningHelper.spotGold();
-			if (goldDirection != null) {
-				MovementHelper.tryMove(goldDirection, true);
-			} else if (!isExplorer && isGoldMiner) {
-				goldDirection = GoldMiningHelper.spotGoldOnGrid();
-				if (goldDirection != null) {
-					MovementHelper.tryMove(goldDirection, false);
-				}
-			}
-			if (rc.isMovementReady()) {
-				Direction leadDirection = LeadMiningHelper.spotLead();
-				if (leadDirection != null) {
-					MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
-				} else {
-					if (!isExplorer && (leadDirection = LeadMiningHelper.spotLeadOnGrid()) != null) {
-						MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
-					} else {
-						Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
-						if (antiCorner != null) {
-							myDirection = antiCorner;
-						}
-						MovementHelper.moveAndAvoid(myDirection, myArchonLocation, 2);
-					}
-				}
-			}
+			move();
 		}
 
 		if (LeadMiningHelper.canMineLead()) {
@@ -65,9 +45,45 @@ public strictfp class Miner {
 		logger.flush();
 	}
 
+	private static boolean move() throws GameActionException {
+		if (rc.getID() == 11802 && rc.getRoundNum() > 130) {
+			MovementHelper.getInstantaneousDirection();
+		}
+
+		Direction goldDirection = GoldMiningHelper.spotGold();
+		if (goldDirection != null) {
+			return MovementHelper.tryMove(goldDirection, false);
+		}
+
+		Direction runAway = getAntiSoldierDirection();
+		if (runAway != null) {
+			return MovementHelper.tryMove(runAway, false);
+		}
+
+		if (!isExplorer && isGoldMiner) {
+			goldDirection = GoldMiningHelper.spotGoldOnGrid();
+			if (goldDirection != null) {
+				return MovementHelper.tryMove(goldDirection, false);
+			}
+		}
+		Direction leadDirection = LeadMiningHelper.spotLead();
+		if (leadDirection != null) {
+			return MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
+		}
+		if (!isExplorer && (leadDirection = LeadMiningHelper.spotLeadOnGrid()) != null) {
+			return MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
+		}
+
+		Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
+		if (antiCorner != null) {
+			myDirection = antiCorner;
+		}
+		return MovementHelper.moveAndAvoid(myDirection, myArchonLocation, 2);
+	}
+
 	public static void init() throws GameActionException {
-		isGoldMiner = Math.random() < GOLD_MINER_RATIO;
-		isExplorer = Math.random() < getExplorerRatio();
+		isGoldMiner = random.nextDouble() < GOLD_MINER_RATIO;
+		isExplorer = random.nextDouble() < getExplorerRatio();
 		myDirection = Functions.getRandomDirection();
 		archonCount = 0;
 		for (int i = 32; i < 36; ++i) {
@@ -86,5 +102,21 @@ public strictfp class Miner {
 				break;
 			}
 		}
+	}
+
+
+	private static Direction getAntiSoldierDirection() {
+		int dx = 0, dy = 0, count = 0;
+		for (RobotInfo ri: rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
+			if (ri.type == RobotType.SOLDIER) {
+				Direction d = ri.location.directionTo(rc.getLocation());
+				dx += d.dx;
+				dy += d.dy;
+				count++;
+			}
+		}
+		if (count < 2) return null;
+		if (dx == 0 && dy == 0) return null;
+		return (new MapLocation(0, 0).directionTo(new MapLocation(dx, dy)));
 	}
 }

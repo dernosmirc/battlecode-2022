@@ -3,9 +3,13 @@ package gen3.util;
 import battlecode.common.Direction;
 import battlecode.common.MapLocation;
 
+import java.util.Random;
+
 import static gen3.RobotPlayer.directions;
+import static gen3.RobotPlayer.rc;
 
 public strictfp class Functions {
+	private static final Random random = new Random(rc.getID());
 
 	public static int getBits(int num, int low, int high) {
 		return (num & ((1 << (high + 1)) - 1)) >> low;
@@ -24,7 +28,7 @@ public strictfp class Functions {
 	}
 
 	public static Object getRandom(Object[] col) {
-		return col[(int) (Math.random() * col.length)];
+		return col[(int) (random.nextDouble() * col.length)];
 	}
 
 	public static Direction getRandomDirection() {

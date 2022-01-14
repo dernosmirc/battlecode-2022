@@ -239,9 +239,9 @@ public class LeadMiningHelper {
     public static Direction spotLead() throws GameActionException {
         MapLocation location = rc.getLocation();
         Direction best = null;
-        double bestFactor = 0;
-        for (MapLocation mp: rc.senseNearbyLocationsWithLead(8)) {
-            double factor = (rc.senseLead(mp) - 1) / Math.pow (location.distanceSquaredTo(mp) + 1, 1) ;
+        int bestFactor = 0;
+        for (MapLocation mp: rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared)) {
+            int factor = rc.senseLead(mp) - 1;
             if (factor > bestFactor) {
                 best = location.directionTo(mp);
                 bestFactor = factor;

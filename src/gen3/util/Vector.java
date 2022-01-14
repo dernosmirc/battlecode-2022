@@ -3,11 +3,14 @@ package gen3.util;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Random;
 
+import static gen3.RobotPlayer.rc;
 import static gen3.RobotPlayer.DEBUG;
 
 @SuppressWarnings("unchecked")
 public class Vector<T> implements Iterable<T> {
+    private final Random random = new Random(rc.getID());
     private final T[] container;
     public final int maxSize;
     public int length = 0;
@@ -26,6 +29,7 @@ public class Vector<T> implements Iterable<T> {
     public Vector (T[] arr){
         container = arr.clone();
         this.maxSize = arr.length;
+        this.length = arr.length;
     }
 
     public void set(int i, T value){
@@ -72,7 +76,6 @@ public class Vector<T> implements Iterable<T> {
     }
 
     public void sort(Comparator<T> c) {
-        // TODO optimise
         Arrays.sort(container, 0, length, c);
     }
 
