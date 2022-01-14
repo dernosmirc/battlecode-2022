@@ -7,8 +7,8 @@ import battlecode.common.RobotType;
 import gen3.common.MovementHelper;
 import gen3.util.Functions;
 import gen3.util.MetalInfo;
-
-import java.util.ArrayList;
+import gen3.util.SymmetryType;
+import gen3.util.Vector;
 
 import static gen3.RobotPlayer.*;
 
@@ -23,6 +23,8 @@ public class LeadMiningHelper {
 
     private static final int MAX_7BITS = 127;
     private static final double COMPRESSION = 0.001;
+    
+    private static final int LEAD_SYMMETRY_THRESHOLD = 90;
 
     private static int scaleLeadTo7Bits(int lead) {
         return (int) Math.floor(127 * (1 - Math.exp(-COMPRESSION * lead)));
@@ -86,13 +88,13 @@ public class LeadMiningHelper {
         return new MetalInfo(count, center);
     }
 
-    private static ArrayList<MapLocation> getAdjacentCells() {
+    private static Vector<MapLocation> getAdjacentCells() {
         MapLocation now = rc.getLocation();
         MapLocation center = new MapLocation(
                 now.x - (now.x % GRID_DIM) + GRID_DIM / 2,
                 now.y - (now.y % GRID_DIM) + GRID_DIM / 2
         );
-        ArrayList<MapLocation> adj = new ArrayList<>();
+        Vector<MapLocation> adj = new Vector<>(5);
         adj.add(new MapLocation(center.x, center.y));
         Direction direction = MovementHelper.getInstantaneousDirection();
         if (direction == Direction.EAST || direction == Direction.WEST) {
@@ -143,8 +145,32 @@ public class LeadMiningHelper {
         return -1;
     }
 
+    private static void addSymmetricPositions(Vector<MetalInfo> infos, MetalInfo info) throws GameActionException {
+        if (info.amount >= LEAD_SYMMETRY_THRESHOLD) {
+            infos.add(
+                    new MetalInfo(
+                            info.amount,
+                            SymmetryType.getSymmetricalLocation(info.location, SymmetryType.HORIZONTAL)
+                    )
+            );
+            infos.add(
+                    new MetalInfo(
+                            info.amount,
+                            SymmetryType.getSymmetricalLocation(info.location, SymmetryType.VERTICAL)
+                    )
+            );
+            infos.add(
+                    new MetalInfo(
+                            info.amount,
+                            SymmetryType.getSymmetricalLocation(info.location, SymmetryType.ROTATIONAL)
+                    )
+            );
+        }
+    }
+
     public static void updateLeadAmountInGridCell() throws GameActionException {
-        ArrayList<MapLocation> adj = getAdjacentCells();
+        Vector<MapLocation> adj = getAdjacentCells();
+        Vector<MetalInfo> symmetrical = new Vector<>(8);
         MetalInfo[] infos = getLeadOnGrid();
         for (MapLocation loc : adj) {
             MetalInfo mInfo = getLeadInfoCell(loc);
@@ -153,6 +179,7 @@ public class LeadMiningHelper {
                 if (index != -1) {
                     infos[index] = mInfo;
                     rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
+                    addSymmetricPositions(symmetrical, mInfo);
                 } else if (mInfo.amount > 0) {
                     int minAmount = Integer.MAX_VALUE;
                     for (int i = 0; i < SA_COUNT; i++) {
@@ -167,7 +194,28 @@ public class LeadMiningHelper {
                     if (minAmount == Integer.MAX_VALUE || minAmount < mInfo.amount) {
                         infos[index] = mInfo;
                         rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
+                        addSymmetricPositions(symmetrical, mInfo);
                     }
+                }
+            }
+        }
+
+        for (MetalInfo mInfo: symmetrical) {
+            int index = getLocationIndex(infos, mInfo.location);
+            if (index == -1) {
+                int minAmount = Integer.MAX_VALUE;
+                for (int i = 0; i < SA_COUNT; i++) {
+                    if (infos[i] == null) {
+                        index = i;
+                        break;
+                    } else if (infos[i].amount < minAmount) {
+                        index = i;
+                        minAmount = infos[i].amount;
+                    }
+                }
+                if (minAmount == Integer.MAX_VALUE || minAmount < mInfo.amount) {
+                    infos[index] = mInfo;
+                    rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
                 }
             }
         }

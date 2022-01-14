@@ -17,24 +17,24 @@ public strictfp class SpawnHelper {
 		if (rc.getRoundNum() < 250) return 0.65;
 		if (rc.getRoundNum() < 500) return 0.65;
 		if (rc.getRoundNum() < 750) return 0.65;
-		if (rc.getRoundNum() < 1000) return 0.80;
+		if (rc.getRoundNum() < 1000) return 0.65;
 		return 1.00;
 	}
 
 	private static double getMinerWeight() {
 		if (rc.getRoundNum() < 250) return 0.30;
 		if (rc.getRoundNum() < 500) return 0.30;
-		if (rc.getRoundNum() < 750) return 0.20;
-		if (rc.getRoundNum() < 1000) return 0.20;
-		return 0.15;
+		if (rc.getRoundNum() < 750) return 0.30;
+		if (rc.getRoundNum() < 1000) return 0.30;
+		return 0.25;
 	}
 
 	private static double getBuilderWeight() {
 		if (rc.getRoundNum() < 250) return 0.00;
 		if (rc.getRoundNum() < 500) return 0.05;
-		if (rc.getRoundNum() < 750) return 0.10;
-		if (rc.getRoundNum() < 1000) return 0.15;
-		return 0.20;
+		if (rc.getRoundNum() < 750) return 0.05;
+		if (rc.getRoundNum() < 1000) return 0.05;
+		return 0.10;
 	}
 
 	private static double getSkipWeight() {

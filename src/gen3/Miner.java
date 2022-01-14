@@ -14,7 +14,7 @@ import static gen3.util.Functions.sigmoid;
 public strictfp class Miner {
 	private static final double GOLD_MINER_RATIO = 0.25;
 	private static double getExplorerRatio() {
-		return 0.70 * sigmoid((300-rc.getRoundNum())/200.0);
+		return 0.65 * sigmoid((300-rc.getRoundNum())/100.0);
 	}
 
 	private static MapLocation myArchonLocation;
@@ -74,7 +74,9 @@ public strictfp class Miner {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
 				++archonCount;
-				MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
+				MapLocation archonLocation = new MapLocation(
+						getBits(value, 6, 11), getBits(value, 0, 5)
+				);
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
 					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
 					myDirection = myArchonLocation.directionTo(rc.getLocation());
