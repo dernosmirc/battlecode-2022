@@ -69,10 +69,59 @@ public strictfp class SpawnHelper {
 		rc.writeSharedArray(10 + Archon.myIndex, int16);
 	}
 
+	private static boolean[] archonDead = new boolean[4];
+
+	private static int lastArchonCount = -1;
+	private static void updateDeadArchons() throws GameActionException {
+		if (lastArchonCount == -1) {
+			lastArchonCount = maxArchonCount;
+		}
+		int latestCount = rc.getArchonCount();
+		if (lastArchonCount == latestCount) {
+			return;
+		}
+		lastArchonCount = latestCount;
+		int max0 = -1, max1 = -1, max2 = -1;
+		int i0 = -1, i1 = -1, i2 = -1;
+		for (int i = 0; i < maxArchonCount; ++i) {
+			if (Archon.myIndex != i) {
+				int hp = rc.readSharedArray(14 + i);
+				if (hp > max2) {
+					if (hp > max1) {
+						i2 = i1;
+						max2 = max1;
+						if (hp > max0) {
+							i1 = i0;
+							max1 = max0;
+							i0 = i;
+							max0 = hp;
+						} else {
+							i1 = i;
+							max1 = hp;
+						}
+					} else {
+						i2 = i;
+						max2 = hp;
+					}
+				}
+			}
+		}
+		archonDead = new boolean[4];
+		switch (maxArchonCount - latestCount) {
+			case 3:
+				archonDead[i2] = true;
+			case 2:
+				archonDead[i1] = true;
+			case 1:
+				archonDead[i0] = true;
+		}
+	}
+
 	private static int getArchonDroidPriority() throws GameActionException {
+		updateDeadArchons();
 		int p = 1;
-		for (int i = 0; i < archonCount; ++i) {
-			if (Archon.myIndex != i &&
+		for (int i = 0; i < maxArchonCount; ++i) {
+			if (Archon.myIndex != i && !archonDead[i] &&
 					getBits(rc.readSharedArray(10 + i), 0, 11) < droidsBuilt
 			) {
 				p++;
@@ -82,9 +131,10 @@ public strictfp class SpawnHelper {
 	}
 
 	private static int getArchonWatchtowerPriority() throws GameActionException {
+		updateDeadArchons();
 		int p = 1;
-		for (int i = 0; i < archonCount; ++i) {
-			if (Archon.myIndex != i &&
+		for (int i = 0; i < maxArchonCount; ++i) {
+			if (Archon.myIndex != i && !archonDead[i] &&
 					getBits(rc.readSharedArray(10 + i), 12, 15) < buildersBuilt
 			) {
 				p++;

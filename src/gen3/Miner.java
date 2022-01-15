@@ -82,11 +82,11 @@ public strictfp class Miner {
 		isGoldMiner = random.nextDouble() < GOLD_MINER_RATIO;
 		isExplorer = random.nextDouble() < getExplorerRatio();
 		myDirection = Functions.getRandomDirection();
-		archonCount = 0;
+		maxArchonCount = 0;
 		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
-				++archonCount;
+				++maxArchonCount;
 				MapLocation archonLocation = new MapLocation(
 						getBits(value, 6, 11), getBits(value, 0, 5)
 				);
@@ -102,7 +102,18 @@ public strictfp class Miner {
 	}
 
 
+	private static Direction antiSoldier = null;
+	private static int momentum = 0;
 	private static Direction getAntiSoldierDirection() {
+		if (momentum > 0) {
+			Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
+			if (antiCorner != null) {
+				momentum = 0;
+				return antiCorner;
+			}
+			momentum--;
+			return antiSoldier;
+		}
 		int dx = 0, dy = 0, count = 0;
 		for (RobotInfo ri: rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
 			if (ri.type == RobotType.SOLDIER) {
@@ -112,8 +123,10 @@ public strictfp class Miner {
 				count++;
 			}
 		}
-		if (count < 2) return null;
+		if (count < 1) return null;
 		if (dx == 0 && dy == 0) return null;
-		return (new MapLocation(0, 0).directionTo(new MapLocation(dx, dy)));
+		antiSoldier = new MapLocation(0, 0).directionTo(new MapLocation(dx, dy));
+		momentum = count * 7;
+		return antiSoldier;
 	}
 }

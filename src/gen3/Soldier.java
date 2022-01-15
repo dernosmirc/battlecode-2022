@@ -4,7 +4,6 @@ import battlecode.common.*;
 import gen3.helpers.GoldMiningHelper;
 import gen3.helpers.LeadMiningHelper;
 import gen3.common.CommsHelper;
-import gen3.common.MovementHelper;
 import gen3.soldier.BellmanFordMovement;
 import gen3.soldier.BugPathingMovement;
 import gen3.util.SymmetryType;
@@ -12,9 +11,7 @@ import gen3.util.SymmetryType;
 import static gen3.RobotPlayer.*;
 import static gen3.util.Functions.getBits;
 import static gen3.util.Functions.setBits;
-import static gen3.common.MovementHelper.updateMovement;
 
-import java.util.Properties;
 import java.util.Random;
 
 public strictfp class Soldier {
@@ -27,7 +24,7 @@ public strictfp class Soldier {
 	private static boolean sensedEnemyArchon;
 
 	private static void updateEnemyArchonLocations() throws GameActionException {
-		for (int i = 0; i < archonCount; ++i) {
+		for (int i = 0; i < maxArchonCount; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
 				MapLocation archonLocation = CommsHelper.getLocationFrom12Bits(value);
@@ -79,11 +76,11 @@ public strictfp class Soldier {
 		updateGuessedEnemyArchonSymmetries();
 
 		switch (myTeam) {
-			case B:
-				BellmanFordMovement.move();
-				break;
 			case A:
 				BugPathingMovement.move();
+				break;
+			case B:
+				BellmanFordMovement.move();
 				break;
 		}
 
@@ -99,7 +96,7 @@ public strictfp class Soldier {
 
 		MapLocation[] symmetricalLocations;
 		int value = rc.readSharedArray(4);
-		for (int i = 32; i < 32 + archonCount; ++i) {
+		for (int i = 32; i < 32 + maxArchonCount; ++i) {
 			MapLocation archonLocation = CommsHelper.getLocationFrom12Bits(rc.readSharedArray(i));
 			symmetricalLocations = SymmetryType.getSymmetricalLocations(archonLocation);
 			for (MapLocation location : symmetricalLocations) {
@@ -143,7 +140,7 @@ public strictfp class Soldier {
 	private static void calculateEnemyArchonLocations(RobotInfo archon) throws GameActionException {
 		boolean alreadyUpdated = false;
 		boolean foundThisArchon = false;
-		for (int i = 0; i < archonCount; ++i) {
+		for (int i = 0; i < maxArchonCount; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
 				alreadyUpdated = true;
@@ -155,7 +152,7 @@ public strictfp class Soldier {
 
 		if (alreadyUpdated) {
 			if (!foundThisArchon) {
-				for (int i = 0; i < archonCount; ++i) {
+				for (int i = 0; i < maxArchonCount; ++i) {
 					if (getBits(rc.readSharedArray(i), 15, 15) == 0) {
 						int value = setBits(0, 15, 15, 1);
 						value = setBits(value, 6, 11, archon.location.x);
@@ -178,7 +175,7 @@ public strictfp class Soldier {
 
 		SymmetryType symType = SymmetryType.NONE;
 		int index = 32;
-		for (int j = 0; j < archonCount; j++) {
+		for (int j = 0; j < maxArchonCount; j++) {
 			int value = rc.readSharedArray(index + j);
 			MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
 			symType = SymmetryType.getSymmetryType(archonLocation, archon.location);
@@ -193,7 +190,7 @@ public strictfp class Soldier {
 			value = setBits(value, 0, 5, archon.location.y);
 			rc.writeSharedArray(0, value);
 		} else {
-			for (int j = 0; j < archonCount; j++) {
+			for (int j = 0; j < maxArchonCount; j++) {
 				int value = rc.readSharedArray(index + j);
 				MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
 				MapLocation enemyArchonLocation = SymmetryType.getSymmetricalLocation(archonLocation, symType);
@@ -207,11 +204,11 @@ public strictfp class Soldier {
 	}
 
 	public static void init() throws GameActionException {
-		archonCount = 0;
+		maxArchonCount = 0;
 		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
-				++archonCount;
+				++maxArchonCount;
 				MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
 					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);

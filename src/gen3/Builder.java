@@ -74,11 +74,11 @@ public strictfp class Builder {
 	}
 
 	public static void init() throws GameActionException {
-		archonCount = 0;
+		maxArchonCount = 0;
 		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
-				++archonCount;
+				++maxArchonCount;
 				MapLocation archonLocation = new MapLocation(
 						getBits(value, 6, 11), getBits(value, 0, 5)
 				);

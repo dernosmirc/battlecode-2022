@@ -36,11 +36,21 @@ public strictfp class Archon {
 		return null;
 	}
 
+	private static int lastRoundHp = 0;
+	private static void updateArchonHp() throws GameActionException {
+		if (lastRoundHp != rc.getHealth()) {
+			lastRoundHp = rc.getHealth();
+			rc.writeSharedArray(14 + myIndex, lastRoundHp);
+		}
+	}
+
 	public static void run() throws GameActionException {
 		// DON'T SPAWN SOLDIER ON FIRST ROUND
 		if (rc.getRoundNum() == 2) {
 			setCentralArchon();
 		}
+
+		updateArchonHp();
 
 		if (rc.isActionReady()) {
 			RobotType toSpawn = SpawnHelper.getNextDroid();
@@ -78,7 +88,7 @@ public strictfp class Archon {
 		MapLocation centre = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
 		int minDistance = rc.getMapWidth() * rc.getMapHeight();
 		int archonIndex = 0;
-		for (int i = 32; i < 32 + archonCount; ++i) {
+		for (int i = 32; i < 32 + maxArchonCount; ++i) {
 			MapLocation archonLocation = CommsHelper.getLocationFrom12Bits(rc.readSharedArray(i));
 			int distance = Math.max(Math.abs(archonLocation.x - centre.x), Math.abs(archonLocation.y - centre.y));
 			if (distance < minDistance) {
@@ -125,8 +135,8 @@ public strictfp class Archon {
 	}
 
 	public static void init() throws GameActionException {
-		archonCount = rc.getArchonCount();
-		for (int i = 32; i < 32 + archonCount; ++i) {
+		maxArchonCount = rc.getArchonCount();
+		for (int i = 32; i < 32 + maxArchonCount; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 0) {
 				value = setBits(0, 15, 15, 1);

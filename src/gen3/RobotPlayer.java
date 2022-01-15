@@ -13,7 +13,7 @@ public strictfp class RobotPlayer {
 	public static RobotController rc;
 	public static Team myTeam, enemyTeam;
 	public static RobotType myType;
-	public static int archonCount;
+	public static int maxArchonCount;
 
 	public static double leadIncome = 0;
 	public static double goldIncome = 0;
