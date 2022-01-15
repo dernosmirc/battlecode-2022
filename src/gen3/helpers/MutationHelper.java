@@ -1,6 +1,5 @@
 package gen3.helpers;
 
-import battlecode.common.Direction;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
@@ -10,7 +9,7 @@ import static gen3.RobotPlayer.*;
 
 public class MutationHelper {
 
-    private static final int THRESHOLD_WATCHTOWER_LEAD = 400;
+    private static final int THRESHOLD_WATCHTOWER_LEAD = 420;
     private static final int THRESHOLD_ARCHON_LEAD = 400;
 
     public static Pair<MapLocation, Boolean> getLocationToMutate() {

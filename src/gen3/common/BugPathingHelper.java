@@ -2,7 +2,7 @@ package gen3.common;
 
 import battlecode.common.*;
 import java.lang.Math;
-
+import java.util.Map;
 import static gen3.RobotPlayer.*;
 import static gen3.common.MovementHelper.updateMovement;
 
@@ -22,7 +22,7 @@ public class BugPathingHelper {
     /**
      * True iff looping around obstacle, false elsewhere
      */
-    private static boolean loopingAround = false;
+    private static boolean gen3_2 = false;
     /**
      * Distance to target from where we start looping around obstacle, > 0 if looping, -1 else
      */
@@ -35,7 +35,7 @@ public class BugPathingHelper {
      * Default Constructor
      */
 //    public BugPathingHelper(){
-//        loopingAround = false;
+//        gen3_2 = false;
 //        curDistanceToTarget = -1;
 //        startLocation = null;
 //    }
@@ -50,7 +50,7 @@ public class BugPathingHelper {
 //        else{
 //            ACCEPTABLE_RUBBLE = rubbleThreshold;
 //        }
-//        loopingAround = false;
+//        gen3_2 = false;
 //        curDistanceToTarget = -1;
 //        startLocation = null;
 //    }
@@ -87,7 +87,7 @@ public class BugPathingHelper {
         else{
             double m = (double) (x1 - x2) / (double) (y2 - y1);
             double c = y1 - m * x1;
-            if (Math.abs(valInLine(m, c, x3, y3)) < 1e-3){
+            if (Math.abs(valInLine(m, c, x3, y3)) < 1e-5){
                 return true;
             }
             return valInLine(m, c, x3, y3) * valInLine(m, c, x2, y2) > 0;
@@ -106,14 +106,15 @@ public class BugPathingHelper {
             // There is nothing we can do anyway.
             return;
         }
+
+        // indicator string log
         String indicator = "";
-        indicator += loopingAround;
+        indicator += gen3_2;
         if (startLocation == null){
             indicator += "00";
         }
         else{
-            indicator += startLocation.x;
-            indicator += startLocation.y;
+            indicator += (startLocation.x + "," + startLocation.y);
         }
         if (bugDirection == null){
             indicator += "?";
@@ -121,6 +122,7 @@ public class BugPathingHelper {
         else{
             indicator += bugDirection.name();
         }
+        indicator += (target.x + "," + target.y);
         if (DEBUG) {
             rc.setIndicatorString(indicator);
         }
@@ -131,9 +133,29 @@ public class BugPathingHelper {
             return;
         }
 
+        if (gen3_2){
+            // Calculate new direction
+            MapLocation newLocation = new MapLocation(rc.getLocation().x, rc.getLocation().y);
+            Direction newDirection = newLocation.directionTo(target);
+            // check if we can move towards target
+            // see case if you don't return to same place accidentally.
+            if (rc.canMove(newDirection) && !isObstacle(rc, newDirection) && checkIfForward(startLocation, target, newLocation)){
+                if (DEBUG) {
+                    System.out.println("CAN MOVE" + newLocation.toString());
+                    rc.setIndicatorDot(rc.getLocation(), 0, 0, 255);
+                }
+                gen3_2 = false;
+                startLocation = null;
+                bugDirection = null;
+                rc.move(newDirection);
+                updateMovement(newDirection);
+                return;
+            }
+        }
+
         Direction d = currentLocation.directionTo(target);
         // moveTowardsDirection(rc, d);
-        if (!loopingAround && rc.canMove(d) && !isObstacle(rc, d)) {
+        if (!gen3_2 && rc.canMove(d) && !isObstacle(rc, d)) {
             // Easy case of Bug 0!
             // No obstacle in the way, so let's just go straight for it!
             rc.move(d);
@@ -141,11 +163,12 @@ public class BugPathingHelper {
             bugDirection = null;
             currentLocation = null;
         } else {
-            loopingAround = true;
+            gen3_2 = true;
             // Hard case of Bug 0 :<
             // There is an obstacle in the way, so we're gonna have to go around it.
             if (startLocation == null){
                 startLocation = new MapLocation(currentLocation.x, currentLocation.y);
+                rc.setIndicatorDot(startLocation, 255, 0, 0);
             }
             if (bugDirection == null) {
                 // If we don't know what we're trying to do
@@ -162,18 +185,7 @@ public class BugPathingHelper {
                     rc.move(bugDirection);
                     updateMovement(bugDirection);
                     bugDirection = bugDirection.rotateLeft();
-                    // Calculate new direction
-                    MapLocation newLocation = rc.getLocation();
-                    Direction newDirection = newLocation.directionTo(target);
-                    // check if we can move towards target
-                    // see case if you don't return to same place accidentally.
-                    if (rc.canMove(newDirection) && checkIfForward(startLocation, target, newLocation)){
-                        rc.move(newDirection);
-                        updateMovement(newDirection);
-                        loopingAround = false;
-                        startLocation = null;
-                        bugDirection = null;
-                    }
+                    rc.setIndicatorDot(rc.getLocation(), 0, 255, 0);
                     break;
                 } else {
                     bugDirection = bugDirection.rotateRight();

@@ -5,6 +5,8 @@ import gen3.helpers.GoldMiningHelper;
 import gen3.helpers.LeadMiningHelper;
 import gen3.common.CommsHelper;
 import gen3.common.MovementHelper;
+import gen3.soldier.BellmanFordMovement;
+import gen3.soldier.BugPathingMovement;
 import gen3.util.SymmetryType;
 
 import static gen3.RobotPlayer.*;
@@ -12,14 +14,15 @@ import static gen3.util.Functions.getBits;
 import static gen3.util.Functions.setBits;
 import static gen3.common.MovementHelper.updateMovement;
 
+import java.util.Properties;
 import java.util.Random;
 
 public strictfp class Soldier {
 	private static final Random rng = new Random(rc.getID());
 
-	private static MapLocation myArchonLocation;
-	private static int myArchonIndex;
-	private static MapLocation guessedEnemyArchonLocation;
+	public static MapLocation myArchonLocation;
+	public static int myArchonIndex;
+	public static MapLocation guessedEnemyArchonLocation;
 	private static MapLocation centralArchon;
 	private static boolean sensedEnemyArchon;
 
@@ -60,66 +63,6 @@ public strictfp class Soldier {
 		}
 	}
 
-	private static void move() throws GameActionException {
-		MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
-		if (enemyArchonLocation != null) {
-			Direction dir = rc.getLocation().directionTo(enemyArchonLocation);
-			MovementHelper.tryMove(dir, false);
-			// if (rc.canMove(dir)) {
-			// 	rc.move(dir);
-			// 	updateMovement(dir);
-			// } else if (rc.canMove(dir.rotateLeft())) {
-			// 	rc.move(dir.rotateLeft());
-			// 	updateMovement(dir);
-			// } else if (rc.canMove(dir.rotateRight())) {
-			// 	rc.move(dir.rotateRight());
-			// 	updateMovement(dir);
-			// }
-
-			return;
-		}
-
-		if (guessedEnemyArchonLocation != null) {
-			int symmetryIndex = SymmetryType.getSymmetryType(myArchonLocation, guessedEnemyArchonLocation).ordinal();
-			int value = rc.readSharedArray(5);
-			int bit = 3 * myArchonIndex + symmetryIndex;
-			if (getBits(value, bit, bit) == 1) {
-				updateGuessedEnemyArchonLocation();
-			}
-		}
-
-		// TODO: Use MovementHelper's pathing
-		if (guessedEnemyArchonLocation == null) {
-			// TODO: Go to nearest alive archon instead
-			Direction dir = rc.getLocation().directionTo(myArchonLocation);
-			MovementHelper.tryMove(dir, false);
-			// if (rc.canMove(dir)) {
-			// 	rc.move(dir);
-			// 	updateMovement(dir);
-			// } else if (rc.canMove(dir.rotateLeft())) {
-			// 	rc.move(dir.rotateLeft());
-			// 	updateMovement(dir);
-			// } else if(rc.canMove(dir.rotateRight())) {
-			// 	rc.move(dir.rotateRight());
-			// 	updateMovement(dir);
-			// }
-
-			return;
-		}
-
-		Direction dir = rc.getLocation().directionTo(guessedEnemyArchonLocation);
-		MovementHelper.tryMove(dir, false);
-		// if (rc.canMove(dir)) {
-		// 	rc.move(dir);
-		// 	updateMovement(dir);
-		// } else if (rc.canMove(dir.rotateLeft())) {
-		// 	rc.move(dir.rotateLeft());
-		// 	updateMovement(dir);
-		// } else if(rc.canMove(dir.rotateRight())) {
-		// 	rc.move(dir.rotateRight());
-		// 	updateMovement(dir);
-		// }
-	}
 
 	public static void run() throws GameActionException {
 		sensedEnemyArchon = false;
@@ -134,7 +77,15 @@ public strictfp class Soldier {
 		}
 
 		updateGuessedEnemyArchonSymmetries();
-		move();
+
+		switch (myTeam) {
+			case B:
+				BellmanFordMovement.move();
+				break;
+			case A:
+				BugPathingMovement.move();
+				break;
+		}
 
 		// Update lead and gold sources nearby to help miners
 		LeadMiningHelper.updateLeadAmountInGridCell();
@@ -170,7 +121,7 @@ public strictfp class Soldier {
 		updateGuessedEnemyArchonLocation();
 	}
 
-	private static void updateGuessedEnemyArchonLocation() throws GameActionException {
+	public static void updateGuessedEnemyArchonLocation() throws GameActionException {
 		if (guessedEnemyArchonLocation == null) {
 			return;
 		}
