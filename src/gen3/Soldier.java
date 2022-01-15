@@ -194,6 +194,7 @@ public strictfp class Soldier {
 			value = setBits(value, 0, 5, archon.location.y);
 			rc.writeSharedArray(0, value);
 		} else {
+			SymmetryType.setMapSymmetry(symType);
 			for (int j = 0; j < maxArchonCount; j++) {
 				int value = rc.readSharedArray(index + j);
 				MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));

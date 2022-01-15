@@ -4,6 +4,8 @@ import battlecode.common.MapLocation;
 import battlecode.common.GameActionException;
 
 import static gen3.RobotPlayer.*;
+import static gen3.util.Functions.getBits;
+import static gen3.util.Functions.setBits;
 
 public enum SymmetryType {
 	HORIZONTAL,
@@ -51,5 +53,15 @@ public enum SymmetryType {
 		}
 
 		return symmetricalLocation;
+	}
+
+	public static SymmetryType getMapSymmetry() throws GameActionException {
+		return SymmetryType.values()[getBits(rc.readSharedArray(4), 13, 14)];
+	}
+
+	public static void setMapSymmetry(SymmetryType symmetryType) throws GameActionException {
+		int value = rc.readSharedArray(4);
+		value = setBits(value, 13, 14, symmetryType.ordinal());
+		rc.writeSharedArray(4, value);
 	}
 }

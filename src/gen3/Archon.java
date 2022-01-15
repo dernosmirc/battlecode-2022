@@ -79,6 +79,7 @@ public strictfp class Archon {
 	// 0-7		Symmetries for next soldier, per archon
 	// 8-10		Bad symmetries
 	// 11-12	Archon index
+	// 13-14	Map symmetry
 	// 15		Indicator
 	public static void setCentralArchon() throws GameActionException {
 		if (getBits(rc.readSharedArray(4), 15, 15) == 1) {
@@ -99,6 +100,7 @@ public strictfp class Archon {
 
 		int value = setBits(0, 15, 15, 1);
 		value = setBits(value, 11, 12, archonIndex);
+		value = setBits(value, 13, 14, 3);
 		rc.writeSharedArray(4, value);
 	}
 
