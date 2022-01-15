@@ -1,11 +1,10 @@
-package gen3.helpers;
+package gen3_1.helpers;
 
 import battlecode.common.*;
-import gen3.Archon;
+import gen3_1.Archon;
 
-import static gen3.RobotPlayer.*;
-import static gen3.util.Functions.getBits;
-import static gen3.util.Functions.setBits;
+import static gen3_1.RobotPlayer.*;
+import static gen3_1.util.Functions.getBits;
 
 public strictfp class SpawnHelper {
 
@@ -19,7 +18,7 @@ public strictfp class SpawnHelper {
 
 	private static double getBuilderWeight() {
 		if (rc.getRoundNum() < 250) return 0.00;
-		return 0.10;
+		return 0.05;
 	}
 
 	private static double getSkipWeight() {
@@ -28,9 +27,9 @@ public strictfp class SpawnHelper {
 
 	private static double getLeadThreshold() {
 		if (rc.getRoundNum() < 1000) return 75;
-		if (rc.getRoundNum() < 1250) return 220;
-		if (rc.getRoundNum() < 1500) return 250;
-		return 400;
+		if (rc.getRoundNum() < 1250) return 200;
+		if (rc.getRoundNum() < 1500) return 400;
+		return 500;
 	}
 
 	private static double getLeadIncomeThreshold() {
@@ -60,27 +59,14 @@ public strictfp class SpawnHelper {
 				break;
 		}
 		droidsBuilt++;
-		int int16 = setBits(droidsBuilt, 12, 15, buildersBuilt);
-		rc.writeSharedArray(10 + Archon.myIndex, int16);
+		rc.writeSharedArray(10 + Archon.myIndex, droidsBuilt);
 	}
 
-	private static int getArchonDroidPriority() throws GameActionException {
+	private static int getArchonPriority() throws GameActionException {
 		int p = 1;
 		for (int i = 0; i < archonCount; ++i) {
 			if (Archon.myIndex != i &&
-					getBits(rc.readSharedArray(10 + i), 0, 11) < droidsBuilt
-			) {
-				p++;
-			}
-		}
-		return p;
-	}
-
-	private static int getArchonWatchtowerPriority() throws GameActionException {
-		int p = 1;
-		for (int i = 0; i < archonCount; ++i) {
-			if (Archon.myIndex != i &&
-					getBits(rc.readSharedArray(10 + i), 12, 15) < buildersBuilt
+					getBits(rc.readSharedArray(10 + i), 0, 15) < droidsBuilt
 			) {
 				p++;
 			}
@@ -177,7 +163,7 @@ public strictfp class SpawnHelper {
 
 	public static RobotType getNextDroid() throws GameActionException {
 		double threshold = getLeadThreshold();
-		if (rc.getTeamLeadAmount(myTeam) < threshold * getArchonDroidPriority()) {
+		if (rc.getTeamLeadAmount(myTeam) < threshold * getArchonPriority()) {
 			return null;
 		}
 
@@ -187,10 +173,6 @@ public strictfp class SpawnHelper {
 		if (soldiersBuilt < 6) return RobotType.SOLDIER;
 		if (minersBuilt < 5) return RobotType.MINER;
 		if (soldiersBuilt < 9) return RobotType.SOLDIER;
-
-		if (rc.getTeamLeadAmount(myTeam) >= 220 * getArchonWatchtowerPriority() && buildersBuilt < 2) {
-			return RobotType.BUILDER;
-		}
 
 		double sol = getSoldierWeight(),
 				min = getMinerWeight(),

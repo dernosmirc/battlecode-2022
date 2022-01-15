@@ -1,17 +1,17 @@
-package gen3.helpers;
+package gen3_1.common;
 
 import battlecode.common.*;
 import java.lang.Math;
 import java.util.Map;
-import static gen3.RobotPlayer.*;
-import static gen3.common.MovementHelper.updateMovement;
+import static gen3_1.RobotPlayer.*;
+import static gen3_1.common.MovementHelper.updateMovement;
 
 public class BugPathingHelper {
     /**
      * Any location with less than or equal to this amount of rubble is not an obstacle.
      * All other squares are obstacles.
      */
-    private static int ACCEPTABLE_RUBBLE = 35;
+    private static int ACCEPTABLE_RUBBLE = 28;
 
     /**
      * The direction that we are trying to use to go around the obstacle.
@@ -106,22 +106,7 @@ public class BugPathingHelper {
             // There is nothing we can do anyway.
             return;
         }
-        String indicator = "";
-        indicator += loopingAround;
-        if (startLocation == null){
-            indicator += "00";
-        }
-        else{
-            indicator += startLocation.x;
-            indicator += startLocation.y;
-        }
-        if (bugDirection == null){
-            indicator += "?";
-        }
-        else{
-            indicator += bugDirection.name();
-        }
-        rc.setIndicatorString(indicator);
+
         MapLocation currentLocation = rc.getLocation();
         // if (currentLocation == target) // this is BAD! see Lecture 2 for why.
         if (currentLocation.equals(target)) {
@@ -130,6 +115,9 @@ public class BugPathingHelper {
         }
 
         Direction d = currentLocation.directionTo(target);
+        if (startLocation == null){
+            startLocation = new MapLocation(currentLocation.x, currentLocation.y);
+        }
         // moveTowardsDirection(rc, d);
         if (!loopingAround && rc.canMove(d) && !isObstacle(rc, d)) {
             // Easy case of Bug 0!
@@ -137,14 +125,11 @@ public class BugPathingHelper {
             rc.move(d);
             updateMovement(d);
             bugDirection = null;
-            currentLocation = null;
         } else {
+
             loopingAround = true;
             // Hard case of Bug 0 :<
             // There is an obstacle in the way, so we're gonna have to go around it.
-            if (startLocation == null){
-                startLocation = new MapLocation(currentLocation.x, currentLocation.y);
-            }
             if (bugDirection == null) {
                 // If we don't know what we're trying to do
                 // make something up
@@ -170,7 +155,6 @@ public class BugPathingHelper {
                         updateMovement(newDirection);
                         loopingAround = false;
                         startLocation = null;
-                        bugDirection = null;
                     }
                     break;
                 } else {
