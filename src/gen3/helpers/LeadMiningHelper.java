@@ -63,10 +63,10 @@ public class LeadMiningHelper {
 
     private static MetalInfo[] getLeadOnGrid() throws GameActionException {
         MetalInfo[] infos = new MetalInfo[SA_COUNT];
-        for (int i = SA_START; i < SA_START + SA_COUNT; i++) {
-            MetalInfo info = getInfoFromInt16(rc.readSharedArray(i));
+        for (int i = 0; i < SA_COUNT; i++) {
+            MetalInfo info = getInfoFromInt16(rc.readSharedArray(SA_START + i));
             if (info.amount != 0) {
-                infos[i-SA_START] = info;
+                infos[i] = info;
             }
         }
         return infos;
@@ -76,10 +76,11 @@ public class LeadMiningHelper {
         if (!rc.canSenseLocation(center) || !rc.onTheMap(center)) {
             return null;
         }
-        int count = 0;
-        for (int x = -GRID_DIM/2; x < (GRID_DIM+1)/2; x++) {
-            for (int y = -GRID_DIM/2; y < (GRID_DIM+1)/2; y++) {
-                MapLocation loc = new MapLocation(center.x + x, center.y + y);
+        int count = 0, dim = GRID_DIM, dim1 = dim - 1,
+                centerX = center.x - dim/2, centerY = center.y - dim/2;
+        for (int x = dim1; --x >= 0;) {
+            for (int y = dim1; --y >= 0;) {
+                MapLocation loc = new MapLocation(centerX + x, centerY + y);
                 if (rc.canSenseLocation(loc)) {
                     count += Math.max(rc.senseLead(loc) - 1, 0);
                 }
@@ -90,30 +91,28 @@ public class LeadMiningHelper {
 
     private static Vector<MapLocation> getAdjacentCells() {
         MapLocation now = rc.getLocation();
-        MapLocation center = new MapLocation(
-                now.x - (now.x % GRID_DIM) + GRID_DIM / 2,
-                now.y - (now.y % GRID_DIM) + GRID_DIM / 2
-        );
+        int centerX = now.x - (now.x % GRID_DIM) + GRID_DIM / 2,
+                centerY = now.y - (now.y % GRID_DIM) + GRID_DIM / 2;
         Vector<MapLocation> adj = new Vector<>(5);
-        adj.add(new MapLocation(center.x, center.y));
+        adj.add(new MapLocation(centerX, centerY));
         Direction direction = MovementHelper.getInstantaneousDirection();
         if (direction == Direction.EAST || direction == Direction.WEST) {
-            adj.add(new MapLocation(center.x, center.y + GRID_DIM));
-            adj.add(new MapLocation(center.x, center.y - GRID_DIM));
+            adj.add(new MapLocation(centerX, centerY + GRID_DIM));
+            adj.add(new MapLocation(centerX, centerY - GRID_DIM));
         } else if (direction == Direction.NORTH || direction == Direction.SOUTH) {
-            adj.add(new MapLocation(center.x + GRID_DIM, center.y));
-            adj.add(new MapLocation(center.x - GRID_DIM, center.y));
+            adj.add(new MapLocation(centerX + GRID_DIM, centerY));
+            adj.add(new MapLocation(centerX - GRID_DIM, centerY));
         } else if (direction == Direction.NORTHEAST || direction == Direction.SOUTHWEST) {
-            adj.add(new MapLocation(center.x + GRID_DIM, center.y - GRID_DIM));
-            adj.add(new MapLocation(center.x - GRID_DIM, center.y + GRID_DIM));
+            adj.add(new MapLocation(centerX + GRID_DIM, centerY - GRID_DIM));
+            adj.add(new MapLocation(centerX - GRID_DIM, centerY + GRID_DIM));
         } else if (direction == Direction.NORTHWEST || direction == Direction.SOUTHEAST) {
-            adj.add(new MapLocation(center.x + GRID_DIM, center.y + GRID_DIM));
-            adj.add(new MapLocation(center.x - GRID_DIM, center.y - GRID_DIM));
-        } else if (myType == RobotType.SOLDIER) {
-            adj.add(new MapLocation(center.x, center.y + GRID_DIM));
-            adj.add(new MapLocation(center.x, center.y - GRID_DIM));
-            adj.add(new MapLocation(center.x + GRID_DIM, center.y));
-            adj.add(new MapLocation(center.x - GRID_DIM, center.y));
+            adj.add(new MapLocation(centerX + GRID_DIM, centerY + GRID_DIM));
+            adj.add(new MapLocation(centerX - GRID_DIM, centerY - GRID_DIM));
+        } else {
+            adj.add(new MapLocation(centerX, centerY + GRID_DIM));
+            adj.add(new MapLocation(centerX, centerY - GRID_DIM));
+            adj.add(new MapLocation(centerX + GRID_DIM, centerY));
+            adj.add(new MapLocation(centerX - GRID_DIM, centerY));
         }
         return adj;
     }
@@ -136,7 +135,7 @@ public class LeadMiningHelper {
     }
 
     private static int getLocationIndex(MetalInfo[] infos, MapLocation location) {
-        for (int i = 0; i < SA_COUNT; i++) {
+        for (int i = SA_COUNT-1; --i >= 0;) {
             if (infos[i] != null && infos[i].location.equals(location)) {
                 return i;
             }
@@ -145,36 +144,40 @@ public class LeadMiningHelper {
     }
 
     private static void addSymmetricPositions(MetalInfo[] infos, MetalInfo info) throws GameActionException {
+        int amount = info.amount;
+        MapLocation loc = info.location;
         MetalInfo[] arr = {
                 new MetalInfo(
-                        info.amount,
-                        SymmetryType.getSymmetricalLocation(info.location, SymmetryType.HORIZONTAL)
+                        amount,
+                        SymmetryType.getSymmetricalLocation(loc, SymmetryType.HORIZONTAL)
                 ),
                 new MetalInfo(
-                        info.amount,
-                        SymmetryType.getSymmetricalLocation(info.location, SymmetryType.VERTICAL)
+                        amount,
+                        SymmetryType.getSymmetricalLocation(loc, SymmetryType.VERTICAL)
                 ),
                 new MetalInfo(
-                        info.amount,
-                        SymmetryType.getSymmetricalLocation(info.location, SymmetryType.ROTATIONAL)
+                        amount,
+                        SymmetryType.getSymmetricalLocation(loc, SymmetryType.ROTATIONAL)
                 )
         };
-        for (MetalInfo mInfo : arr) {
-            int index = getLocationIndex(infos, mInfo.location);
+        for (int j = 2; --j >= 0;) {
+            MetalInfo itj = arr[j];
+            int index = getLocationIndex(infos, itj.location);
             if (index == -1) {
                 int minAmount = Integer.MAX_VALUE;
-                for (int i = 0; i < SA_COUNT; i++) {
-                    if (infos[i] == null) {
+                for (int i = SA_COUNT - 1; --i >= 0;) {
+                    MetalInfo it = infos[i];
+                    if (it == null) {
                         index = i;
                         break;
-                    } else if (infos[i].amount < minAmount) {
+                    } else if (it.amount < minAmount) {
                         index = i;
-                        minAmount = infos[i].amount;
+                        minAmount = it.amount;
                     }
                 }
-                if (minAmount == Integer.MAX_VALUE || minAmount < mInfo.amount) {
-                    infos[index] = mInfo;
-                    rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
+                if (minAmount == Integer.MAX_VALUE || minAmount < itj.amount) {
+                    infos[index] = itj;
+                    rc.writeSharedArray(index + SA_START, getInt16FromInfo(itj));
                 }
             }
         }
@@ -184,8 +187,8 @@ public class LeadMiningHelper {
         Vector<MapLocation> adj = getAdjacentCells();
         MetalInfo[] infos = getLeadOnGrid();
         MetalInfo bestCandidate = new MetalInfo(0, rc.getLocation());
-        for (MapLocation loc : adj) {
-            MetalInfo mInfo = getLeadInfoCell(loc);
+        for (int i = adj.length-1; --i >= 0;) {
+            MetalInfo mInfo = getLeadInfoCell(adj.get(i));
             if (mInfo != null) {
                 int index = getLocationIndex(infos, mInfo.location);
                 if (index != -1) {
@@ -199,13 +202,14 @@ public class LeadMiningHelper {
         }
         if (bestCandidate.amount > 0) {
             int minAmount = Integer.MAX_VALUE, index = 0;
-            for (int i = 0; i < SA_COUNT; i++) {
-                if (infos[i] == null) {
+            for (int i = SA_COUNT - 1; --i >= 0;) {
+                MetalInfo it = infos[i];
+                if (it == null) {
                     index = i;
                     break;
-                } else if (infos[i].amount < minAmount) {
+                } else if (it.amount < minAmount) {
                     index = i;
-                    minAmount = infos[i].amount;
+                    minAmount = it.amount;
                 }
             }
             if (infos[index] == null || minAmount < bestCandidate.amount) {

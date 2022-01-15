@@ -33,11 +33,7 @@ public class Vector<T> implements Iterable<T> {
     }
 
     public void set(int i, T value){
-        if (i >= this.length){
-            log("Vector Size Exceeded");
-        } else {
-            container[i] = value;
-        }
+        container[i] = value;
     }
 
     public void add(T val) {
@@ -48,13 +44,8 @@ public class Vector<T> implements Iterable<T> {
         }
     }
 
-    public T get(int i){
-        if (i >= this.length) {
-            log("Vector Size Exceeded");
-            return null;
-        } else {
-            return container[i];
-        }
+    public T get(int i) {
+        return container[i];
     }
 
     public boolean has(T a) {

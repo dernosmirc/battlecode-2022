@@ -132,10 +132,11 @@ public class GoldMiningHelper {
     public static MapLocation getGoldLocation() throws GameActionException {
         MapLocation best = null;
         int bestGold = 0;
-        for (MapLocation mp: rc.senseNearbyLocationsWithGold(myType.visionRadiusSquared)) {
-            int gold = rc.senseGold(mp);
+        MapLocation[] mps = rc.senseNearbyLocationsWithGold(myType.visionRadiusSquared);
+        for (int i = mps.length - 1; --i >= 0;) {
+            int gold = rc.senseGold(mps[i]);
             if (gold > bestGold) {
-                best = mp;
+                best = mps[i];
                 bestGold = gold;
             }
         }
