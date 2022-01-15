@@ -3,6 +3,7 @@ package gen3;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotType;
+import battlecode.common.MapLocation;
 import gen3.common.CommsHelper;
 import gen3.helpers.SpawnHelper;
 
@@ -19,6 +20,11 @@ public strictfp class Archon {
 	private static int symmetryIndex = 0;
 
 	public static void run() throws GameActionException {
+		// DON'T SPAWN SOLDIER ON FIRST ROUND
+		if (rc.getRoundNum() == 2) {
+			setCentralArchon();
+		}
+
 		if (rc.isActionReady()) {
 			RobotType toSpawn = SpawnHelper.getNextDroid();
 			if (toSpawn != null) {
@@ -36,19 +42,46 @@ public strictfp class Archon {
 		}
 	}
 
+	// Bits		Meaning
+	// 0-7		Symmetries for next soldier, per archon
+	// 8-10		Bad symmetries
+	// 11-12	Archon index
+	// 15		Indicator
+	public static void setCentralArchon() throws GameActionException {
+		if (getBits(rc.readSharedArray(4), 15, 15) == 1) {
+			return;
+		}
+
+		MapLocation centre = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
+		int minDistance = rc.getMapWidth() * rc.getMapHeight();
+		int archonIndex = 0;
+		for (int i = 32; i < 32 + archonCount; ++i) {
+			MapLocation archonLocation = CommsHelper.getLocationFrom12Bits(rc.readSharedArray(i));
+			int distance = Math.max(Math.abs(archonLocation.x - centre.x), Math.abs(archonLocation.y - centre.y));
+			if (distance < minDistance) {
+				minDistance = distance;
+				archonIndex = i - 32;
+			}
+		}
+
+		int value = setBits(0, 15, 15, 1);
+		value = setBits(value, 11, 12, archonIndex);
+		rc.writeSharedArray(4, value);
+	}
+
 	public static void broadcastSymmetry() throws GameActionException {
 		if (CommsHelper.foundEnemyArchon()) {
 			return;
 		}
 
-		int value = getBits(rc.readSharedArray(5), 3 * myIndex, 3 * myIndex + 2);
-		if ((value & 0b1) != 0) {
+		int value = getBits(rc.readSharedArray(4), 8, 10);
+		if (getBits(value, 8, 8) == 1) {
 			isPossibleEnemyArchonSymmetry[0] = false;
 		}
-		if ((value & 0b10) != 0) {
+		if (getBits(value, 9, 9) == 1) {
 			isPossibleEnemyArchonSymmetry[1] = false;
 		}
-		if ((value & 0b100) != 0) {
+		if (getBits(value, 10, 10) == 1) {
 			isPossibleEnemyArchonSymmetry[2] = false;
 		}
 

@@ -45,8 +45,8 @@ public strictfp class CommsHelper {
 		return SymmetryType.values()[getBits(value, 2 * archonIndex, 2 * archonIndex + 1)];
 	}
 
-	public static SymmetryType getPossibleSymmetry(int archonIndex) throws GameActionException {
-		int value = getBits(rc.readSharedArray(5), 3 * archonIndex, 3 * archonIndex + 2);
+	public static SymmetryType getPossibleSymmetry() throws GameActionException {
+		int value = getBits(rc.readSharedArray(4), 8, 10);
 		// TODO: store values array inside SymmetryType
 		if ((value & 0b1) == 0) {
 			return SymmetryType.values()[0];

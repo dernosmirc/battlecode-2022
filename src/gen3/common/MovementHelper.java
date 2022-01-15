@@ -53,7 +53,7 @@ public class MovementHelper {
                 double bestFact = 0;
                 for (int i = 0; i < dirs.length; i++) {
                     if (rc.canMove(dirs[i])) {
-                        double fact = DIRECTION_WEIGHTS[i] / rc.senseRubble(ml.add(dirs[i]));
+                        double fact = DIRECTION_WEIGHTS[i] / (1 + rc.senseRubble(ml.add(dirs[i])));
                         if (fact > bestFact) {
                             opt = dirs[i];
                             bestFact = fact;
@@ -73,6 +73,15 @@ public class MovementHelper {
                 }
             }
         }
+        return false;
+    }
+
+    public static boolean greedyTryMove(Direction dir) throws GameActionException {
+        if (!rc.isMovementReady()) {
+            return false;
+        }
+
+        // incomplete
         return false;
     }
 }

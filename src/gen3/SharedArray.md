@@ -3,8 +3,7 @@
 | Index          | Description                             |
 |----------------|-----------------------------------------|
 | [0, 4)         | Enemy archon locations                  |
-| 4              | Guessed enemy archon symmetry broadcast |
-| 5              | Bad symmetries broadcast                |
+| 4              | Enemy archon symmetry                   |
 | [10, 14)       | # of droids spawned by each archon      |
 | [32, 36)       | Team Archon Locations                   |
 | [36, 44)       | Top 8 lead sources on 4x4 Grid          |
