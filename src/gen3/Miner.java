@@ -15,6 +15,7 @@ import static gen3.util.Functions.sigmoid;
 
 public strictfp class Miner {
 	private static final double GOLD_MINER_RATIO = 0.25;
+	private static final int ANTI_SOLDIER_MOMENTUM = 4;
 	private static double getExplorerRatio() {
 		return 0.65 * sigmoid((300-rc.getRoundNum())/200.0);
 	}
@@ -127,7 +128,7 @@ public strictfp class Miner {
 		if (count < 1) return null;
 		if (dx == 0 && dy == 0) return null;
 		antiSoldier = new MapLocation(0, 0).directionTo(new MapLocation(dx, dy));
-		momentum = count * 7;
+		momentum = count * ANTI_SOLDIER_MOMENTUM;
 		return antiSoldier;
 	}
 }

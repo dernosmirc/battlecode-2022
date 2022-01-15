@@ -63,7 +63,7 @@ public class LeadMiningHelper {
 
     private static MetalInfo[] getLeadOnGrid() throws GameActionException {
         MetalInfo[] infos = new MetalInfo[SA_COUNT];
-        for (int i = 0; i < SA_COUNT; i++) {
+        for (int i = SA_COUNT-1; --i >= 0;) {
             MetalInfo info = getInfoFromInt16(rc.readSharedArray(SA_START + i));
             if (info.amount != 0) {
                 infos[i] = info;
@@ -121,7 +121,8 @@ public class LeadMiningHelper {
         MapLocation location = rc.getLocation(), leadLoc = null;
         double maxFac = 0;
         MetalInfo[] infos = getLeadOnGrid();
-        for (MetalInfo o: infos) {
+        for (int i = infos.length-1; --i >= 0;) {
+            MetalInfo o = infos[i];
             if (o != null && o.amount > 0) {
                 double fac = o.amount * Math.pow(o.location.distanceSquaredTo(location), DISTANCE_FACTOR);
                 if (fac > maxFac) {
