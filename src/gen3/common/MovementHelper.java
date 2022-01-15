@@ -81,7 +81,30 @@ public class MovementHelper {
             return false;
         }
 
-        // incomplete
-        return false;
+        Direction optimalDirection = null;
+        int minRubble = 100000;
+        if (rc.canMove(dir)) {
+            int rubble = rc.senseRubble(rc.getLocation().add(dir));
+            if (rubble < minRubble) {
+                minRubble = rubble;
+                optimalDirection = dir;
+            }
+        }
+        if (rc.canMove(dir.rotateRight())) {
+            int rubble = rc.senseRubble(rc.getLocation().add(dir.rotateRight()));
+            if (rubble < minRubble) {
+                minRubble = rubble;
+                optimalDirection = dir.rotateRight();
+            }
+        }
+        if (rc.canMove(dir.rotateLeft())) {
+            int rubble = rc.senseRubble(rc.getLocation().add(dir.rotateLeft()));
+            if (rubble < minRubble) {
+                minRubble = rubble;
+                optimalDirection = dir.rotateLeft();
+            }
+        }
+
+        return optimalDirection != null ? tryMove(optimalDirection, true) : false;
     }
 }
