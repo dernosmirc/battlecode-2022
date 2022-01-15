@@ -50,6 +50,7 @@ public strictfp class Archon {
 			setCentralArchon();
 		}
 
+		checkIfDefenseNeeded();
 		updateArchonHp();
 
 		if (rc.isActionReady()) {
@@ -75,13 +76,34 @@ public strictfp class Archon {
 		}
 	}
 
-	// Bits		Meaning
-	// 0-7		Symmetries for next soldier, per archon
-	// 8-10		Bad symmetries
-	// 11-12	Archon index
-	// 13-14	Map symmetry
-	// 15		Indicator
-	public static void setCentralArchon() throws GameActionException {
+	private static void checkIfDefenseNeeded() throws GameActionException {
+		boolean defenseNeeded = false;
+		for (RobotInfo ri : rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
+			switch (ri.type) {
+				case SOLDIER:
+				case WATCHTOWER:
+				case SAGE:
+					defenseNeeded = true;
+					break;
+			}
+			if (defenseNeeded) {
+				break;
+			}
+		}
+
+		int value = rc.readSharedArray(32 + myIndex);
+		int bit = getBits(value, 14, 14);
+		if (defenseNeeded && bit == 0) {
+			value = setBits(value, 14, 14, 1);
+		} else if (!defenseNeeded && bit == 1) {
+			value = setBits(value, 14, 14, 0);
+		}
+		if (value != rc.readSharedArray(32 + myIndex)) {
+			rc.writeSharedArray(32 + myIndex, value);
+		}
+	}
+
+	private static void setCentralArchon() throws GameActionException {
 		if (getBits(rc.readSharedArray(4), 15, 15) == 1) {
 			return;
 		}

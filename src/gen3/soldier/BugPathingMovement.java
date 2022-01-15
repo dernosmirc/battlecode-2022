@@ -2,6 +2,7 @@ package gen3.soldier;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import gen3.helpers.AttackHelper;
 import gen3.common.BugPathingHelper;
 import gen3.common.CommsHelper;
 import gen3.util.SymmetryType;
@@ -13,6 +14,12 @@ import static gen3.util.Functions.getBits;
 public class BugPathingMovement {
 
     public static void move() throws GameActionException {
+        MapLocation defenseLocation = AttackHelper.getDefenseLocation();
+        if (defenseLocation != null) {
+            BugPathingHelper.moveTowards(defenseLocation);
+            return;
+        }
+
         MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (enemyArchonLocation != null) {
             BugPathingHelper.moveTowards(enemyArchonLocation);

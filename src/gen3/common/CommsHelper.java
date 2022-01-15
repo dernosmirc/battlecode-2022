@@ -7,15 +7,12 @@ import gen3.util.SymmetryType;
 import static gen3.RobotPlayer.*;
 import static gen3.util.Functions.getBits;
 import static gen3.util.Functions.setBits;
+import static gen3.util.Functions.getDistance;
 
 public strictfp class CommsHelper {
 
 	public static MapLocation getLocationFrom12Bits(int bits) {
 		return new MapLocation(getBits(bits, 6, 11), getBits(bits, 0, 5));
-	}
-
-	private static int getDistance(MapLocation location1, MapLocation location2) {
-		return Math.max(Math.abs(location1.x - location2.x), Math.abs(location1.y - location2.y));
 	}
 
 	public static MapLocation getEnemyArchonLocation() throws GameActionException {

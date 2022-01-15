@@ -95,4 +95,8 @@ public strictfp class Functions {
 			}
 		}
 	}
+
+	public static int getDistance(MapLocation location1, MapLocation location2) {
+		return Math.max(Math.abs(location1.x - location2.x), Math.abs(location1.y - location2.y));
+	}
 }
