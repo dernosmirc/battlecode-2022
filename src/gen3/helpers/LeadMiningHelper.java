@@ -184,36 +184,37 @@ public class LeadMiningHelper {
         Vector<MapLocation> adj = getAdjacentCells();
         MetalInfo[] infos = getLeadOnGrid();
         MetalInfo bestCandidate = new MetalInfo(0, rc.getLocation());
-        int globalMin = 0;
         for (MapLocation loc : adj) {
             MetalInfo mInfo = getLeadInfoCell(loc);
             if (mInfo != null) {
                 int index = getLocationIndex(infos, mInfo.location);
-                if (index == -1 && mInfo.amount > globalMin) {
-                    int minAmount = Integer.MAX_VALUE;
-                    for (int i = 0; i < SA_COUNT; i++) {
-                        if (infos[i] == null) {
-                            index = i;
-                            break;
-                        } else if (infos[i].amount < minAmount) {
-                            index = i;
-                            minAmount = infos[i].amount;
-                        }
-                    }
-                    globalMin = Math.max(minAmount, globalMin);
-                }
                 if (index != -1) {
                     infos[index] = mInfo;
                     rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
-                    if (mInfo.amount > bestCandidate.amount) {
-                        bestCandidate = mInfo;
-                    }
+                }
+                if (mInfo.amount > bestCandidate.amount) {
+                    bestCandidate = mInfo;
                 }
             }
         }
-
-        if (bestCandidate.getAmount() > LEAD_SYMMETRY_THRESHOLD) {
-            addSymmetricPositions(infos, bestCandidate);
+        if (bestCandidate.amount > 0) {
+            int minAmount = Integer.MAX_VALUE, index = 0;
+            for (int i = 0; i < SA_COUNT; i++) {
+                if (infos[i] == null) {
+                    index = i;
+                    break;
+                } else if (infos[i].amount < minAmount) {
+                    index = i;
+                    minAmount = infos[i].amount;
+                }
+            }
+            if (infos[index] == null || minAmount < bestCandidate.amount) {
+                infos[index] = bestCandidate;
+                rc.writeSharedArray(index + SA_START, getInt16FromInfo(bestCandidate));
+            }
+            if (bestCandidate.amount > LEAD_SYMMETRY_THRESHOLD) {
+                addSymmetricPositions(infos, bestCandidate);
+            }
         }
     }
 

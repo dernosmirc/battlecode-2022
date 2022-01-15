@@ -10,19 +10,21 @@ import static gen3.util.Functions.setBits;
 public strictfp class SpawnHelper {
 
 	private static double getSoldierWeight() {
-		return 0.8;
+		return 0.65;
 	}
 
 	private static double getMinerWeight() {
-		return 0.30;
+		return 0.35;
 	}
 
-	private static double getBuilderWeight() {
-		if (rc.getRoundNum() < 750) return 0.00;
-		if (buildersBuilt >= 8) return 0.00;
-		if (buildersBuilt >= 3) return 0.025;
-		if (buildersBuilt >= 2) return 0.05;
-		return 0.10;
+	private static double getBuilderWeight() throws GameActionException {
+		double value = 0.00;
+		if (rc.getRoundNum() < 750) value = 0.00;
+		else if (buildersBuilt >= 8) value = 0.00;
+		else if (buildersBuilt >= 3) value = 0.025;
+		else if (buildersBuilt >= 2) value = 0.05;
+		else if (buildersBuilt >= 0) value = 0.10;
+		return value / getArchonWatchtowerPriority();
 	}
 
 	private static double getSkipWeight() {
