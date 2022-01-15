@@ -18,7 +18,10 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getBuilderWeight() {
-		if (rc.getRoundNum() < 250) return 0.00;
+		if (rc.getRoundNum() < 750) return 0.00;
+		if (buildersBuilt >= 8) return 0.00;
+		if (buildersBuilt >= 3) return 0.025;
+		if (buildersBuilt >= 2) return 0.05;
 		return 0.10;
 	}
 
@@ -27,7 +30,7 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getLeadThreshold() {
-		if (rc.getRoundNum() < 1000) return 75;
+		if (rc.getRoundNum() < 750) return 75;
 		if (rc.getRoundNum() < 1250) return 220;
 		if (rc.getRoundNum() < 1500) return 250;
 		return 400;
@@ -92,13 +95,13 @@ public strictfp class SpawnHelper {
 	private static Direction getOptimalBuilderSpawnDirection() throws GameActionException {
 		MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
 		int ideal = rc.getLocation().directionTo(center).ordinal();
-		for (int i = 0; i <= 5; i++) {
+		for (int i = 0; i < 5; i++) {
 			int l = (ideal + i) % 8, r = (ideal - i + 8) % 8;
-			if (!builderSpawned[l] && rc.isLocationOccupied(rc.getLocation().add(directions[l]))) {
+			if (!builderSpawned[l] && !rc.isLocationOccupied(rc.getLocation().add(directions[l]))) {
 				builderSpawned[l] = true;
 				return directions[l];
 			}
-			if (!builderSpawned[r] && rc.isLocationOccupied(rc.getLocation().add(directions[r]))) {
+			if (!builderSpawned[r] && !rc.isLocationOccupied(rc.getLocation().add(directions[r]))) {
 				builderSpawned[r] = true;
 				return directions[r];
 			}
@@ -187,10 +190,6 @@ public strictfp class SpawnHelper {
 		if (soldiersBuilt < 6) return RobotType.SOLDIER;
 		if (minersBuilt < 5) return RobotType.MINER;
 		if (soldiersBuilt < 9) return RobotType.SOLDIER;
-
-		if (rc.getTeamLeadAmount(myTeam) >= 220 * getArchonWatchtowerPriority() && buildersBuilt < 2) {
-			return RobotType.BUILDER;
-		}
 
 		double sol = getSoldierWeight(),
 				min = getMinerWeight(),

@@ -3,6 +3,7 @@ package gen3_1.helpers;
 import battlecode.common.*;
 import gen3_1.Archon;
 
+import static gen3_1.RobotPlayer.rc;
 import static gen3_1.RobotPlayer.*;
 import static gen3_1.util.Functions.getBits;
 
@@ -17,8 +18,11 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getBuilderWeight() {
-		if (rc.getRoundNum() < 250) return 0.00;
-		return 0.05;
+		if (rc.getRoundNum() < 750) return 0.00;
+		if (buildersBuilt >= 8) return 0.00;
+		if (buildersBuilt >= 3) return 0.05;
+		if (buildersBuilt >= 2) return 0.10;
+		return 0.20;
 	}
 
 	private static double getSkipWeight() {
@@ -80,11 +84,11 @@ public strictfp class SpawnHelper {
 		int ideal = rc.getLocation().directionTo(center).ordinal();
 		for (int i = 0; i <= 5; i++) {
 			int l = (ideal + i) % 8, r = (ideal - i + 8) % 8;
-			if (!builderSpawned[l] && rc.isLocationOccupied(rc.getLocation().add(directions[l]))) {
+			if (!builderSpawned[l] && !rc.isLocationOccupied(rc.getLocation().add(directions[l]))) {
 				builderSpawned[l] = true;
 				return directions[l];
 			}
-			if (!builderSpawned[r] && rc.isLocationOccupied(rc.getLocation().add(directions[r]))) {
+			if (!builderSpawned[r] && !rc.isLocationOccupied(rc.getLocation().add(directions[r]))) {
 				builderSpawned[r] = true;
 				return directions[r];
 			}

@@ -37,6 +37,7 @@ public strictfp class Builder {
 									rc.canBuildRobot(nextBuilding.type, buildDirection)
 					) {
 						rc.buildRobot(nextBuilding.type, buildDirection);
+						nextBuilding = null;
 					}
 				}
 			}
