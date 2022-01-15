@@ -10,16 +10,21 @@ import static gen3.util.Functions.setBits;
 public strictfp class SpawnHelper {
 
 	private static double getSoldierWeight() {
-		return 0.8;
+		return 0.65;
 	}
 
 	private static double getMinerWeight() {
-		return 0.30;
+		return 0.35;
 	}
 
-	private static double getBuilderWeight() {
-		if (rc.getRoundNum() < 250) return 0.00;
-		return 0.10;
+	private static double getBuilderWeight() throws GameActionException {
+		double value = 0.00;
+		if (rc.getRoundNum() < 750) value = 0.00;
+		else if (buildersBuilt >= 8) value = 0.00;
+		else if (buildersBuilt >= 3) value = 0.025;
+		else if (buildersBuilt >= 2) value = 0.05;
+		else if (buildersBuilt >= 0) value = 0.10;
+		return value / getArchonWatchtowerPriority();
 	}
 
 	private static double getSkipWeight() {
@@ -27,7 +32,7 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getLeadThreshold() {
-		if (rc.getRoundNum() < 1000) return 75;
+		if (rc.getRoundNum() < 750) return 75;
 		if (rc.getRoundNum() < 1250) return 220;
 		if (rc.getRoundNum() < 1500) return 250;
 		return 400;
@@ -92,13 +97,13 @@ public strictfp class SpawnHelper {
 	private static Direction getOptimalBuilderSpawnDirection() throws GameActionException {
 		MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
 		int ideal = rc.getLocation().directionTo(center).ordinal();
-		for (int i = 0; i <= 5; i++) {
+		for (int i = 0; i < 5; i++) {
 			int l = (ideal + i) % 8, r = (ideal - i + 8) % 8;
-			if (!builderSpawned[l] && rc.isLocationOccupied(rc.getLocation().add(directions[l]))) {
+			if (!builderSpawned[l] && !rc.isLocationOccupied(rc.getLocation().add(directions[l]))) {
 				builderSpawned[l] = true;
 				return directions[l];
 			}
-			if (!builderSpawned[r] && rc.isLocationOccupied(rc.getLocation().add(directions[r]))) {
+			if (!builderSpawned[r] && !rc.isLocationOccupied(rc.getLocation().add(directions[r]))) {
 				builderSpawned[r] = true;
 				return directions[r];
 			}
@@ -187,10 +192,6 @@ public strictfp class SpawnHelper {
 		if (soldiersBuilt < 6) return RobotType.SOLDIER;
 		if (minersBuilt < 5) return RobotType.MINER;
 		if (soldiersBuilt < 9) return RobotType.SOLDIER;
-
-		if (rc.getTeamLeadAmount(myTeam) >= 220 * getArchonWatchtowerPriority() && buildersBuilt < 2) {
-			return RobotType.BUILDER;
-		}
 
 		double sol = getSoldierWeight(),
 				min = getMinerWeight(),
