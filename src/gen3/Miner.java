@@ -41,8 +41,9 @@ public strictfp class Miner {
 			LeadMiningHelper.mineLead();
 		}
 
+		logger.log("Updating Lead");
 		LeadMiningHelper.updateLeadAmountInGridCell();
-
+		logger.log("Updated Lead");
 		logger.flush();
 	}
 

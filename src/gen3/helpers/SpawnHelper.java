@@ -81,27 +81,27 @@ public strictfp class SpawnHelper {
 			return;
 		}
 		lastArchonCount = latestCount;
-		int max0 = -1, max1 = -1, max2 = -1;
+		int min0 = 2000, min1 = 2000, min2 = 2000;
 		int i0 = -1, i1 = -1, i2 = -1;
 		for (int i = 0; i < maxArchonCount; ++i) {
 			if (Archon.myIndex != i) {
 				int hp = rc.readSharedArray(14 + i);
-				if (hp > max2) {
-					if (hp > max1) {
+				if (hp < min2) {
+					if (hp < min1) {
 						i2 = i1;
-						max2 = max1;
-						if (hp > max0) {
+						min2 = min1;
+						if (hp < min0) {
 							i1 = i0;
-							max1 = max0;
+							min1 = min0;
 							i0 = i;
-							max0 = hp;
+							min0 = hp;
 						} else {
 							i1 = i;
-							max1 = hp;
+							min1 = hp;
 						}
 					} else {
 						i2 = i;
-						max2 = hp;
+						min2 = hp;
 					}
 				}
 			}

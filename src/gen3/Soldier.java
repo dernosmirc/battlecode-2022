@@ -6,6 +6,7 @@ import gen3.helpers.LeadMiningHelper;
 import gen3.common.CommsHelper;
 import gen3.soldier.BellmanFordMovement;
 import gen3.soldier.BugPathingMovement;
+import gen3.util.Logger;
 import gen3.util.SymmetryType;
 
 import static gen3.RobotPlayer.*;
@@ -62,6 +63,7 @@ public strictfp class Soldier {
 
 
 	public static void run() throws GameActionException {
+		Logger logger = new Logger("Soldier", true);
 		sensedEnemyArchon = false;
 		updateEnemyArchonLocations();
 		attack();
@@ -87,6 +89,8 @@ public strictfp class Soldier {
 		// Update lead and gold sources nearby to help miners
 		LeadMiningHelper.updateLeadAmountInGridCell();
 		GoldMiningHelper.updateGoldAmountInGridCell();
+
+		logger.flush();
 	}
 
 	private static void updateGuessedEnemyArchonSymmetries() throws GameActionException {
