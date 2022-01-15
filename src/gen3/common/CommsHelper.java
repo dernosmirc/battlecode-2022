@@ -22,7 +22,7 @@ public strictfp class CommsHelper {
 		MapLocation archonLocation = null;
 		MapLocation centre = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
 		int minDistance = rc.getMapWidth() * rc.getMapHeight();
-		for (int i = 0; i < archonCount; ++i) {
+		for (int i = 0; i < maxArchonCount; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
 				MapLocation location = getLocationFrom12Bits(value);
@@ -38,7 +38,7 @@ public strictfp class CommsHelper {
 	}
 
 	public static boolean foundEnemyArchon() throws GameActionException {
-		for (int i = 0; i < archonCount; ++i) {
+		for (int i = 0; i < maxArchonCount; ++i) {
 			if (getBits(rc.readSharedArray(i), 15, 15) == 1) {
 				return true;
 			}
