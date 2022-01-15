@@ -13,12 +13,12 @@ public class Logger {
 
     // LogCounts is total number of logs for a class including total.
     public Logger (String title, boolean flushOnlyIfExceeds) {
+        start = prev = Clock.getBytecodeNum();
+        startRN = prevRN = rc.getRoundNum();
+        this.flushOnlyIfExceeds = flushOnlyIfExceeds;
         if (DEBUG) {
-            start = prev = Clock.getBytecodeNum();
-            startRN = prevRN = rc.getRoundNum();
             pre.append("Log_Start@").append(prevRN).append(" ");
             output.append(" ").append(title).append('\n');
-            this.flushOnlyIfExceeds = flushOnlyIfExceeds;
         }
     }
 

@@ -121,7 +121,9 @@ public class BugPathingHelper {
         else{
             indicator += bugDirection.name();
         }
-        rc.setIndicatorString(indicator);
+        if (DEBUG) {
+            rc.setIndicatorString(indicator);
+        }
         MapLocation currentLocation = rc.getLocation();
         // if (currentLocation == target) // this is BAD! see Lecture 2 for why.
         if (currentLocation.equals(target)) {

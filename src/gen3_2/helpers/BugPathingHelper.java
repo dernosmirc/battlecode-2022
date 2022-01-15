@@ -3,8 +3,8 @@ package gen3_2.helpers;
 import battlecode.common.*;
 import java.lang.Math;
 import java.util.Map;
-import static gen3.RobotPlayer.*;
-import static gen3.common.MovementHelper.updateMovement;
+import static gen3_2.RobotPlayer.*;
+import static gen3_2.common.MovementHelper.updateMovement;
 
 public class BugPathingHelper {
     /**
@@ -123,7 +123,9 @@ public class BugPathingHelper {
             indicator += bugDirection.name();
         }
         indicator += (target.x + "," + target.y);
-        rc.setIndicatorString(indicator);
+        if (DEBUG) {
+            rc.setIndicatorString(indicator);
+        }
         MapLocation currentLocation = rc.getLocation();
         // if (currentLocation == target) // this is BAD! see Lecture 2 for why.
         if (currentLocation.equals(target)) {
@@ -138,8 +140,10 @@ public class BugPathingHelper {
             // check if we can move towards target
             // see case if you don't return to same place accidentally.
             if (rc.canMove(newDirection) && !isObstacle(rc, newDirection) && checkIfForward(startLocation, target, newLocation)){
-                System.out.println("CAN MOVE" + newLocation.toString());
-                rc.setIndicatorDot(rc.getLocation(), 0, 0, 255);
+                if (DEBUG) {
+                    System.out.println("CAN MOVE" + newLocation.toString());
+                    rc.setIndicatorDot(rc.getLocation(), 0, 0, 255);
+                }
                 gen3_2 = false;
                 startLocation = null;
                 bugDirection = null;

@@ -10,7 +10,7 @@ import static gen3.RobotPlayer.*;
 
 public class MutationHelper {
 
-    private static final int THRESHOLD_WATCHTOWER_LEAD = 200;
+    private static final int THRESHOLD_WATCHTOWER_LEAD = 400;
     private static final int THRESHOLD_ARCHON_LEAD = 400;
 
     public static Pair<MapLocation, Boolean> getLocationToMutate() {

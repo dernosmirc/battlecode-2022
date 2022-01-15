@@ -32,9 +32,10 @@ public strictfp class SpawnHelper {
 
 	private static double getLeadThreshold() {
 		if (rc.getRoundNum() < 750) return 75;
-		if (rc.getRoundNum() < 1250) return 220;
-		if (rc.getRoundNum() < 1500) return 250;
-		return 400;
+		if (rc.getRoundNum() < 1000) return 220;
+		if (rc.getRoundNum() < 1250) return 250;
+		if (rc.getRoundNum() < 1500) return 400;
+		return 500;
 	}
 
 	private static double getLeadIncomeThreshold() {
