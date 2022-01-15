@@ -56,18 +56,19 @@ public class GoldMiningHelper {
 
     private static MetalInfo[] getGoldOnGrid() throws GameActionException {
         MetalInfo[] infos = new MetalInfo[SA_COUNT];
-        for (int i = SA_START; i < SA_START + SA_COUNT; i++) {
-            MetalInfo info = getInfoFromInt16(rc.readSharedArray(i));
+        for (int i = SA_COUNT - 1; --i >= 0;) {
+            MetalInfo info = getInfoFromInt16(rc.readSharedArray(SA_START + i));
             if (info.amount != 0) {
-                infos[i - SA_START] = info;
+                infos[i] = info;
             }
         }
         return infos;
     }
 
     private static int getLocationIndex(MetalInfo[] infos, MapLocation location) {
-        for (int i = 0; i < SA_COUNT; i++) {
-            if (infos[i] != null && infos[i].location.equals(location)) {
+        for (int i = SA_COUNT-1; --i >= 0;) {
+            MetalInfo info = infos[i];
+            if (info != null && info.location.equals(location)) {
                 return i;
             }
         }
@@ -100,12 +101,13 @@ public class GoldMiningHelper {
             rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
         } else {
             int minAmount = Integer.MAX_VALUE;
-            for (int i = 0; i < SA_COUNT; i++) {
-                if (infos[i] == null) {
+            for (int i = SA_COUNT-1; --i >= 0;) {
+                MetalInfo it = infos[i];
+                if (it == null) {
                     index = i;
                     break;
-                } else if (infos[i].amount < minAmount) {
-                    minAmount = infos[i].amount;
+                } else if (it.amount < minAmount) {
+                    minAmount = it.amount;
                     index = i;
                 }
             }
