@@ -4,6 +4,7 @@ import battlecode.common.*;
 import gen3.helpers.GoldMiningHelper;
 import gen3.helpers.LeadMiningHelper;
 import gen3.common.CommsHelper;
+import gen3.common.MovementHelper;
 import gen3.util.SymmetryType;
 
 import static gen3.RobotPlayer.*;
@@ -63,16 +64,17 @@ public strictfp class Soldier {
 		MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
 		if (enemyArchonLocation != null) {
 			Direction dir = rc.getLocation().directionTo(enemyArchonLocation);
-			if (rc.canMove(dir)) {
-				rc.move(dir);
-				updateMovement(dir);
-			} else if (rc.canMove(dir.rotateLeft())) {
-				rc.move(dir.rotateLeft());
-				updateMovement(dir);
-			} else if (rc.canMove(dir.rotateRight())) {
-				rc.move(dir.rotateRight());
-				updateMovement(dir);
-			}
+			MovementHelper.tryMove(dir, false);
+			// if (rc.canMove(dir)) {
+			// 	rc.move(dir);
+			// 	updateMovement(dir);
+			// } else if (rc.canMove(dir.rotateLeft())) {
+			// 	rc.move(dir.rotateLeft());
+			// 	updateMovement(dir);
+			// } else if (rc.canMove(dir.rotateRight())) {
+			// 	rc.move(dir.rotateRight());
+			// 	updateMovement(dir);
+			// }
 
 			return;
 		}
@@ -90,31 +92,33 @@ public strictfp class Soldier {
 		if (guessedEnemyArchonLocation == null) {
 			// TODO: Go to nearest alive archon instead
 			Direction dir = rc.getLocation().directionTo(myArchonLocation);
-			if (rc.canMove(dir)) {
-				rc.move(dir);
-				updateMovement(dir);
-			} else if (rc.canMove(dir.rotateLeft())) {
-				rc.move(dir.rotateLeft());
-				updateMovement(dir);
-			} else if(rc.canMove(dir.rotateRight())) {
-				rc.move(dir.rotateRight());
-				updateMovement(dir);
-			}
+			MovementHelper.tryMove(dir, false);
+			// if (rc.canMove(dir)) {
+			// 	rc.move(dir);
+			// 	updateMovement(dir);
+			// } else if (rc.canMove(dir.rotateLeft())) {
+			// 	rc.move(dir.rotateLeft());
+			// 	updateMovement(dir);
+			// } else if(rc.canMove(dir.rotateRight())) {
+			// 	rc.move(dir.rotateRight());
+			// 	updateMovement(dir);
+			// }
 
 			return;
 		}
 
 		Direction dir = rc.getLocation().directionTo(guessedEnemyArchonLocation);
-		if (rc.canMove(dir)) {
-			rc.move(dir);
-			updateMovement(dir);
-		} else if (rc.canMove(dir.rotateLeft())) {
-			rc.move(dir.rotateLeft());
-			updateMovement(dir);
-		} else if(rc.canMove(dir.rotateRight())) {
-			rc.move(dir.rotateRight());
-			updateMovement(dir);
-		}
+		MovementHelper.tryMove(dir, false);
+		// if (rc.canMove(dir)) {
+		// 	rc.move(dir);
+		// 	updateMovement(dir);
+		// } else if (rc.canMove(dir.rotateLeft())) {
+		// 	rc.move(dir.rotateLeft());
+		// 	updateMovement(dir);
+		// } else if(rc.canMove(dir.rotateRight())) {
+		// 	rc.move(dir.rotateRight());
+		// 	updateMovement(dir);
+		// }
 	}
 
 	public static void run() throws GameActionException {
