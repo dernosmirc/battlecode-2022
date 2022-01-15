@@ -14,15 +14,27 @@ public strictfp class CommsHelper {
 		return new MapLocation(getBits(bits, 6, 11), getBits(bits, 0, 5));
 	}
 
+	private static int getDistance(MapLocation location1, MapLocation location2) {
+		return Math.max(Math.abs(location1.x - location2.x), Math.abs(location1.y - location2.y));
+	}
+
 	public static MapLocation getEnemyArchonLocation() throws GameActionException {
+		MapLocation archonLocation = null;
+		MapLocation centre = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
+		int minDistance = rc.getMapWidth() * rc.getMapHeight();
 		for (int i = 0; i < archonCount; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
-				return getLocationFrom12Bits(value);
+				MapLocation location = getLocationFrom12Bits(value);
+				int distance = getDistance(centre, location);
+				if (distance <  minDistance) {
+					minDistance = distance;
+					archonLocation = new MapLocation(location.x, location.y);
+				}
 			}
 		}
 
-		return null;
+		return archonLocation;
 	}
 
 	public static boolean foundEnemyArchon() throws GameActionException {
