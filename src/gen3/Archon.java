@@ -1,8 +1,6 @@
 package gen3;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 import battlecode.common.MapLocation;
 import gen3.common.CommsHelper;
 import gen3.helpers.SpawnHelper;
@@ -19,6 +17,25 @@ public strictfp class Archon {
 	private static boolean[] isPossibleEnemyArchonSymmetry;
 	private static int symmetryIndex = 0;
 
+	private static final RobotType[] priority = {
+			RobotType.SAGE,
+			RobotType.SOLDIER,
+			RobotType.MINER,
+			RobotType.BUILDER,
+	};
+
+	private static MapLocation getHealLocation() {
+		RobotInfo[] infos = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam);
+		for (RobotType type: priority) {
+			for (RobotInfo ri : infos) {
+				if (ri.type == type) {
+					return ri.location;
+				}
+			}
+		}
+		return null;
+	}
+
 	public static void run() throws GameActionException {
 		// DON'T SPAWN SOLDIER ON FIRST ROUND
 		if (rc.getRoundNum() == 2) {
@@ -33,6 +50,12 @@ public strictfp class Archon {
 					buildDirectionIndex = direction.ordinal() + 1;
 					SpawnHelper.incrementDroidsBuilt(toSpawn);
 					rc.buildRobot(toSpawn, direction);
+				}
+			}
+			if (rc.isActionReady()) {
+				MapLocation toHeal = getHealLocation();
+				if (toHeal != null && rc.canRepair(toHeal)) {
+					rc.repair(toHeal);
 				}
 			}
 		}
