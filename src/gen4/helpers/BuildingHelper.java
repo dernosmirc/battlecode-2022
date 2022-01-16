@@ -88,9 +88,13 @@ public class BuildingHelper {
         MapLocation optimal = null, rn = rc.getLocation();
         for (int i = possible.length; --i >= 0;) {
             MapLocation loc = possible[i];
-            int total = -rn.distanceSquaredTo(loc);
-            for (int j = enemyArchons.length; --j >= 0;) {
-                total += enemyArchons[j].distanceSquaredTo(loc);
+            int total = rn.distanceSquaredTo(loc);
+            if (enemyArchons != null) {
+                for (int j = enemyArchons.length; --j >= 0; ) {
+                    if (enemyArchons[j] != null) {
+                        total -= enemyArchons[j].distanceSquaredTo(loc);
+                    }
+                }
             }
             if (total < minDistance) {
                 minDistance = total;
