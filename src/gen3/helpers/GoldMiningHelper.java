@@ -13,7 +13,7 @@ public class GoldMiningHelper {
 
     private static final int GRID_DIM = 3;
 
-    private static final int SA_START = 44;
+    private static final int SA_START = 48;
     private static final int SA_COUNT = 2;
 
     private static final int MAX_7BITS = 127;
