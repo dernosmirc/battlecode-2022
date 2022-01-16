@@ -1,6 +1,8 @@
 package gen3.common;
 
 import battlecode.common.*;
+import gen3.util.Functions;
+
 import java.lang.Math;
 import java.util.Map;
 import static gen3.RobotPlayer.*;
@@ -40,8 +42,16 @@ public class BugPathingHelper {
      */
     private static MapLocation startLocation;
     /**
-     * Default Constructor
+     * The direction in which robot is moving before approaching wall
      */
+    private static Direction initialDirection = null;
+    /**
+     *
+     */
+    private static int loopTowardsSide = 0;
+//    /**
+//     * Default Constructor
+//     */
 //    public BugPathingHelper(){
 //        gen3_2 = false;
 //        curDistanceToTarget = -1;
@@ -119,6 +129,8 @@ public class BugPathingHelper {
         startLocation = null;
         gen3_2 = false;
         wallMoveCount = 0;
+        initialDirection = null;
+        loopTowardsSide = 0;
     }
     /**
      * Moves the Robot Controller to the target using bug path finding algo.
@@ -180,6 +192,7 @@ public class BugPathingHelper {
                 }
                 setDefault();
                 rc.move(newDirection);
+                initialDirection = newDirection;
                 updateMovement(newDirection);
                 return;
             }
@@ -202,6 +215,7 @@ public class BugPathingHelper {
             // Easy case of Bug 0!
             // No obstacle in the way, so let's just go straight for it!
             rc.move(d);
+            initialDirection = d;
             updateMovement(d);
             setDefault();
         } else {
@@ -217,7 +231,24 @@ public class BugPathingHelper {
                 // the best direction towards the goal?
                 bugDirection = d;
             }
-
+            // Specifies loop rotate direction
+            // DEFAULT: 0
+            // LEFT: -1
+            // RIGHT: 1
+            if (loopTowardsSide == 0){
+                if (initialDirection == null){
+                    loopTowardsSide = 1;
+                }
+                else if (Functions.vectorAddition(d, initialDirection.opposite()) == Direction.WEST){
+                    loopTowardsSide = -1;
+                }
+                else if (Functions.vectorAddition(d, initialDirection.opposite()) == Direction.EAST){
+                    loopTowardsSide = 1;
+                }
+                else{
+                    loopTowardsSide = 1;
+                }
+            }
             if (wallMoveCount > ACCEPTABLE_WALL_MOVES){
                 boolean check = false;
                 if (rc.canMove(d)){
@@ -246,13 +277,23 @@ public class BugPathingHelper {
                     rc.move(bugDirection);
                     updateMovement(bugDirection);
                     wallMoveCount += 1;
-                    bugDirection = bugDirection.rotateLeft();
+                    if (loopTowardsSide == 1){
+                        bugDirection = bugDirection.rotateLeft();
+                    }
+                    else{
+                        bugDirection = bugDirection.rotateRight();
+                    }
                     if (DEBUG){
                         rc.setIndicatorDot(rc.getLocation(), 0, 255, 0);
                     }
                     break;
                 } else {
-                    bugDirection = bugDirection.rotateRight();
+                    if (loopTowardsSide == 1){
+                        bugDirection = bugDirection.rotateRight();
+                    }
+                    else{
+                        bugDirection = bugDirection.rotateLeft();
+                    }
                 }
             }
         }
