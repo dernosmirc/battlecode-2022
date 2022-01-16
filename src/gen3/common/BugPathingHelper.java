@@ -215,9 +215,9 @@ public class BugPathingHelper {
             // Easy case of Bug 0!
             // No obstacle in the way, so let's just go straight for it!
             rc.move(d);
-            initialDirection = d;
             updateMovement(d);
             setDefault();
+            initialDirection = d;
         } else {
             gen3_2 = true;
             if (startLocation == null){
