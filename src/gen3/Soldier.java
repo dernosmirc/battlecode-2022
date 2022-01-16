@@ -3,6 +3,7 @@ package gen3;
 import battlecode.common.*;
 import gen3.helpers.GoldMiningHelper;
 import gen3.helpers.LeadMiningHelper;
+import gen3.helpers.AttackHelper;
 import gen3.common.CommsHelper;
 import gen3.soldier.BellmanFordMovement;
 import gen3.soldier.BugPathingMovement;
@@ -22,7 +23,6 @@ public strictfp class Soldier {
 	public static int myArchonIndex;
 	public static MapLocation guessedEnemyArchonLocation;
 	private static MapLocation centralArchon;
-	private static boolean sensedEnemyArchon;
 
 	private static void updateEnemyArchonLocations() throws GameActionException {
 		for (int i = 0; i < maxArchonCount; ++i) {
@@ -40,37 +40,13 @@ public strictfp class Soldier {
 		}
 	}
 
-	private static void attack() throws GameActionException {
-		if (!rc.isActionReady()) {
-			return;
-		}
-
-		RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.actionRadiusSquared, enemyTeam);
-		for (RobotInfo robot : enemyRobots) {
-			if (robot.type == RobotType.ARCHON) {
-				sensedEnemyArchon = true;
-				if (rc.canAttack(robot.location)) {
-					rc.attack(robot.location);
-					break;
-				}
-			}
-		}
-
-		if (enemyRobots.length > 0 && rc.canAttack(enemyRobots[0].location)) {
-			rc.attack(enemyRobots[0].location);
-		}
-	}
-
-
 	public static void run() throws GameActionException {
 		Logger logger = new Logger("Soldier", true);
-		sensedEnemyArchon = false;
 		updateEnemyArchonLocations();
-		attack();
+		AttackHelper.attack();
 
 		for (RobotInfo robot : rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
 			if (robot.type == RobotType.ARCHON) {
-				sensedEnemyArchon = true;
 				calculateEnemyArchonLocations(robot);
 			}
 		}
