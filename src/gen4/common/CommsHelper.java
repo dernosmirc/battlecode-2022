@@ -157,10 +157,10 @@ public strictfp class CommsHelper {
 	}
 
 	public static int getArchonHpPriority(int archonIndex) throws GameActionException {
-		int p = 1, myHp = getBits(rc.readSharedArray(10 + archonIndex), 0, 11);
+		int p = 1, myHp = getBits(rc.readSharedArray(14 + archonIndex), 0, 10);
 		boolean[] dead = getDeadArchons();
 		for (int i = 0; i < maxArchonCount; ++i) {
-			if (Archon.myIndex != i && !dead[i]) {
+			if (archonIndex != i && !dead[i]) {
 				if (getBits(rc.readSharedArray(14 + i), 0, 10) < myHp) {
 					p++;
 				}
