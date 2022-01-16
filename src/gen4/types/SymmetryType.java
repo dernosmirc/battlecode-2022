@@ -1,4 +1,4 @@
-package gen4.util;
+package gen4.types;
 
 import battlecode.common.MapLocation;
 import battlecode.common.GameActionException;

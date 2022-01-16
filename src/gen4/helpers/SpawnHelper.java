@@ -3,6 +3,7 @@ package gen4.helpers;
 import battlecode.common.*;
 import gen4.Archon;
 import gen4.common.CommsHelper;
+import gen4.types.BuilderType;
 
 import static gen4.RobotPlayer.*;
 import static gen4.util.Functions.getBits;
@@ -21,7 +22,7 @@ public strictfp class SpawnHelper {
 	private static double getBuilderWeight() throws GameActionException {
 		if (rc.getRoundNum() < 750) return 0.00;
 		if (getArchonWatchtowerPriority() > 1) return 0.00;
-		if (buildersBuilt >= 8) return 0.00;
+		if (buildersBuilt >= 9) return 0.00;
 		if (buildersBuilt >= 3) return 0.025;
 		if (buildersBuilt >= 2) return 0.05;
 		return 0.10;
@@ -100,12 +101,14 @@ public strictfp class SpawnHelper {
 
 	private static int getArchonWatchtowerPriority() throws GameActionException {
 		updateDeadArchons();
-		int p = 1;
+		int p = 1, myHp = rc.getHealth();
 		for (int i = 0; i < maxArchonCount; ++i) {
-			if (Archon.myIndex != i && !archonDead[i] &&
-					getBits(rc.readSharedArray(10 + i), 12, 15) < buildersBuilt
-			) {
-				p++;
+			if (Archon.myIndex != i && !archonDead[i]) {
+				int theirHp = getBits(rc.readSharedArray(14 + i), 0, 10);
+				int theirBuilders = getBits(rc.readSharedArray(10 + i), 12, 15);
+				if (theirBuilders < buildersBuilt || theirBuilders == buildersBuilt && theirHp < myHp) {
+					p++;
+				}
 			}
 		}
 		return p;
@@ -208,7 +211,10 @@ public strictfp class SpawnHelper {
 		if (soldiersBuilt < 6) return RobotType.SOLDIER;
 		if (minersBuilt < 5) return RobotType.MINER;
 		if (soldiersBuilt < 9) return RobotType.SOLDIER;
-		if (buildersBuilt < 1) return RobotType.BUILDER;
+		if (buildersBuilt < 1) {
+			CommsHelper.setBuilderType(BuilderType.RepairBuilder, Archon.myIndex);
+			return RobotType.BUILDER;
+		}
 
 		double sol = getSoldierWeight(),
 				min = getMinerWeight(),
@@ -231,6 +237,7 @@ public strictfp class SpawnHelper {
 			return RobotType.MINER;
 		}
 		if (rand < sol + min + bui) {
+			CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
 			return RobotType.BUILDER;
 		}
 		return null;

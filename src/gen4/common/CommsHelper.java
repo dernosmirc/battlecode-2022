@@ -2,7 +2,10 @@ package gen4.common;
 
 import battlecode.common.MapLocation;
 import battlecode.common.GameActionException;
-import gen4.util.SymmetryType;
+import gen4.Archon;
+import gen4.types.BuilderType;
+import gen4.types.SymmetryType;
+import gen4.util.Functions;
 
 import static gen4.RobotPlayer.*;
 import static gen4.util.Functions.getBits;
@@ -95,7 +98,7 @@ public strictfp class CommsHelper {
 		int min0 = 2000, min1 = 2000, min2 = 2000;
 		int i0 = -1, i1 = -1, i2 = -1;
 		for (int i = 0; i < maxArchonCount; ++i) {
-			int hp = rc.readSharedArray(14 + i);
+			int hp = Functions.getBits(rc.readSharedArray(14 + i), 0, 10);
 			if (hp < min2) {
 				if (hp < min1) {
 					i2 = i1;
@@ -140,5 +143,29 @@ public strictfp class CommsHelper {
 			}
 		}
 		return false;
+	}
+
+	public static void setBuilderType(BuilderType type, int archonIndex) throws GameActionException {
+		int val = Functions.setBits(rc.readSharedArray(14 + archonIndex), 12, 13, type.ordinal());
+		rc.writeSharedArray(14 + archonIndex, val);
+	}
+
+	public static BuilderType getBuilderType(int archonIndex) throws GameActionException {
+		return BuilderType.values()[
+				Functions.getBits(rc.readSharedArray(14 + archonIndex), 12, 13)
+		];
+	}
+
+	public static int getArchonHpPriority(int archonIndex) throws GameActionException {
+		int p = 1, myHp = getBits(rc.readSharedArray(10 + archonIndex), 0, 11);
+		boolean[] dead = getDeadArchons();
+		for (int i = 0; i < maxArchonCount; ++i) {
+			if (Archon.myIndex != i && !dead[i]) {
+				if (getBits(rc.readSharedArray(14 + i), 0, 10) < myHp) {
+					p++;
+				}
+			}
+		}
+		return p;
 	}
 }

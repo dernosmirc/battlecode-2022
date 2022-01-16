@@ -1,12 +1,13 @@
-package gen3.common;
+package gen4.common;
 
 import battlecode.common.*;
-import gen3.util.Functions;
+import gen4.util.Functions;
 
 import java.lang.Math;
 import java.util.Map;
-import static gen3.RobotPlayer.*;
-import static gen3.common.MovementHelper.updateMovement;
+
+import static gen4.RobotPlayer.*;
+import static gen4.common.MovementHelper.updateMovement;
 
 public class BugPathingHelper {
     /**

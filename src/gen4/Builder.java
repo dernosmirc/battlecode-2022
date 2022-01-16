@@ -1,9 +1,11 @@
 package gen4;
 
 import battlecode.common.*;
+import gen4.common.CommsHelper;
 import gen4.helpers.BuildingHelper;
 import gen4.common.MovementHelper;
 import gen4.helpers.MutationHelper;
+import gen4.types.BuilderType;
 import gen4.util.Functions;
 import gen4.util.Logger;
 import gen4.util.Pair;
@@ -24,8 +26,9 @@ public strictfp class Builder {
 
 	private static MapLocation myArchonLocation;
 	public static Direction myDirection;
-	private static int myArchonIndex;
+	public static int myArchonIndex;
 	private static ConstructionInfo nextBuilding;
+	private static BuilderType myBuilderType;
 
 	private static void act() throws GameActionException {
 		MapLocation repair = BuildingHelper.getRepairLocation();
@@ -101,10 +104,15 @@ public strictfp class Builder {
 					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
 					myArchonIndex = i - 32;
 					myDirection = myArchonLocation.directionTo(rc.getLocation());
-					nextBuilding = new ConstructionInfo(
-							RobotType.WATCHTOWER,
-							Functions.translate(myArchonLocation, myDirection, BuildingHelper.WATCHTOWER_DISTANCE)
-					);
+					myBuilderType = CommsHelper.getBuilderType(myArchonIndex);
+					switch (myBuilderType) {
+						case WatchtowerBuilder:
+							nextBuilding = new ConstructionInfo(
+									RobotType.WATCHTOWER,
+									Functions.translate(myArchonLocation, myDirection, BuildingHelper.WATCHTOWER_DISTANCE)
+							);
+							break;
+					}
 				}
 			} else {
 				break;

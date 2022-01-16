@@ -5,10 +5,9 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 
 import gen4.common.CommsHelper;
-import gen4.common.MovementHelper;
 import gen4.util.Functions;
 import gen4.util.MetalInfo;
-import gen4.util.SymmetryType;
+import gen4.types.SymmetryType;
 import gen4.util.Vector;
 
 import static gen4.RobotPlayer.*;

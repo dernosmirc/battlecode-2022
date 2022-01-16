@@ -53,14 +53,14 @@ public strictfp class Soldier {
 
 		updateGuessedEnemyArchonSymmetries();
 
-		BellmanFordMovement.move();
-		/*switch (myTeam) {
+		switch (myTeam) {
 			case A:
 				BugPathingMovement.move();
 				break;
 			case B:
+				BellmanFordMovement.move();
 				break;
-		}*/
+		}
 
 		// Update lead and gold sources nearby to help miners
 		LeadMiningHelper.updateLeadAmountInGridCell();

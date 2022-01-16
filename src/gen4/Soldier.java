@@ -8,7 +8,7 @@ import gen4.common.CommsHelper;
 import gen4.soldier.BellmanFordMovement;
 import gen4.soldier.BugPathingMovement;
 import gen4.util.Logger;
-import gen4.util.SymmetryType;
+import gen4.types.SymmetryType;
 
 import static gen4.RobotPlayer.*;
 import static gen4.util.Functions.getBits;

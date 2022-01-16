@@ -4,6 +4,8 @@ import battlecode.common.*;
 import battlecode.common.MapLocation;
 import gen4.common.CommsHelper;
 import gen4.helpers.SpawnHelper;
+import gen4.types.BuilderType;
+import gen4.util.Functions;
 
 
 import static gen4.RobotPlayer.*;
@@ -40,7 +42,8 @@ public strictfp class Archon {
 	private static void updateArchonHp() throws GameActionException {
 		if (lastRoundHp != rc.getHealth()) {
 			lastRoundHp = rc.getHealth();
-			rc.writeSharedArray(14 + myIndex, lastRoundHp);
+			int val = Functions.setBits(rc.readSharedArray(14 + myIndex), 0, 10, lastRoundHp);
+			rc.writeSharedArray(14 + myIndex, val);
 		}
 	}
 
