@@ -5,6 +5,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotType;
 import gen4.helpers.DefenseHelper;
+import gen4.helpers.AttackHelper;
 import gen4.common.CommsHelper;
 import gen4.common.MovementHelper;
 
@@ -39,21 +40,27 @@ public class BellmanFordMovement {
             return;
         }
 
+        Direction dir = AttackHelper.shouldMoveBack();
+        if (dir != null) {
+            MovementHelper.greedyTryMove(dir);
+            return;
+        }
+
         MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (enemyArchonLocation != null) {
-            Direction dir = rc.getLocation().directionTo(enemyArchonLocation);
+            dir = rc.getLocation().directionTo(enemyArchonLocation);
             MovementHelper.greedyTryMove(dir);
             return;
         }
 
         if (guessedEnemyArchonLocation == null) {
             // TODO: Go to nearest alive archon instead
-            Direction dir = rc.getLocation().directionTo(myArchonLocation);
+            dir = rc.getLocation().directionTo(myArchonLocation);
             MovementHelper.greedyTryMove(dir);
             return;
         }
 
-        Direction dir = rc.getLocation().directionTo(guessedEnemyArchonLocation);
+        dir = rc.getLocation().directionTo(guessedEnemyArchonLocation);
         MovementHelper.greedyTryMove(dir);
     }
 }

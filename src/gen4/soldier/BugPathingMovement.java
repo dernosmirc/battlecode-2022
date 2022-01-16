@@ -5,6 +5,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotType;
 import gen4.helpers.DefenseHelper;
+import gen4.helpers.AttackHelper;
 import gen4.common.BugPathingHelper;
 import gen4.common.CommsHelper;
 import gen4.common.MovementHelper;
@@ -18,7 +19,6 @@ public class BugPathingMovement {
 
     public static void move() throws GameActionException {
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
-        // setDefault
         if (defenseLocation != null) {
             int distance = rc.getLocation().distanceSquaredTo(defenseLocation);
             if (distance < INNER_DEFENSE_RADIUS) {
@@ -40,6 +40,13 @@ public class BugPathingMovement {
                 BugPathingHelper.moveTowards(defenseLocation);
             }
 
+            return;
+        }
+
+        Direction dir = AttackHelper.shouldMoveBack();
+        if (dir != null) {
+            BugPathingHelper.setDefault();
+            MovementHelper.greedyTryMove(dir);
             return;
         }
 

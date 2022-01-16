@@ -2,6 +2,9 @@ package gen4.helpers;
 
 import battlecode.common.RobotInfo;
 import battlecode.common.GameActionException;
+import battlecode.common.Direction;
+import gen4.helpers.AttackHelper;
+import gen4.common.MovementHelper;
 
 import static gen4.RobotPlayer.*;
 
@@ -41,5 +44,55 @@ public strictfp class AttackHelper {
 		if (robotToAttack != null && rc.canAttack(robotToAttack.location)) {
 			rc.attack(robotToAttack.location);
 		}
+	}
+
+	public static Direction shouldMoveBack() throws GameActionException {
+		RobotInfo[] robots = rc.senseNearbyRobots(myType.visionRadiusSquared);
+		double enemyRobots = 0;
+		double ourRobots = 1;
+		double[] robotsInDirection = new double[8];
+
+		// TODO: take mutation level into consideration
+		// TODO: take sage into consideration
+		for (int i = robots.length; --i >= 0; ) {
+			RobotInfo robot = robots[i];
+			if (robot.team == enemyTeam) {
+				switch (robot.type) {
+					case SOLDIER:
+						++enemyRobots;
+						++robotsInDirection[rc.getLocation().directionTo(robot.location).ordinal()];
+						break;
+					case WATCHTOWER:
+						enemyRobots += 1.5;
+						robotsInDirection[rc.getLocation().directionTo(robot.location).ordinal()] += 1.5;
+						break;
+				}
+			} else {
+				switch (robot.type) {
+					case SOLDIER:
+						++ourRobots;
+						break;
+					case WATCHTOWER:
+						ourRobots += 1.5;
+						break;
+				}
+			}
+		}
+
+		if (ourRobots >= enemyRobots + 1) {
+			return null;
+		}
+
+		double maxRobots = 0;
+		Direction dir = Direction.NORTH;
+		for (int i = 8; --i >= 0; ) {
+			double robotsCount = robotsInDirection[i];
+			if (robotsCount > maxRobots) {
+				maxRobots = robotsCount;
+				dir = directions[i];
+			}
+		}
+
+		return dir.opposite();
 	}
 }
