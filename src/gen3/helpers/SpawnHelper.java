@@ -2,6 +2,7 @@ package gen3.helpers;
 
 import battlecode.common.*;
 import gen3.Archon;
+import gen3.common.CommsHelper;
 
 import static gen3.RobotPlayer.*;
 import static gen3.util.Functions.getBits;
@@ -81,40 +82,7 @@ public strictfp class SpawnHelper {
 			return;
 		}
 		lastArchonCount = latestCount;
-		int min0 = 2000, min1 = 2000, min2 = 2000;
-		int i0 = -1, i1 = -1, i2 = -1;
-		for (int i = 0; i < maxArchonCount; ++i) {
-			if (Archon.myIndex != i) {
-				int hp = rc.readSharedArray(14 + i);
-				if (hp < min2) {
-					if (hp < min1) {
-						i2 = i1;
-						min2 = min1;
-						if (hp < min0) {
-							i1 = i0;
-							min1 = min0;
-							i0 = i;
-							min0 = hp;
-						} else {
-							i1 = i;
-							min1 = hp;
-						}
-					} else {
-						i2 = i;
-						min2 = hp;
-					}
-				}
-			}
-		}
-		archonDead = new boolean[4];
-		switch (maxArchonCount - latestCount) {
-			case 3:
-				archonDead[i2] = true;
-			case 2:
-				archonDead[i1] = true;
-			case 1:
-				archonDead[i0] = true;
-		}
+		archonDead = CommsHelper.getDeadArchons();
 	}
 
 	private static int getArchonDroidPriority() throws GameActionException {
