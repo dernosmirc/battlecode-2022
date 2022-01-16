@@ -113,7 +113,7 @@ public class BugPathingHelper {
     /**
      * Set values back to default
      */
-    private static void setDefault(){
+    public static void setDefault(){
         anomaly = false;
         bugDirection = null;
         startLocation = null;
