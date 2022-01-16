@@ -19,12 +19,13 @@ public class LeadMiningHelper {
     private static final int SA_START = 36;
     private static final int SA_COUNT = 12;
 
-    private static final double DISTANCE_FACTOR = -0.25;
+    private static final double DISTANCE_FACTOR = -1;
 
     private static final int MAX_7BITS = 127;
     private static final double COMPRESSION = 0.001;
     
     private static final int LEAD_SYMMETRY_THRESHOLD = 75;
+    private static final int ROUND_SYMMETRY_THRESHOLD = 350;
 
     private static int scaleLeadTo7Bits(int lead) {
         return (int) Math.floor(127 * (1 - Math.exp(-COMPRESSION * lead)));
@@ -219,7 +220,7 @@ public class LeadMiningHelper {
                 infos[index] = bestCandidate;
                 rc.writeSharedArray(index + SA_START, getInt16FromInfo(bestCandidate));
             }
-            if (bestCandidate.amount > LEAD_SYMMETRY_THRESHOLD) {
+            if (bestCandidate.amount >= LEAD_SYMMETRY_THRESHOLD && rc.getRoundNum() <= ROUND_SYMMETRY_THRESHOLD) {
                 addSymmetricPositions(infos, bestCandidate);
             }
         }

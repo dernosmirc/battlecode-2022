@@ -210,6 +210,7 @@ public strictfp class SpawnHelper {
 		if (soldiersBuilt < 6) return RobotType.SOLDIER;
 		if (minersBuilt < 5) return RobotType.MINER;
 		if (soldiersBuilt < 9) return RobotType.SOLDIER;
+		if (buildersBuilt < 1) return RobotType.BUILDER;
 
 		double sol = getSoldierWeight(),
 				min = getMinerWeight(),
