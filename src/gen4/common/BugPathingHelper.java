@@ -5,8 +5,8 @@ import gen4.util.Functions;
 
 import java.lang.Math;
 import java.util.Map;
-
 import static gen4.RobotPlayer.*;
+import static gen4.common.MovementHelper.greedyTryMove;
 import static gen4.common.MovementHelper.updateMovement;
 
 public class BugPathingHelper {
@@ -16,6 +16,7 @@ public class BugPathingHelper {
      */
     private static int ACCEPTABLE_RUBBLE = 30;
     private static int ACCEPTABLE_WALL_MOVES = 10;
+    private static int WIDTH_RUBBLE_THRESHOLD = 30;
     /**
      * The direction that we are trying to use to go around the obstacle.
      * It is null if we are not trying to go around an obstacle.
@@ -133,6 +134,44 @@ public class BugPathingHelper {
         initialDirection = null;
         loopTowardsSide = 0;
     }
+
+    /**
+     * Checks width
+     * @param d
+     * @param loc
+     * @return true if width move can be made, else false
+     * @throws GameActionException
+     */
+    private static boolean widthCheck(Direction d, MapLocation loc) throws GameActionException{
+        int leftRubble = 0, midRubble = 0, rightRubble = 0;
+        MapLocation leftLoc = loc.add(d.rotateLeft()), midLoc = loc.add(d), rightLoc = loc.add(d.rotateRight());
+        int width = 1;
+        while (true){
+            if (!rc.canSenseLocation(leftLoc))   break;
+            int temp1 = rc.senseRubble(leftLoc) + Math.min(leftRubble, midRubble);
+            if (temp1/width <= WIDTH_RUBBLE_THRESHOLD){
+                return true;
+            }
+            if (!rc.canSenseLocation(midLoc))   break;
+            int temp2 = rc.senseRubble(leftLoc) + Math.min(leftRubble, rightRubble);
+            if (temp2/width <= WIDTH_RUBBLE_THRESHOLD){
+                return true;
+            }
+            if (!rc.canSenseLocation(rightLoc))  break;
+            int temp3 = rc.senseRubble(leftLoc) + Math.min(midRubble, rightRubble);
+            if (temp3/width <= WIDTH_RUBBLE_THRESHOLD){
+                return true;
+            }
+            leftLoc = leftLoc.add(d);
+            rightLoc = rightLoc.add(d);
+            midLoc = midLoc.add(d);
+            leftRubble = temp1;
+            midRubble = temp2;
+            rightRubble = temp3;
+            width += 1;
+        }
+        return false;
+    }
     /**
      * Moves the Robot Controller to the target using bug path finding algo.
      * @param target the final target MapLocation
@@ -199,15 +238,7 @@ public class BugPathingHelper {
             }
         }
         if (anomaly) {
-            if (rc.canMove(newDirection)){
-                rc.move(newDirection);
-            }
-            else if (rc.canMove(newDirection.rotateLeft())){
-                rc.move(newDirection.rotateLeft());
-            }
-            else if (rc.canMove(newDirection.rotateRight())){
-                rc.move(newDirection.rotateRight());
-            }
+            greedyTryMove(newDirection);
             return;
         }
         Direction d = currentLocation.directionTo(target);
@@ -251,25 +282,17 @@ public class BugPathingHelper {
                 }
             }
             if (wallMoveCount > ACCEPTABLE_WALL_MOVES){
-                boolean check = false;
-                if (rc.canMove(d)){
-                    rc.move(d);
-                    check = true;
-                }
-                else if (rc.canMove(d.rotateLeft())){
-                    rc.move(d.rotateLeft());
-                    check = true;
-                }
-                else if (rc.canMove(d.rotateRight())){
-                    rc.move(d.rotateRight());
-                    check = true;
-                }
-                if (check){
+                if (greedyTryMove(d)){
                     setDefault();
                 }
                 return;
             }
-
+            if (widthCheck(d, currentLocation)){
+                greedyTryMove(d);
+                setDefault();
+                initialDirection = d;
+                return;
+            }
             // Now, try to actually go around the obstacle
             // using bugDirection!
             // Repeat 8 times to try all 8 possible directions.
