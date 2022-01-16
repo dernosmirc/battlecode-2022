@@ -24,17 +24,32 @@ public strictfp class Builder {
 		}
 	}
 
-	private static MapLocation myArchonLocation;
+	public static MapLocation myArchonLocation;
 	public static Direction myDirection;
 	public static int myArchonIndex;
 	private static ConstructionInfo nextBuilding;
-	private static BuilderType myBuilderType;
+	public static BuilderType myBuilderType;
 
 	private static void act() throws GameActionException {
+		Pair<MapLocation, Boolean> mutate = MutationHelper.getLocationToMutate();
+		if (mutate != null) {
+			if (mutate.value) {
+				if (rc.canMutate(mutate.key)) {
+					rc.mutate(mutate.key);
+					return;
+				}
+			} else {
+				MovementHelper.tryMove(rc.getLocation().directionTo(mutate.key), false);
+			}
+		}
+
 		MapLocation repair = BuildingHelper.getRepairLocation();
 		if (repair != null && rc.canRepair(repair)) {
 			rc.repair(repair);
-		} else if (nextBuilding != null) {
+			return;
+		}
+
+		if (nextBuilding != null) {
 			Direction buildDirection = rc.getLocation().directionTo(nextBuilding.location);
 			if (
 					rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 2) &&
@@ -42,18 +57,9 @@ public strictfp class Builder {
 			) {
 				rc.buildRobot(nextBuilding.type, buildDirection);
 				nextBuilding = null;
-			}
-		}
-		if (rc.isActionReady()) {
-			Pair<MapLocation, Boolean> mutate = MutationHelper.getLocationToMutate();
-			if (mutate != null) {
-				if (mutate.value) {
-					if (rc.canMutate(mutate.key)) {
-						rc.mutate(mutate.key);
-					}
-				} else {
-					MovementHelper.tryMove(rc.getLocation().directionTo(mutate.key), false);
-				}
+			} else {
+				MovementHelper.tryMove(buildDirection,
+						rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 5));
 			}
 		}
 	}
@@ -103,16 +109,7 @@ public strictfp class Builder {
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
 					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
 					myArchonIndex = i - 32;
-					myDirection = myArchonLocation.directionTo(rc.getLocation());
-					myBuilderType = CommsHelper.getBuilderType(myArchonIndex);
-					switch (myBuilderType) {
-						case WatchtowerBuilder:
-							nextBuilding = new ConstructionInfo(
-									RobotType.WATCHTOWER,
-									Functions.translate(myArchonLocation, myDirection, BuildingHelper.WATCHTOWER_DISTANCE)
-							);
-							break;
-					}
+					nextBuilding = BuildingHelper.getNextConstruction();
 				}
 			} else {
 				break;

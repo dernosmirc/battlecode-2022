@@ -5,11 +5,14 @@ import gen4.Archon;
 import gen4.common.CommsHelper;
 import gen4.types.BuilderType;
 
+import java.util.Random;
+
 import static gen4.RobotPlayer.*;
 import static gen4.util.Functions.getBits;
 import static gen4.util.Functions.setBits;
 
 public strictfp class SpawnHelper {
+	private static final Random random = new Random(rc.getID());
 
 	private static double getSoldierWeight() {
 		return 0.65;
@@ -22,10 +25,9 @@ public strictfp class SpawnHelper {
 	private static double getBuilderWeight() throws GameActionException {
 		if (rc.getRoundNum() < 750) return 0.00;
 		if (getArchonWatchtowerPriority() > 1) return 0.00;
-		if (buildersBuilt >= 9) return 0.00;
 		if (buildersBuilt >= 3) return 0.025;
-		if (buildersBuilt >= 2) return 0.05;
-		return 0.10;
+		if (buildersBuilt >= 2) return 0.050;
+		return 0.100;
 	}
 
 	private static double getSkipWeight() {
@@ -33,11 +35,12 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getLeadThreshold() {
-		if (rc.getRoundNum() < 750) return 75;
+		/*if (rc.getRoundNum() < 750) return 75;
 		if (rc.getRoundNum() < 1000) return 220;
 		if (rc.getRoundNum() < 1250) return 250;
 		if (rc.getRoundNum() < 1500) return 400;
-		return 500;
+		return 500;*/
+		return 75;
 	}
 
 	private static double getLeadIncomeThreshold() {
@@ -221,7 +224,7 @@ public strictfp class SpawnHelper {
 				bui = getBuilderWeight(),
 				ski = getSkipWeight(),
 				total = sol + min + bui + ski,
-				rand = Math.random();
+				rand = random.nextDouble();
 
 		if (total - ski == 0) {
 			return null;
@@ -237,7 +240,14 @@ public strictfp class SpawnHelper {
 			return RobotType.MINER;
 		}
 		if (rand < sol + min + bui) {
-			CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
+			if (buildersBuilt >= 3) {
+				CommsHelper.setBuilderType(
+						random.nextDouble() > 0.5 ? BuilderType.LabBuilder : BuilderType.WatchtowerBuilder,
+						Archon.myIndex
+				);
+			} else {
+				CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
+			}
 			return RobotType.BUILDER;
 		}
 		return null;

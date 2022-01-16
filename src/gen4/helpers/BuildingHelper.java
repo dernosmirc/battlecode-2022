@@ -1,9 +1,9 @@
 package gen4.helpers;
 
-import battlecode.common.Direction;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
+import battlecode.common.*;
+import gen4.Builder;
+import gen4.common.CommsHelper;
+import gen4.util.Functions;
 
 import static gen4.RobotPlayer.*;
 
@@ -74,5 +74,51 @@ public class BuildingHelper {
             return false;
         }
         return true;
+    }
+
+    private static MapLocation getOptimalLabLocation() throws GameActionException {
+        int minDistance = Integer.MAX_VALUE, w = rc.getMapWidth()-1, h = rc.getMapHeight()-1;
+        MapLocation[] enemyArchons = CommsHelper.getEnemyArchonLocations();
+        MapLocation[] possible = {
+                new MapLocation(0, 0),
+                new MapLocation(0, h),
+                new MapLocation(w, 0),
+                new MapLocation(w, h),
+        };
+        MapLocation optimal = null, rn = rc.getLocation();
+        for (int i = possible.length; --i >= 0;) {
+            MapLocation loc = possible[i];
+            int total = rn.distanceSquaredTo(loc);
+            if (enemyArchons != null) {
+                for (int j = enemyArchons.length; --j >= 0; ) {
+                    if (enemyArchons[j] != null) {
+                        total -= enemyArchons[j].distanceSquaredTo(loc);
+                    }
+                }
+            }
+            if (total < minDistance) {
+                minDistance = total;
+                optimal = loc;
+            }
+        }
+        return optimal;
+    }
+
+    public static Builder.ConstructionInfo getNextConstruction() throws GameActionException {
+        Builder.myDirection = Builder.myArchonLocation.directionTo(rc.getLocation());
+        Builder.myBuilderType = CommsHelper.getBuilderType(Builder.myArchonIndex);
+        switch (Builder.myBuilderType) {
+            case WatchtowerBuilder:
+                return new Builder.ConstructionInfo(
+                        RobotType.WATCHTOWER,
+                        Functions.translate(Builder.myArchonLocation, Builder.myDirection, WATCHTOWER_DISTANCE)
+                );
+            case LabBuilder:
+                return new Builder.ConstructionInfo(
+                        RobotType.LABORATORY,
+                        getOptimalLabLocation()
+                );
+        }
+        return null;
     }
 }
