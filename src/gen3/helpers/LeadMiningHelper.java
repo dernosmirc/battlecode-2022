@@ -17,7 +17,7 @@ public class LeadMiningHelper {
     private static final int GRID_DIM = 3;
 
     private static final int SA_START = 36;
-    private static final int SA_COUNT = 8;
+    private static final int SA_COUNT = 12;
 
     private static final double DISTANCE_FACTOR = -0.25;
 
@@ -148,33 +148,21 @@ public class LeadMiningHelper {
         int amount = info.amount;
         MapLocation loc = info.location;
         MetalInfo[] arr;
-        SymmetryType sym = SymmetryType.getMapSymmetry();
-        switch (sym)
-        {
-            case NONE:
-                arr = new MetalInfo[] {
+        arr = new MetalInfo[] {
                         new MetalInfo(
-                            amount,
-                            SymmetryType.getSymmetricalLocation(loc, SymmetryType.HORIZONTAL)
+                                amount,
+                                SymmetryType.getSymmetricalLocation(loc, SymmetryType.HORIZONTAL)
                         ),
                         new MetalInfo(
-                            amount,
-                            SymmetryType.getSymmetricalLocation(loc, SymmetryType.VERTICAL)
+                                amount,
+                                SymmetryType.getSymmetricalLocation(loc, SymmetryType.VERTICAL)
                         ),
                         new MetalInfo(
                                 amount,
                                 SymmetryType.getSymmetricalLocation(loc, SymmetryType.ROTATIONAL)
                         )
                 };
-                break;
-            default:
-                arr = new MetalInfo[] {
-                        new MetalInfo(
-                                amount,
-                                SymmetryType.getSymmetricalLocation(loc, sym)
-                        )
-                };
-        };
+
         for (int j = arr.length-1; --j >= 0;) {
             MetalInfo itj = arr[j];
             int index = getLocationIndex(infos, itj.location);

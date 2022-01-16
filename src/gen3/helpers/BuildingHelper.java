@@ -61,6 +61,21 @@ public class BuildingHelper {
         return null;
     }
 
+    public static boolean shouldMove(MapLocation archon, MapLocation construction) {
+        MapLocation myLocation = rc.getLocation();
+        if (archon.isWithinDistanceSquared(myLocation, MIN_DISTANCE_FROM_ARCHON)) {
+            return true;
+        }
+        if (construction != null && myLocation.isWithinDistanceSquared(construction, myType.actionRadiusSquared)) {
+            return false;
+        }
+        MapLocation repair = getRepairLocation();
+        if (repair != null && myLocation.isWithinDistanceSquared(repair, myType.actionRadiusSquared)) {
+            return false;
+        }
+        return true;
+    }
+
     public static Direction getPerpendicular(MapLocation archon) {
         if (archon == null) {
             return null;

@@ -78,7 +78,11 @@ public strictfp class Builder {
 			act();
 		}
 
-		if (rc.isMovementReady()) {
+		MapLocation construction = null;
+		if (nextBuilding != null) {
+			construction = nextBuilding.location;
+		}
+		if (rc.isMovementReady() && BuildingHelper.shouldMove(myArchonLocation, construction)) {
 			move();
 		}
 		logger.flush();
