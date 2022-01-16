@@ -12,7 +12,7 @@ public class BuildingHelper {
     public static final int WATCHTOWER_DISTANCE = 2;
 
     private static final int MIN_DISTANCE_FROM_ARCHON = 4;
-    private static final int MAX_DISTANCE_FROM_ARCHON = 25;
+    private static final int MAX_DISTANCE_FROM_ARCHON = 20;
 
     public static Direction getAntiArchonDirection(MapLocation archon) {
         if (archon == null) {

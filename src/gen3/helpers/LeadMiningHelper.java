@@ -3,7 +3,7 @@ package gen3.helpers;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import battlecode.common.RobotType;
+
 import gen3.common.MovementHelper;
 import gen3.util.Functions;
 import gen3.util.MetalInfo;
@@ -147,21 +147,35 @@ public class LeadMiningHelper {
     private static void addSymmetricPositions(MetalInfo[] infos, MetalInfo info) throws GameActionException {
         int amount = info.amount;
         MapLocation loc = info.location;
-        MetalInfo[] arr = {
-                new MetalInfo(
-                        amount,
-                        SymmetryType.getSymmetricalLocation(loc, SymmetryType.HORIZONTAL)
-                ),
-                new MetalInfo(
-                        amount,
-                        SymmetryType.getSymmetricalLocation(loc, SymmetryType.VERTICAL)
-                ),
-                new MetalInfo(
-                        amount,
-                        SymmetryType.getSymmetricalLocation(loc, SymmetryType.ROTATIONAL)
-                )
+        MetalInfo[] arr;
+        SymmetryType sym = SymmetryType.getMapSymmetry();
+        switch (sym)
+        {
+            case NONE:
+                arr = new MetalInfo[] {
+                        new MetalInfo(
+                            amount,
+                            SymmetryType.getSymmetricalLocation(loc, SymmetryType.HORIZONTAL)
+                        ),
+                        new MetalInfo(
+                            amount,
+                            SymmetryType.getSymmetricalLocation(loc, SymmetryType.VERTICAL)
+                        ),
+                        new MetalInfo(
+                                amount,
+                                SymmetryType.getSymmetricalLocation(loc, SymmetryType.ROTATIONAL)
+                        )
+                };
+                break;
+            default:
+                arr = new MetalInfo[] {
+                        new MetalInfo(
+                                amount,
+                                SymmetryType.getSymmetricalLocation(loc, sym)
+                        )
+                };
         };
-        for (int j = 2; --j >= 0;) {
+        for (int j = arr.length-1; --j >= 0;) {
             MetalInfo itj = arr[j];
             int index = getLocationIndex(infos, itj.location);
             if (index == -1) {
