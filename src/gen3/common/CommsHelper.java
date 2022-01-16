@@ -34,6 +34,20 @@ public strictfp class CommsHelper {
 		return archonLocation;
 	}
 
+	public static MapLocation[] getEnemyArchonLocations() throws GameActionException {
+		MapLocation[] archons = new MapLocation[maxArchonCount];
+		boolean found = false;
+		for (int i = 0; i < maxArchonCount; ++i) {
+			int value = rc.readSharedArray(i);
+			if (getBits(value, 15, 15) == 1) {
+				found = true;
+				archons[i] = getLocationFrom12Bits(value);
+			}
+		}
+
+		return found ? archons : null;
+	}
+
 	public static boolean foundEnemyArchon() throws GameActionException {
 		for (int i = 0; i < maxArchonCount; ++i) {
 			if (getBits(rc.readSharedArray(i), 15, 15) == 1) {
