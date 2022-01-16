@@ -1,18 +1,18 @@
-package gen3;
+package gen4;
 
 import battlecode.common.*;
-import gen3.helpers.GoldMiningHelper;
-import gen3.helpers.LeadMiningHelper;
-import gen3.helpers.AttackHelper;
-import gen3.common.CommsHelper;
-import gen3.soldier.BellmanFordMovement;
-import gen3.soldier.BugPathingMovement;
-import gen3.util.Logger;
-import gen3.util.SymmetryType;
+import gen4.helpers.GoldMiningHelper;
+import gen4.helpers.LeadMiningHelper;
+import gen4.helpers.AttackHelper;
+import gen4.common.CommsHelper;
+import gen4.soldier.BellmanFordMovement;
+import gen4.soldier.BugPathingMovement;
+import gen4.util.Logger;
+import gen4.util.SymmetryType;
 
-import static gen3.RobotPlayer.*;
-import static gen3.util.Functions.getBits;
-import static gen3.util.Functions.setBits;
+import static gen4.RobotPlayer.*;
+import static gen4.util.Functions.getBits;
+import static gen4.util.Functions.setBits;
 
 import java.util.Random;
 
@@ -53,14 +53,14 @@ public strictfp class Soldier {
 
 		updateGuessedEnemyArchonSymmetries();
 
-		BellmanFordMovement.move();
-		/*switch (myTeam) {
+		switch (myTeam) {
 			case A:
 				BugPathingMovement.move();
 				break;
 			case B:
+				BellmanFordMovement.move();
 				break;
-		}*/
+		}
 
 		// Update lead and gold sources nearby to help miners
 		LeadMiningHelper.updateLeadAmountInGridCell();
