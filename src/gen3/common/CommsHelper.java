@@ -11,6 +11,9 @@ import static gen3.util.Functions.getDistance;
 
 public strictfp class CommsHelper {
 
+	// TODO improve hyperparameter
+	private static final double ENEMY_ZONE_FACTOR = 8.5;
+
 	public static MapLocation getLocationFrom12Bits(int bits) {
 		return new MapLocation(getBits(bits, 6, 11), getBits(bits, 0, 5));
 	}
@@ -123,5 +126,19 @@ public strictfp class CommsHelper {
 		}
 
 		return isDead;
+	}
+
+	public static boolean isLocationInEnemyZone(MapLocation l) throws GameActionException {
+		MapLocation[] enemyArchons = getEnemyArchonLocations();
+		if (enemyArchons == null) {
+			return false;
+		}
+		int zoneRadius = (int) (Math.sqrt((rc.getMapWidth() + rc.getMapHeight()) / 2.0) * ENEMY_ZONE_FACTOR);
+		for (int i = enemyArchons.length - 1; --i >= 0;) {
+			if (enemyArchons[i] != null && l.isWithinDistanceSquared(enemyArchons[i], zoneRadius)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

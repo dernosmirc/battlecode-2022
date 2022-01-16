@@ -1,6 +1,7 @@
 package gen3;
 
 import battlecode.common.*;
+import gen3.common.CommsHelper;
 import gen3.helpers.GoldMiningHelper;
 import gen3.helpers.LeadMiningHelper;
 import gen3.common.MovementHelper;
@@ -15,7 +16,7 @@ import static gen3.util.Functions.sigmoid;
 
 public strictfp class Miner {
 	private static final double GOLD_MINER_RATIO = 0.25;
-	private static final int ANTI_SOLDIER_MOMENTUM = 4;
+	private static final int ANTI_SOLDIER_MOMENTUM = 0;
 	private static double getExplorerRatio() {
 		return 0.65 * sigmoid((300-rc.getRoundNum())/200.0);
 	}
@@ -51,31 +52,41 @@ public strictfp class Miner {
 	private static boolean move() throws GameActionException {
 		Direction goldDirection = GoldMiningHelper.spotGold();
 		if (goldDirection != null) {
+			rc.setIndicatorString("gold near");
 			return MovementHelper.tryMove(goldDirection, false);
 		}
 
 		Direction runAway = getAntiSoldierDirection();
 		if (runAway != null) {
+			rc.setIndicatorString("anti soldier");
 			return MovementHelper.tryMove(runAway, false);
 		}
 
 		if (!isExplorer && isGoldMiner) {
 			goldDirection = GoldMiningHelper.spotGoldOnGrid();
 			if (goldDirection != null) {
+				rc.setIndicatorString("gold afar");
 				return MovementHelper.tryMove(goldDirection, false);
 			}
 		}
 		Direction leadDirection = LeadMiningHelper.spotLead();
 		if (leadDirection != null) {
+			rc.setIndicatorString("lead near");
 			return MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
 		}
 		if (!isExplorer && (leadDirection = LeadMiningHelper.spotLeadOnGrid()) != null) {
+			rc.setIndicatorString("lead afar");
 			return MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
 		}
 
 		Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
 		if (antiCorner != null) {
+			rc.setIndicatorString("anti corner");
 			myDirection = antiCorner;
+		}
+		rc.setIndicatorString("no clue");
+		if (CommsHelper.isLocationInEnemyZone(rc.getLocation().add(myDirection))) {
+			myDirection = myDirection.opposite();
 		}
 		return MovementHelper.moveAndAvoid(myDirection, myArchonLocation, 2);
 	}
@@ -127,7 +138,7 @@ public strictfp class Miner {
 		}
 		if (count < 1) return null;
 		if (dx == 0 && dy == 0) return null;
-		antiSoldier = new MapLocation(0, 0).directionTo(new MapLocation(dx, dy));
+		myDirection = antiSoldier = new MapLocation(0, 0).directionTo(new MapLocation(dx, dy));
 		momentum = count * ANTI_SOLDIER_MOMENTUM;
 		return antiSoldier;
 	}

@@ -99,4 +99,29 @@ public strictfp class Functions {
 	public static int getDistance(MapLocation location1, MapLocation location2) {
 		return Math.max(Math.abs(location1.x - location2.x), Math.abs(location1.y - location2.y));
 	}
+
+	public static Direction getPerpendicular(Direction direction) {
+		if (direction == null) {
+			return null;
+		}
+		switch (direction) {
+			case NORTH:
+				return Direction.EAST;
+			case NORTHEAST:
+				return Direction.SOUTHEAST;
+			case EAST:
+				return Direction.SOUTH;
+			case SOUTHEAST:
+				return Direction.SOUTHWEST;
+			case SOUTH:
+				return Direction.WEST;
+			case SOUTHWEST:
+				return Direction.NORTHWEST;
+			case WEST:
+				return Direction.NORTH;
+			case NORTHWEST:
+				return Direction.NORTHEAST;
+		}
+		return null;
+	}
 }

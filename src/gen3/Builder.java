@@ -66,7 +66,7 @@ public strictfp class Builder {
 			MovementHelper.tryMove(direction, false);
 			return;
 		}
-		direction = BuildingHelper.getPerpendicular(myArchonLocation);
+		direction = Functions.getPerpendicular(myArchonLocation.directionTo(rc.getLocation()));
 		if (direction != null) {
 			MovementHelper.tryMove(direction, false);
 		}

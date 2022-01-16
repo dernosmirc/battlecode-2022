@@ -4,6 +4,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 
+import gen3.common.CommsHelper;
 import gen3.common.MovementHelper;
 import gen3.util.Functions;
 import gen3.util.MetalInfo;
@@ -145,27 +146,22 @@ public class LeadMiningHelper {
         return -1;
     }
 
-    private static void addSymmetricPositions(MetalInfo[] infos, MetalInfo info) throws GameActionException {
+    private static void addPositions(MetalInfo[] infos, MetalInfo info) throws GameActionException {
         int amount = info.amount;
         MapLocation loc = info.location;
-        MetalInfo[] arr;
-        arr = new MetalInfo[] {
-                        new MetalInfo(
-                                amount,
-                                SymmetryType.getSymmetricalLocation(loc, SymmetryType.HORIZONTAL)
-                        ),
-                        new MetalInfo(
-                                amount,
-                                SymmetryType.getSymmetricalLocation(loc, SymmetryType.VERTICAL)
-                        ),
-                        new MetalInfo(
-                                amount,
-                                SymmetryType.getSymmetricalLocation(loc, SymmetryType.ROTATIONAL)
-                        )
-                };
-
+        Vector<MetalInfo> arr = new Vector<>(4);
+        arr.add(info);
+        SymmetryType[] syms = SymmetryType.values();
+        if (amount >= LEAD_SYMMETRY_THRESHOLD && rc.getRoundNum() <= ROUND_SYMMETRY_THRESHOLD) {
+            for (int i = 2; --i >= 0;) {
+                MapLocation l = SymmetryType.getSymmetricalLocation(loc, syms[i]);
+                if (!CommsHelper.isLocationInEnemyZone(l)) {
+                    arr.add(new MetalInfo(amount, l));
+                }
+            }
+        }
         for (int j = arr.length-1; --j >= 0;) {
-            MetalInfo itj = arr[j];
+            MetalInfo itj = arr.get(j);
             int index = getLocationIndex(infos, itj.location);
             if (index == -1) {
                 int minAmount = Integer.MAX_VALUE;
@@ -205,24 +201,7 @@ public class LeadMiningHelper {
             }
         }
         if (bestCandidate.amount > 0) {
-            int minAmount = Integer.MAX_VALUE, index = 0;
-            for (int i = SA_COUNT - 1; --i >= 0;) {
-                MetalInfo it = infos[i];
-                if (it == null) {
-                    index = i;
-                    break;
-                } else if (it.amount < minAmount) {
-                    index = i;
-                    minAmount = it.amount;
-                }
-            }
-            if (infos[index] == null || minAmount < bestCandidate.amount) {
-                infos[index] = bestCandidate;
-                rc.writeSharedArray(index + SA_START, getInt16FromInfo(bestCandidate));
-            }
-            if (bestCandidate.amount >= LEAD_SYMMETRY_THRESHOLD && rc.getRoundNum() <= ROUND_SYMMETRY_THRESHOLD) {
-                addSymmetricPositions(infos, bestCandidate);
-            }
+            addPositions(infos, bestCandidate);
         }
     }
 
@@ -255,29 +234,35 @@ public class LeadMiningHelper {
         return best;
     }
 
+    private static boolean clockwise = true;
     public static Direction getAntiEdgeDirection() {
-        if (
-                rc.getLocation().x < 2 &&
-                        rc.getLocation().y <= rc.getMapHeight() - 3
-        ) {
-            return Direction.NORTH;
-        } else if (
-                rc.getLocation().y < 2 &&
-                        rc.getLocation().x >= 2
-        ) {
-            return Direction.WEST;
-        } else if (
-                rc.getLocation().y > rc.getMapHeight() - 3 &&
-                        rc.getLocation().x <= rc.getMapWidth() - 3
-        ) {
-            return Direction.EAST;
-        } else if (
-                rc.getLocation().x > rc.getMapWidth() - 3 &&
-                        rc.getLocation().y >= 2
-        ) {
-            return Direction.SOUTH;
-        } else {
-            return null;
+        int x = rc.getLocation().x - 1, y = rc.getLocation().y - 1,
+                w = rc.getMapWidth() - 2, h = rc.getMapHeight() - 2;
+
+        if (x == 0 && y == h) {
+            return Direction.SOUTHEAST;
         }
+        if (y == 0 && x == 0) {
+            return Direction.NORTHEAST;
+        }
+        if (y == h && x == w) {
+            return Direction.SOUTHWEST;
+        }
+        if (x == w && y == 0) {
+            return Direction.NORTHWEST;
+        }
+        if (x == 0) {
+            return Direction.EAST;
+        }
+        if (y == 0) {
+            return Direction.NORTH;
+        }
+        if (y == h) {
+            return Direction.SOUTH;
+        }
+        if (x == w) {
+            return Direction.WEST;
+        }
+        return null;
     }
 }

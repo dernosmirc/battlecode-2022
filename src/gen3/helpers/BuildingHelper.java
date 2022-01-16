@@ -11,7 +11,7 @@ public class BuildingHelper {
 
     public static final int WATCHTOWER_DISTANCE = 2;
 
-    private static final int MIN_DISTANCE_FROM_ARCHON = 3;
+    private static final int MIN_DISTANCE_FROM_ARCHON = 2;
     private static final int MAX_DISTANCE_FROM_ARCHON = 20;
 
     public static Direction getAntiArchonDirection(MapLocation archon) {
@@ -74,30 +74,5 @@ public class BuildingHelper {
             return false;
         }
         return true;
-    }
-
-    public static Direction getPerpendicular(MapLocation archon) {
-        if (archon == null) {
-            return null;
-        }
-        switch (archon.directionTo(rc.getLocation())) {
-            case NORTH:
-                return Direction.EAST;
-            case NORTHEAST:
-                return Direction.SOUTHEAST;
-            case EAST:
-                return Direction.SOUTH;
-            case SOUTHEAST:
-                return Direction.SOUTHWEST;
-            case SOUTH:
-                return Direction.WEST;
-            case SOUTHWEST:
-                return Direction.NORTHWEST;
-            case WEST:
-                return Direction.NORTH;
-            case NORTHWEST:
-                return Direction.NORTHEAST;
-        }
-        return null;
     }
 }
