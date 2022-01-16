@@ -24,7 +24,7 @@ public class LeadMiningHelper {
 
     private static final int MAX_7BITS = 127;
     private static final double COMPRESSION = 0.001;
-    
+
     private static final int LEAD_SYMMETRY_THRESHOLD = 75;
     private static final int ROUND_SYMMETRY_THRESHOLD = 350;
 
@@ -65,7 +65,7 @@ public class LeadMiningHelper {
 
     private static MetalInfo[] getLeadOnGrid() throws GameActionException {
         MetalInfo[] infos = new MetalInfo[SA_COUNT];
-        for (int i = SA_COUNT-1; --i >= 0;) {
+        for (int i = SA_COUNT; --i >= 0;) {
             MetalInfo info = getInfoFromInt16(rc.readSharedArray(SA_START + i));
             if (info.amount != 0) {
                 infos[i] = info;
@@ -78,10 +78,10 @@ public class LeadMiningHelper {
         if (!rc.canSenseLocation(center) || !rc.onTheMap(center)) {
             return null;
         }
-        int count = 0, dim = GRID_DIM, dim1 = dim - 1,
+        int count = 0, dim = GRID_DIM,
                 centerX = center.x - dim/2, centerY = center.y - dim/2;
-        for (int x = dim1; --x >= 0;) {
-            for (int y = dim1; --y >= 0;) {
+        for (int x = dim; --x >= 0;) {
+            for (int y = dim; --y >= 0;) {
                 MapLocation loc = new MapLocation(centerX + x, centerY + y);
                 if (rc.canSenseLocation(loc)) {
                     count += Math.max(rc.senseLead(loc) - 1, 0);
@@ -123,7 +123,7 @@ public class LeadMiningHelper {
         MapLocation location = rc.getLocation(), leadLoc = null;
         double maxFac = 0;
         MetalInfo[] infos = getLeadOnGrid();
-        for (int i = infos.length-1; --i >= 0;) {
+        for (int i = infos.length; --i >= 0;) {
             MetalInfo o = infos[i];
             if (o != null && o.amount > 0) {
                 double fac = o.amount * Math.pow(o.location.distanceSquaredTo(location), DISTANCE_FACTOR);
@@ -138,7 +138,7 @@ public class LeadMiningHelper {
     }
 
     private static int getLocationIndex(MetalInfo[] infos, MapLocation location) {
-        for (int i = SA_COUNT-1; --i >= 0;) {
+        for (int i = SA_COUNT; --i >= 0;) {
             if (infos[i] != null && infos[i].location.equals(location)) {
                 return i;
             }
@@ -160,12 +160,12 @@ public class LeadMiningHelper {
                 }
             }
         }
-        for (int j = arr.length-1; --j >= 0;) {
+        for (int j = arr.length; --j >= 0;) {
             MetalInfo itj = arr.get(j);
             int index = getLocationIndex(infos, itj.location);
             if (index == -1) {
                 int minAmount = Integer.MAX_VALUE;
-                for (int i = SA_COUNT - 1; --i >= 0;) {
+                for (int i = SA_COUNT; --i >= 0;) {
                     MetalInfo it = infos[i];
                     if (it == null) {
                         index = i;
@@ -187,7 +187,7 @@ public class LeadMiningHelper {
         Vector<MapLocation> adj = getAdjacentCells();
         MetalInfo[] infos = getLeadOnGrid();
         MetalInfo bestCandidate = new MetalInfo(0, rc.getLocation());
-        for (int i = adj.length-1; --i >= 0;) {
+        for (int i = adj.length; --i >= 0;) {
             MetalInfo mInfo = getLeadInfoCell(adj.get(i));
             if (mInfo != null) {
                 int index = getLocationIndex(infos, mInfo.location);

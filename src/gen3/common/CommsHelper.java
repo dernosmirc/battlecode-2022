@@ -134,7 +134,7 @@ public strictfp class CommsHelper {
 			return false;
 		}
 		int zoneRadius = (int) (Math.sqrt((rc.getMapWidth() + rc.getMapHeight()) / 2.0) * ENEMY_ZONE_FACTOR);
-		for (int i = enemyArchons.length - 1; --i >= 0;) {
+		for (int i = enemyArchons.length; --i >= 0;) {
 			if (enemyArchons[i] != null && l.isWithinDistanceSquared(enemyArchons[i], zoneRadius)) {
 				return true;
 			}
