@@ -31,6 +31,17 @@ public strictfp class Builder {
 	private static BuilderType myBuilderType;
 
 	private static void act() throws GameActionException {
+		Pair<MapLocation, Boolean> mutate = MutationHelper.getLocationToMutate();
+		if (mutate != null) {
+			if (mutate.value) {
+				if (rc.canMutate(mutate.key)) {
+					rc.mutate(mutate.key);
+					return;
+				}
+			} else {
+				MovementHelper.tryMove(rc.getLocation().directionTo(mutate.key), false);
+			}
+		}
 		MapLocation repair = BuildingHelper.getRepairLocation();
 		if (repair != null && rc.canRepair(repair)) {
 			rc.repair(repair);
@@ -42,18 +53,6 @@ public strictfp class Builder {
 			) {
 				rc.buildRobot(nextBuilding.type, buildDirection);
 				nextBuilding = null;
-			}
-		}
-		if (rc.isActionReady()) {
-			Pair<MapLocation, Boolean> mutate = MutationHelper.getLocationToMutate();
-			if (mutate != null) {
-				if (mutate.value) {
-					if (rc.canMutate(mutate.key)) {
-						rc.mutate(mutate.key);
-					}
-				} else {
-					MovementHelper.tryMove(rc.getLocation().directionTo(mutate.key), false);
-				}
 			}
 		}
 	}
