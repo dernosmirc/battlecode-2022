@@ -23,6 +23,7 @@ public strictfp class Soldier {
 	public static int myArchonIndex;
 	public static MapLocation guessedEnemyArchonLocation;
 	private static MapLocation centralArchon;
+	public static boolean sensedEnemyAttackRobot;
 
 	private static void updateEnemyArchonLocations() throws GameActionException {
 		for (int i = 0; i < maxArchonCount; ++i) {
@@ -42,12 +43,21 @@ public strictfp class Soldier {
 
 	public static void run() throws GameActionException {
 		Logger logger = new Logger("Soldier", true);
+		sensedEnemyAttackRobot = false;
 		updateEnemyArchonLocations();
 		AttackHelper.attack();
 
 		for (RobotInfo robot : rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
 			if (robot.type == RobotType.ARCHON) {
 				calculateEnemyArchonLocations(robot);
+			}
+
+			switch (robot.type) {
+				case SAGE:
+				case WATCHTOWER:
+				case SOLDIER:
+					sensedEnemyAttackRobot = true;
+					break;
 			}
 		}
 
@@ -102,7 +112,7 @@ public strictfp class Soldier {
 		if (guessedEnemyArchonLocation == null) {
 			return;
 		}
-		
+
 		SymmetryType symmetryType = SymmetryType.getSymmetryType(centralArchon, guessedEnemyArchonLocation);
 		int bit = 8 + symmetryType.ordinal();
 		if (getBits(rc.readSharedArray(4), bit, bit) == 0) {
