@@ -2,6 +2,7 @@ package gen4.archon;
 
 import battlecode.common.*;
 import gen4.Archon;
+import gen4.builder.BuildingHelper;
 import gen4.common.CommsHelper;
 import gen4.builder.BuilderType;
 
@@ -30,11 +31,10 @@ public strictfp class SpawnHelper {
 		return 0.100;
 	}
 
-	private static double getLabBuilderProbability() {
-		if (labBuildersBuilt > 0) return 0;
+	private static double getLabBuilderProbability() throws GameActionException {
+		if (labBuildersBuilt > 0 || !BuildingHelper.isCornerMine()) return 0;
+		if (CommsHelper.getEnemyArchonCount() > rc.getArchonCount()) return 0;
 		if (watchtowerBuildersBuilt >= 2) return 1;
-		// TODO send one lab builder to each corner
-		// TODO do not spawn if my archon < enemy archo
 		return 0;
 	}
 

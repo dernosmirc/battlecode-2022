@@ -1,6 +1,7 @@
 package gen4.builder;
 
 import battlecode.common.*;
+import gen4.Archon;
 import gen4.Builder;
 import gen4.common.CommsHelper;
 import gen4.common.Functions;
@@ -102,6 +103,20 @@ public class BuildingHelper {
             }
         }
         return optimal;
+    }
+
+    public static boolean isCornerMine() throws GameActionException {
+        MapLocation corner = getOptimalLabLocation(), my = rc.getLocation(), ideal = my;
+        MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
+        int myDistance = corner.distanceSquaredTo(my), least = myDistance;
+        for (int i = archons.length; --i >= 0;) {
+            int total = archons[i].distanceSquaredTo(corner);
+            if (total < least || (total == least && i < Archon.myIndex)) {
+                least = total;
+                ideal = archons[i];
+            }
+        }
+        return ideal == my;
     }
 
     public static Builder.ConstructionInfo getNextConstruction() throws GameActionException {
