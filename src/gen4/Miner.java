@@ -5,14 +5,14 @@ import gen4.common.CommsHelper;
 import gen4.miner.GoldMiningHelper;
 import gen4.miner.LeadMiningHelper;
 import gen4.common.MovementHelper;
-import gen4.common.util.Functions;
+import gen4.common.Functions;
 import gen4.common.util.Logger;
 
 import java.util.Random;
 
 import static gen4.RobotPlayer.*;
-import static gen4.common.util.Functions.getBits;
-import static gen4.common.util.Functions.sigmoid;
+import static gen4.common.Functions.getBits;
+import static gen4.common.Functions.sigmoid;
 
 public strictfp class Miner {
 	private static final double GOLD_MINER_RATIO = 0.25;

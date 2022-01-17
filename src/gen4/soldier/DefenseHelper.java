@@ -7,8 +7,8 @@ import gen4.common.CommsHelper;
 import gen4.common.MovementHelper;
 
 import static gen4.RobotPlayer.*;
-import static gen4.common.util.Functions.getBits;
-import static gen4.common.util.Functions.getDistance;
+import static gen4.common.Functions.getBits;
+import static gen4.common.Functions.getDistance;
 
 public strictfp class DefenseHelper {
 	public static MapLocation getDefenseLocation() throws GameActionException {

@@ -5,7 +5,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 
 import gen4.common.CommsHelper;
-import gen4.common.util.Functions;
+import gen4.common.Functions;
 import gen4.common.SymmetryType;
 import gen4.common.util.Vector;
 

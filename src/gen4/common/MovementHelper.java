@@ -3,7 +3,7 @@ package gen4.common;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import gen4.common.util.Functions;
+
 import static gen4.RobotPlayer.rc;
 
 public class MovementHelper {

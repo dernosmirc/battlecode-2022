@@ -5,12 +5,12 @@ import gen4.builder.BuildingHelper;
 import gen4.common.MovementHelper;
 import gen4.builder.MutationHelper;
 import gen4.builder.BuilderType;
-import gen4.common.util.Functions;
+import gen4.common.Functions;
 import gen4.common.util.Logger;
 import gen4.common.util.Pair;
 
 import static gen4.RobotPlayer.*;
-import static gen4.common.util.Functions.getBits;
+import static gen4.common.Functions.getBits;
 
 public strictfp class Builder {
 

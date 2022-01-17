@@ -4,8 +4,8 @@ import battlecode.common.MapLocation;
 import battlecode.common.GameActionException;
 
 import static gen4.RobotPlayer.*;
-import static gen4.common.util.Functions.getBits;
-import static gen4.common.util.Functions.setBits;
+import static gen4.common.Functions.getBits;
+import static gen4.common.Functions.setBits;
 
 public enum SymmetryType {
 	HORIZONTAL,

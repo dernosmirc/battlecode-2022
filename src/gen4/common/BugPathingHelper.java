@@ -1,7 +1,6 @@
 package gen4.common;
 
 import battlecode.common.*;
-import gen4.common.util.Functions;
 
 import java.lang.Math;
 

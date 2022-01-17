@@ -3,12 +3,11 @@ package gen4.common;
 import battlecode.common.MapLocation;
 import battlecode.common.GameActionException;
 import gen4.builder.BuilderType;
-import gen4.common.util.Functions;
 
 import static gen4.RobotPlayer.*;
-import static gen4.common.util.Functions.getBits;
-import static gen4.common.util.Functions.setBits;
-import static gen4.common.util.Functions.getDistance;
+import static gen4.common.Functions.getBits;
+import static gen4.common.Functions.setBits;
+import static gen4.common.Functions.getDistance;
 
 public strictfp class CommsHelper {
 

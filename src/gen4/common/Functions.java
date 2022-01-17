@@ -1,4 +1,4 @@
-package gen4.common.util;
+package gen4.common;
 
 import battlecode.common.Direction;
 import battlecode.common.MapLocation;
