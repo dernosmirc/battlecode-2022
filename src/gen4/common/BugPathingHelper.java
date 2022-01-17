@@ -15,7 +15,7 @@ public class BugPathingHelper {
      */
     private static int ACCEPTABLE_RUBBLE = 30;
     private static int ACCEPTABLE_WALL_MOVES = 10;
-    private static int WIDTH_RUBBLE_THRESHOLD = 30;
+    private static int WIDTH_RUBBLE_THRESHOLD = 24;
     /**
      * The direction that we are trying to use to go around the obstacle.
      * It is null if we are not trying to go around an obstacle.
@@ -286,12 +286,12 @@ public class BugPathingHelper {
                 }
                 return;
             }
-            if (widthCheck(d, currentLocation)){
-                greedyTryMove(d);
-                setDefault();
-                initialDirection = d;
-                return;
-            }
+//            if (widthCheck(d, currentLocation)){
+////                System.out.println("" + currentLocation.toString() + " " + d.toString());
+//                greedyTryMove(d);
+//                setDefault();
+//                return;
+//            }
             // Now, try to actually go around the obstacle
             // using bugDirection!
             // Repeat 8 times to try all 8 possible directions.

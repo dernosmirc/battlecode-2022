@@ -74,11 +74,7 @@ public class MovementHelper {
         return false;
     }
 
-    public static boolean greedyTryMove(Direction dir) throws GameActionException {
-        if (!rc.isMovementReady() || dir == null) {
-            return false;
-        }
-
+    public static Direction whereGreedyTryMove(Direction dir) throws GameActionException{
         Direction optimalDirection = null;
         int minRubble = 100000;
         if (rc.canMove(dir)) {
@@ -102,6 +98,14 @@ public class MovementHelper {
                 optimalDirection = dir.rotateLeft();
             }
         }
+        return optimalDirection;
+    }
+
+    public static boolean greedyTryMove(Direction dir) throws GameActionException {
+        if (!rc.isMovementReady() || dir == null) {
+            return false;
+        }
+        Direction optimalDirection = whereGreedyTryMove(dir);
 
         return optimalDirection != null ? tryMove(optimalDirection, true) : false;
     }

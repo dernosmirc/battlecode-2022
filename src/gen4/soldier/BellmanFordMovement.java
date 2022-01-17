@@ -7,10 +7,15 @@ import battlecode.common.RobotType;
 import gen4.common.CommsHelper;
 import gen4.common.MovementHelper;
 
+import java.util.Map;
+
 import static gen4.RobotPlayer.*;
 import static gen4.Soldier.*;
 
 public class BellmanFordMovement {
+
+
+
     private static int INNER_DEFENSE_RADIUS = 4;
     private static int OUTER_DEFENSE_RADIUS = 8;
 
@@ -40,7 +45,18 @@ public class BellmanFordMovement {
 
         Direction dir = AttackHelper.shouldMoveBack();
         if (dir != null) {
-            MovementHelper.greedyTryMove(dir);
+            Direction d = MovementHelper.whereGreedyTryMove(dir);
+            if (d != null){
+                MapLocation tentativeMoveLocation = rc.getLocation().add(d);
+                MapLocation[] friendlyArchon = CommsHelper.getFriendlyArchonLocations();
+                for (int i = maxArchonCount; --i >= 0;){
+                    if (friendlyArchon[i] == null)  continue;
+                    if (tentativeMoveLocation.distanceSquaredTo(friendlyArchon[i]) <= 34){
+                        return;
+                    }
+                }
+                MovementHelper.tryMove(d, true);
+            }
             return;
         }
 

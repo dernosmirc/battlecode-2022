@@ -43,8 +43,18 @@ public class BugPathingMovement {
 
         Direction dir = AttackHelper.shouldMoveBack();
         if (dir != null) {
-            BugPathingHelper.setDefault();
-            MovementHelper.greedyTryMove(dir);
+            Direction d = MovementHelper.whereGreedyTryMove(dir);
+            if (d != null){
+                MapLocation tentativeMoveLocation = rc.getLocation().add(d);
+                MapLocation[] friendlyArchon = CommsHelper.getFriendlyArchonLocations();
+                for (int i = maxArchonCount; --i >= 0;){
+                    if (friendlyArchon[i] == null)  continue;
+                    if (tentativeMoveLocation.distanceSquaredTo(friendlyArchon[i]) <= 34){
+                        return;
+                    }
+                }
+                MovementHelper.tryMove(d, true);
+            }
             return;
         }
 
