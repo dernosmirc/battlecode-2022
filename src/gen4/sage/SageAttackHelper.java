@@ -14,7 +14,7 @@ public class SageAttackHelper {
     // BUILDER
     // SOLDIER
     // SAGE
-    private static final int[] priority = {6, 0, 5, 2, 1, 3, 4};
+    private static final int[] priority = {6, -1, 5, -1, -1, 3, 4};
 
     public static void attack() throws GameActionException {
         if (!rc.isActionReady()) {
@@ -30,6 +30,7 @@ public class SageAttackHelper {
             if (robot.type == RobotType.ARCHON) {
                 if (rc.canEnvision(AnomalyType.FURY)) {
                     rc.envision(AnomalyType.FURY);
+                    rc.setIndicatorString("FURY!");
                     return;
                 }
             }
@@ -45,8 +46,13 @@ public class SageAttackHelper {
             }
         }
 
+        if (maxPriority == -1 || maxHp < 30) {
+            return;
+        }
+
         if (robotToAttack != null && rc.canAttack(robotToAttack.location)) {
             rc.attack(robotToAttack.location);
+            rc.setIndicatorString("normal attack!");
         }
     }
 

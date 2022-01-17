@@ -14,8 +14,8 @@ import static gen4.Sage.*;
 
 public class SageMovementHelper {
 
-    private static final int HP_THRESHOLD = 65;
-    private static final double TURNS_FACTOR = 5;
+    private static final int HP_THRESHOLD = 67;
+    private static final int TURNS_THRESHOLD = 25;
 
     private static int INNER_DEFENSE_RADIUS = 4;
     private static int OUTER_DEFENSE_RADIUS = 20;
@@ -42,6 +42,12 @@ public class SageMovementHelper {
     }
 
     public static void move() throws GameActionException {
+        if (rc.getHealth() < HP_THRESHOLD || rc.getActionCooldownTurns()/10 >= TURNS_THRESHOLD) {
+            rc.setIndicatorString("healing");
+            defenseRevolution(myArchonLocation);
+            return;
+        }
+
         Direction attack = SageAttackHelper.getArchonAttackDirection();
         if (attack != null) {
             rc.setIndicatorString("Archon Attack");
@@ -76,13 +82,10 @@ public class SageMovementHelper {
 
         MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (enemyArchonLocation != null) {
-            double turns = Math.sqrt(rc.getLocation().distanceSquaredTo(enemyArchonLocation));
-            if (rc.getHealth() >= HP_THRESHOLD && rc.getActionCooldownTurns() < turns * TURNS_FACTOR) {
-                rc.setIndicatorString("attacking");
-                dir = rc.getLocation().directionTo(enemyArchonLocation);
-                MovementHelper.greedyTryMove(dir);
-                return;
-            }
+            rc.setIndicatorString("attacking");
+            dir = rc.getLocation().directionTo(enemyArchonLocation);
+            MovementHelper.greedyTryMove(dir);
+            return;
         }
 
         rc.setIndicatorString("chilling");
