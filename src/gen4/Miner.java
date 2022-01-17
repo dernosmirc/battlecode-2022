@@ -16,7 +16,7 @@ import static gen4.common.Functions.sigmoid;
 
 public strictfp class Miner {
 	private static final double GOLD_MINER_RATIO = 0.25;
-	private static final int ANTI_SOLDIER_MOMENTUM = 0;
+	private static final int ANTI_SOLDIER_MOMENTUM = 4;
 	private static double getExplorerRatio() {
 		return 0.5 * sigmoid((300-rc.getRoundNum())/200.0);
 	}

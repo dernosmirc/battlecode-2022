@@ -15,7 +15,7 @@ public strictfp class SpawnHelper {
 	private static final Random random = new Random(rc.getID());
 
 	private static double getSoldierWeight() {
-		return 0.65;
+		return 0.70;
 	}
 
 	private static double getMinerWeight() {
@@ -25,7 +25,7 @@ public strictfp class SpawnHelper {
 	private static double getBuilderWeight() throws GameActionException {
 		if (rc.getRoundNum() < 750) return 0.00;
 		if (getArchonWatchtowerPriority() > 1) return 0.00;
-		if (buildersBuilt >= 3) return 0.025;
+		if (buildersBuilt >= 4) return 0.01;
 		if (buildersBuilt >= 2) return 0.050;
 		return 0.100;
 	}
@@ -47,7 +47,7 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getSageGoldThreshold() {
-		if (rc.getRoundNum() < 1000) return 20;
+		if (rc.getRoundNum() < 1500) return 20;
 		return 85;
 	}
 

@@ -64,6 +64,9 @@ public strictfp class RobotPlayer {
 			case ARCHON:
 				Archon.init();
 				break;
+			case SAGE:
+				Sage.init();
+				break;
 		}
 
 		while (true) {
