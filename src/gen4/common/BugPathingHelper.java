@@ -13,9 +13,10 @@ public class BugPathingHelper {
      * Any location with less than or equal to this amount of rubble is not an obstacle.
      * All other squares are obstacles.
      */
-    private static int ACCEPTABLE_RUBBLE = 30;
-    private static int ACCEPTABLE_WALL_MOVES = 10;
-    private static int WIDTH_RUBBLE_THRESHOLD = 24;
+    private static int ACCEPTABLE_RUBBLE = 25;
+    private static int ACCEPTABLE_WALL_MOVES = 15;
+    private static int WIDTH_RUBBLE_THRESHOLD = 40;
+    private static int WIDTH_CHECK_WALL_MOVES = 7;
     /**
      * The direction that we are trying to use to go around the obstacle.
      * It is null if we are not trying to go around an obstacle.
@@ -148,17 +149,17 @@ public class BugPathingHelper {
         while (true){
             if (!rc.canSenseLocation(leftLoc))   break;
             int temp1 = rc.senseRubble(leftLoc) + Math.min(leftRubble, midRubble);
-            if (temp1/width <= WIDTH_RUBBLE_THRESHOLD){
+            if (rc.senseRubble(leftLoc) < ACCEPTABLE_RUBBLE && temp1/width <= WIDTH_RUBBLE_THRESHOLD){
                 return true;
             }
             if (!rc.canSenseLocation(midLoc))   break;
-            int temp2 = rc.senseRubble(leftLoc) + Math.min(midRubble, Math.min(leftRubble, rightRubble));
-            if (temp2/width <= WIDTH_RUBBLE_THRESHOLD){
+            int temp2 = rc.senseRubble(midLoc) + Math.min(midRubble, Math.min(leftRubble, rightRubble));
+            if (rc.senseRubble(midLoc) < ACCEPTABLE_RUBBLE && temp2/width <= WIDTH_RUBBLE_THRESHOLD){
                 return true;
             }
             if (!rc.canSenseLocation(rightLoc))  break;
-            int temp3 = rc.senseRubble(leftLoc) + Math.min(midRubble, rightRubble);
-            if (temp3/width <= WIDTH_RUBBLE_THRESHOLD){
+            int temp3 = rc.senseRubble(rightLoc) + Math.min(midRubble, rightRubble);
+            if (rc.senseRubble(rightLoc) < ACCEPTABLE_RUBBLE && temp3/width <= WIDTH_RUBBLE_THRESHOLD){
                 return true;
             }
             leftLoc = leftLoc.add(d);
@@ -188,19 +189,29 @@ public class BugPathingHelper {
             // indicator string log
             String indicator = "";
             indicator += gen3_2;
+            indicator += loopTowardsSide;
             if (startLocation == null){
                 indicator += "00";
             }
             else{
                 indicator += (startLocation.x + "," + startLocation.y);
             }
+            if (initialDirection == null){
+                indicator += "?";
+            }
+            else{
+                indicator += initialDirection.toString();
+            }
             if (bugDirection == null){
                 indicator += "?";
             }
             else{
-                indicator += bugDirection.name();
+                indicator += bugDirection.toString();
             }
+            indicator += wallMoveCount;
+            indicator += anomaly;
             indicator += (target.x + "," + target.y);
+            // IS_LOOP, LOOP_TOWARDS,START_LOC, INITIAL_DIR, BUG_DIR, WALL_MOVE_COUNT, ANOMALY, TARGET
             rc.setIndicatorString(indicator);
         }
         MapLocation currentLocation = rc.getLocation();
@@ -280,18 +291,22 @@ public class BugPathingHelper {
                     loopTowardsSide = 1;
                 }
             }
+
+            if (wallMoveCount > WIDTH_CHECK_WALL_MOVES && widthCheck(d, currentLocation)){
+//                System.out.println("" + currentLocation.toString() + " " + d.toString());
+                if (greedyTryMove(d)){
+                    setDefault();
+                    return;
+                }
+            }
+
             if (wallMoveCount > ACCEPTABLE_WALL_MOVES){
                 if (greedyTryMove(d)){
                     setDefault();
                 }
                 return;
             }
-//            if (widthCheck(d, currentLocation)){
-////                System.out.println("" + currentLocation.toString() + " " + d.toString());
-//                greedyTryMove(d);
-//                setDefault();
-//                return;
-//            }
+
             // Now, try to actually go around the obstacle
             // using bugDirection!
             // Repeat 8 times to try all 8 possible directions.
