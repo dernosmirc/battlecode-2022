@@ -153,7 +153,7 @@ public class BugPathingHelper {
                 return true;
             }
             if (!rc.canSenseLocation(midLoc))   break;
-            int temp2 = rc.senseRubble(leftLoc) + Math.min(leftRubble, rightRubble);
+            int temp2 = rc.senseRubble(leftLoc) + Math.min(midRubble, Math.min(leftRubble, rightRubble));
             if (temp2/width <= WIDTH_RUBBLE_THRESHOLD){
                 return true;
             }
