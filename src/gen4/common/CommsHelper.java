@@ -62,10 +62,11 @@ public strictfp class CommsHelper {
 	}
 
 	public static MapLocation[] getFriendlyArchonLocations() throws GameActionException {
+		boolean[] isDead = getDeadArchons();
 		MapLocation[] archons = new MapLocation[maxArchonCount];
 		for (int i = 0; i < maxArchonCount; ++i) {
-			int value = rc.readSharedArray(32 + i);
-			if (getBits(value, 15, 15) == 1) {
+			if (!isDead[i]) {
+				int value = rc.readSharedArray(32 + i);
 				archons[i] = getLocationFrom12Bits(value);
 			}
 		}
@@ -189,5 +190,23 @@ public strictfp class CommsHelper {
 
 	public static int getCentralArchonIndex() throws GameActionException {
 		return Functions.getBits(rc.readSharedArray(4), 11, 12);
+	}
+
+	public static int getCentralArchon() throws GameActionException {
+		MapLocation[] archons = getFriendlyArchonLocations();
+		MapLocation centre = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
+		int minDistance = rc.getMapWidth() * rc.getMapHeight();
+		int archonIndex = 0;
+		for (int i = maxArchonCount; --i >= 0; ) {
+			if (archons[i] != null) {
+				int distance = getDistance(archons[i], centre);
+				if (distance < minDistance) {
+					minDistance = distance;
+					archonIndex = i;
+				}
+			}
+		}
+
+		return archonIndex;
 	}
 }
