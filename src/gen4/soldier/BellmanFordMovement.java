@@ -4,6 +4,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotType;
+import battlecode.common.RobotInfo;
 import gen4.common.CommsHelper;
 import gen4.common.MovementHelper;
 
@@ -11,6 +12,7 @@ import java.util.Map;
 
 import static gen4.RobotPlayer.*;
 import static gen4.Soldier.*;
+import static gen4.common.Functions.getDistance;
 
 public class BellmanFordMovement {
     private static int INNER_DEFENSE_RADIUS = 4;
@@ -18,8 +20,42 @@ public class BellmanFordMovement {
     private static int INNER_ATTACK_RADIUS = 8;
     private static int OUTER_ATTACK_RADIUS = 13;
 
+    private static int HEAL_THRESHOLD = 20;
+
     public static void move() throws GameActionException {
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
+
+        RobotInfo[] robots = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam);
+        RobotInfo archon = null;
+        for (int i = robots.length; --i >= 0; ) {
+            RobotInfo robot = robots[i];
+            if (robot.type == RobotType.ARCHON) {
+                archon = robot;
+                break;
+            }
+        }
+
+        if (defenseLocation == null && archon != null && rc.getHealth() < 45) {
+            defenseLocation = archon.location;
+        }
+
+        if (defenseLocation == null && rc.getHealth() <= HEAL_THRESHOLD) {
+            MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
+            int minDistance = rc.getMapWidth() * rc.getMapHeight();
+            int archonIndex = 0;
+            for (int i = maxArchonCount; --i >= 0; ) {
+                if (archons[i] != null) {
+                    int distance = getDistance(archons[i], rc.getLocation());
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        archonIndex = i;
+                    }
+                }
+            }
+
+            defenseLocation = new MapLocation(archons[archonIndex].x, archons[archonIndex].y);
+        }
+
         if (defenseLocation != null) {
             int distance = rc.getLocation().distanceSquaredTo(defenseLocation);
             if (distance < INNER_DEFENSE_RADIUS) {
