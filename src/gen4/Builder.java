@@ -9,6 +9,7 @@ import gen4.builder.BuilderType;
 import gen4.common.Functions;
 import gen4.common.util.Logger;
 import gen4.common.util.Pair;
+import gen4.sage.SageMovementHelper;
 
 import static gen4.RobotPlayer.*;
 import static gen4.common.Functions.getBits;
@@ -81,11 +82,7 @@ public strictfp class Builder {
 			MovementHelper.tryMove(direction, false);
 			return;
 		}
-		direction = Functions.getPerpendicular(myArchonLocation.directionTo(rc.getLocation()));
-		if (direction != null) {
-			// TODO Improve
-			MovementHelper.tryMove(direction, true);
-		}
+		SageMovementHelper.defenseRevolution(myArchonLocation);
 	}
 
 	public static void run() throws GameActionException {

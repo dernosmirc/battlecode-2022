@@ -189,10 +189,6 @@ public strictfp class CommsHelper {
 		return p;
 	}
 
-	public static int getCentralArchonIndex() throws GameActionException {
-		return Functions.getBits(rc.readSharedArray(4), 11, 12);
-	}
-
 	public static int getCentralArchon() throws GameActionException {
 		MapLocation[] archons = getFriendlyArchonLocations();
 		MapLocation centre = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);

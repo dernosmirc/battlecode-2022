@@ -2,6 +2,7 @@ package gen4.archon;
 
 import battlecode.common.*;
 import gen4.Archon;
+import gen4.builder.BuildingHelper;
 import gen4.common.CommsHelper;
 import gen4.builder.BuilderType;
 import gen4.common.Functions;
@@ -55,7 +56,7 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getSageGoldThreshold() throws GameActionException {
-		if (CommsHelper.getCentralArchonIndex() != Archon.myIndex) return 1000;
+		if (CommsHelper.getCentralArchon() != Archon.myIndex) return 1000;
 		if (rc.getRoundNum() < 1500) return 20;
 		return 85;
 	}
@@ -231,6 +232,10 @@ public strictfp class SpawnHelper {
 			return null;
 		}
 
+		if (getSageGoldThreshold() <= rc.getTeamGoldAmount(myTeam)) {
+			return RobotType.SAGE;
+		}
+
 		if (minersBuilt < 3) return RobotType.MINER;
 		if (soldiersBuilt < 6) return RobotType.SOLDIER;
 		if (minersBuilt < 5) return RobotType.MINER;
@@ -238,10 +243,6 @@ public strictfp class SpawnHelper {
 		if (!isBuilderAround()) {
 			CommsHelper.setBuilderType(BuilderType.RepairBuilder, Archon.myIndex);
 			return RobotType.BUILDER;
-		}
-
-		if (getSageGoldThreshold() <= rc.getTeamGoldAmount(myTeam)) {
-			return RobotType.SAGE;
 		}
 
 		if (
@@ -254,7 +255,8 @@ public strictfp class SpawnHelper {
 		}
 
 		if (
-				1625 <= rc.getRoundNum() && rc.getRoundNum() < 1625 + LAB_WINDOW && labBuildersBuilt < 1
+				labBuildersBuilt < 1 && BuildingHelper.isCornerMine(rc.getLocation()) &&
+				1575 <= rc.getRoundNum() && rc.getRoundNum() < 1575 + LAB_WINDOW
 		) {
 			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
 			labBuildersBuilt++;

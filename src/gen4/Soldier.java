@@ -55,8 +55,8 @@ public strictfp class Soldier {
 
 		switch (myTeam) {
 			case A:
-				BugPathingMovement.move();
-				break;
+				//BugPathingMovement.move();
+				//break;
 			case B:
 				BellmanFordMovement.move();
 				break;

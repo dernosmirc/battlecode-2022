@@ -119,7 +119,7 @@ public class BuildingHelper {
                 }
             }
         }
-        return ideal == my;
+        return ideal.equals(my);
     }
 
     public static Builder.ConstructionInfo getNextConstruction() throws GameActionException {
