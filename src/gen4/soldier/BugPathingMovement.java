@@ -14,6 +14,8 @@ import static gen4.Soldier.*;
 public class BugPathingMovement {
     private static int INNER_DEFENSE_RADIUS = 4;
     private static int OUTER_DEFENSE_RADIUS = 8;
+    private static int INNER_ATTACK_RADIUS = 8;
+    private static int OUTER_ATTACK_RADIUS = 13;
 
     public static void move() throws GameActionException {
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
@@ -43,24 +45,26 @@ public class BugPathingMovement {
 
         Direction dir = AttackHelper.shouldMoveBack();
         if (dir != null) {
-            Direction d = MovementHelper.whereGreedyTryMove(dir);
-            if (d != null){
-                MapLocation tentativeMoveLocation = rc.getLocation().add(d);
-                MapLocation[] friendlyArchon = CommsHelper.getFriendlyArchonLocations();
-                for (int i = maxArchonCount; --i >= 0;){
-                    if (friendlyArchon[i] == null)  continue;
-                    if (tentativeMoveLocation.distanceSquaredTo(friendlyArchon[i]) <= 34){
-                        return;
-                    }
-                }
-                MovementHelper.tryMove(d, true);
-            }
+            BugPathingHelper.setDefault();
+            MovementHelper.greedyTryMove(dir);
             return;
         }
 
         MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (enemyArchonLocation != null) {
-            BugPathingHelper.moveTowards(enemyArchonLocation);
+            if (sensedEnemyAttackRobot) {
+                int distance = rc.getLocation().distanceSquaredTo(enemyArchonLocation);
+                dir = rc.getLocation().directionTo(enemyArchonLocation);
+                // if (distance < INNER_ATTACK_RADIUS) keep spawn blocking?
+                if (distance <= OUTER_ATTACK_RADIUS) {
+                    // stay here
+                } else {
+                    BugPathingHelper.moveTowards(enemyArchonLocation);
+                }
+            } else {
+                BugPathingHelper.moveTowards(enemyArchonLocation);
+            }
+
             return;
         }
 

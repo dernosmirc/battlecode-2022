@@ -13,11 +13,10 @@ import static gen4.RobotPlayer.*;
 import static gen4.Soldier.*;
 
 public class BellmanFordMovement {
-
-
-
     private static int INNER_DEFENSE_RADIUS = 4;
     private static int OUTER_DEFENSE_RADIUS = 8;
+    private static int INNER_ATTACK_RADIUS = 8;
+    private static int OUTER_ATTACK_RADIUS = 13;
 
     public static void move() throws GameActionException {
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
@@ -45,25 +44,28 @@ public class BellmanFordMovement {
 
         Direction dir = AttackHelper.shouldMoveBack();
         if (dir != null) {
-            Direction d = MovementHelper.whereGreedyTryMove(dir);
-            if (d != null){
-                MapLocation tentativeMoveLocation = rc.getLocation().add(d);
-                MapLocation[] friendlyArchon = CommsHelper.getFriendlyArchonLocations();
-                for (int i = maxArchonCount; --i >= 0;){
-                    if (friendlyArchon[i] == null)  continue;
-                    if (tentativeMoveLocation.distanceSquaredTo(friendlyArchon[i]) <= 34){
-                        return;
-                    }
-                }
-                MovementHelper.tryMove(d, true);
-            }
+            MovementHelper.greedyTryMove(dir);
             return;
         }
 
         MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (enemyArchonLocation != null) {
-            dir = rc.getLocation().directionTo(enemyArchonLocation);
-            MovementHelper.greedyTryMove(dir);
+            if (sensedEnemyAttackRobot) {
+                int distance = rc.getLocation().distanceSquaredTo(enemyArchonLocation);
+                dir = rc.getLocation().directionTo(enemyArchonLocation);
+                // if (distance < INNER_ATTACK_RADIUS) keep spawn blocking?
+                if (distance <= OUTER_ATTACK_RADIUS) {
+                    // stay here
+                } else if (MovementHelper.greedyTryMove(dir)) {
+                    return;
+                } else {
+                    DefenseHelper.tryMoveRightAndBack(dir);
+                }
+            } else {
+                dir = rc.getLocation().directionTo(enemyArchonLocation);
+                MovementHelper.greedyTryMove(dir);
+            }
+
             return;
         }
 
