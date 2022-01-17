@@ -1,4 +1,4 @@
-package gen4.util;
+package gen4.miner;
 
 import battlecode.common.MapLocation;
 

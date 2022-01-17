@@ -1,10 +1,8 @@
-package gen4.helpers;
+package gen4.soldier;
 
 import battlecode.common.RobotInfo;
 import battlecode.common.GameActionException;
 import battlecode.common.Direction;
-import gen4.helpers.AttackHelper;
-import gen4.common.MovementHelper;
 
 import static gen4.RobotPlayer.*;
 

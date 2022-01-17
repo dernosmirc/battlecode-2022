@@ -1,4 +1,4 @@
-package gen4.helpers;
+package gen4.soldier;
 
 import battlecode.common.MapLocation;
 import battlecode.common.GameActionException;
@@ -7,8 +7,8 @@ import gen4.common.CommsHelper;
 import gen4.common.MovementHelper;
 
 import static gen4.RobotPlayer.*;
-import static gen4.util.Functions.getBits;
-import static gen4.util.Functions.getDistance;
+import static gen4.common.util.Functions.getBits;
+import static gen4.common.util.Functions.getDistance;
 
 public strictfp class DefenseHelper {
 	public static MapLocation getDefenseLocation() throws GameActionException {

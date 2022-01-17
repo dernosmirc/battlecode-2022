@@ -1,4 +1,4 @@
-package gen4.helpers;
+package gen4.builder;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
@@ -6,7 +6,7 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import gen4.Builder;
 import gen4.common.CommsHelper;
-import gen4.util.Pair;
+import gen4.common.util.Pair;
 
 import static gen4.RobotPlayer.*;
 

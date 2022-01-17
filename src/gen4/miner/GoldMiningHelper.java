@@ -1,10 +1,9 @@
-package gen4.helpers;
+package gen4.miner;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import gen4.util.Functions;
-import gen4.util.MetalInfo;
+import gen4.common.util.Functions;
 
 import static gen4.RobotPlayer.myType;
 import static gen4.RobotPlayer.rc;

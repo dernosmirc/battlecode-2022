@@ -1,10 +1,10 @@
 package gen4.common;
 
 import battlecode.common.*;
-import gen4.util.Functions;
+import gen4.common.util.Functions;
 
 import java.lang.Math;
-import java.util.Map;
+
 import static gen4.RobotPlayer.*;
 import static gen4.common.MovementHelper.greedyTryMove;
 import static gen4.common.MovementHelper.updateMovement;

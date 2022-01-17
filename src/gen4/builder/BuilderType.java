@@ -1,4 +1,4 @@
-package gen4.types;
+package gen4.builder;
 
 public enum BuilderType {
     NoneType,

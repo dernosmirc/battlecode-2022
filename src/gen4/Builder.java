@@ -1,17 +1,16 @@
 package gen4;
 
 import battlecode.common.*;
-import gen4.common.CommsHelper;
-import gen4.helpers.BuildingHelper;
+import gen4.builder.BuildingHelper;
 import gen4.common.MovementHelper;
-import gen4.helpers.MutationHelper;
-import gen4.types.BuilderType;
-import gen4.util.Functions;
-import gen4.util.Logger;
-import gen4.util.Pair;
+import gen4.builder.MutationHelper;
+import gen4.builder.BuilderType;
+import gen4.common.util.Functions;
+import gen4.common.util.Logger;
+import gen4.common.util.Pair;
 
 import static gen4.RobotPlayer.*;
-import static gen4.util.Functions.getBits;
+import static gen4.common.util.Functions.getBits;
 
 public strictfp class Builder {
 

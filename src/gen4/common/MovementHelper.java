@@ -3,7 +3,7 @@ package gen4.common;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import gen4.util.Functions;
+import gen4.common.util.Functions;
 import static gen4.RobotPlayer.rc;
 
 public class MovementHelper {
@@ -75,7 +75,7 @@ public class MovementHelper {
     }
 
     public static boolean greedyTryMove(Direction dir) throws GameActionException {
-        if (!rc.isMovementReady()) {
+        if (!rc.isMovementReady() || dir == null) {
             return false;
         }
 

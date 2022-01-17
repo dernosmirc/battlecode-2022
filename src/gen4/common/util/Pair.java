@@ -1,4 +1,4 @@
-package gen4.util;
+package gen4.common.util;
 
 public class Pair<K, V> {
     public K key;

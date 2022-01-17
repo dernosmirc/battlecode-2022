@@ -1,7 +1,7 @@
 package gen4;
 
 import battlecode.common.*;
-import gen4.util.Vector;
+import gen4.common.util.Vector;
 
 import java.util.Comparator;
 

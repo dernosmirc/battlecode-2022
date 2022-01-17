@@ -3,14 +3,13 @@ package gen4;
 import battlecode.common.*;
 import battlecode.common.MapLocation;
 import gen4.common.CommsHelper;
-import gen4.helpers.SpawnHelper;
-import gen4.types.BuilderType;
-import gen4.util.Functions;
+import gen4.archon.SpawnHelper;
+import gen4.common.util.Functions;
 
 
 import static gen4.RobotPlayer.*;
-import static gen4.util.Functions.getBits;
-import static gen4.util.Functions.setBits;
+import static gen4.common.util.Functions.getBits;
+import static gen4.common.util.Functions.setBits;
 
 public strictfp class Archon {
 	public static int myIndex;

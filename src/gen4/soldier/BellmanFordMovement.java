@@ -4,8 +4,6 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotType;
-import gen4.helpers.DefenseHelper;
-import gen4.helpers.AttackHelper;
 import gen4.common.CommsHelper;
 import gen4.common.MovementHelper;
 

@@ -1,4 +1,4 @@
-package gen4.util;
+package gen4.common.util;
 
 import java.util.Arrays;
 import java.util.Comparator;

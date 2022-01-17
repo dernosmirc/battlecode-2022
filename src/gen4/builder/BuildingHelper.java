@@ -1,9 +1,9 @@
-package gen4.helpers;
+package gen4.builder;
 
 import battlecode.common.*;
 import gen4.Builder;
 import gen4.common.CommsHelper;
-import gen4.util.Functions;
+import gen4.common.util.Functions;
 
 import static gen4.RobotPlayer.*;
 

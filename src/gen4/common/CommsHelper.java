@@ -2,15 +2,13 @@ package gen4.common;
 
 import battlecode.common.MapLocation;
 import battlecode.common.GameActionException;
-import gen4.Archon;
-import gen4.types.BuilderType;
-import gen4.types.SymmetryType;
-import gen4.util.Functions;
+import gen4.builder.BuilderType;
+import gen4.common.util.Functions;
 
 import static gen4.RobotPlayer.*;
-import static gen4.util.Functions.getBits;
-import static gen4.util.Functions.setBits;
-import static gen4.util.Functions.getDistance;
+import static gen4.common.util.Functions.getBits;
+import static gen4.common.util.Functions.setBits;
+import static gen4.common.util.Functions.getDistance;
 
 public strictfp class CommsHelper {
 

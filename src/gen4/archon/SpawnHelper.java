@@ -1,15 +1,15 @@
-package gen4.helpers;
+package gen4.archon;
 
 import battlecode.common.*;
 import gen4.Archon;
 import gen4.common.CommsHelper;
-import gen4.types.BuilderType;
+import gen4.builder.BuilderType;
 
 import java.util.Random;
 
 import static gen4.RobotPlayer.*;
-import static gen4.util.Functions.getBits;
-import static gen4.util.Functions.setBits;
+import static gen4.common.util.Functions.getBits;
+import static gen4.common.util.Functions.setBits;
 
 public strictfp class SpawnHelper {
 	private static final Random random = new Random(rc.getID());
@@ -44,6 +44,11 @@ public strictfp class SpawnHelper {
 		if (rc.getRoundNum() < 1000) return 75;
 		if (rc.getRoundNum() < 1500) return 225;
 		return 450;
+	}
+
+	private static double getSageGoldThreshold() {
+		if (rc.getRoundNum() < 1000) return 20;
+		return 85;
 	}
 
 	private static double getLeadIncomeThreshold() {
@@ -222,6 +227,10 @@ public strictfp class SpawnHelper {
 		if (buildersBuilt < 1) {
 			CommsHelper.setBuilderType(BuilderType.RepairBuilder, Archon.myIndex);
 			return RobotType.BUILDER;
+		}
+
+		if (getSageGoldThreshold() <= rc.getTeamGoldAmount(myTeam)) {
+			return RobotType.SAGE;
 		}
 
 		double sol = getSoldierWeight(),

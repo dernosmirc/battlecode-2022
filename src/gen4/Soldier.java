@@ -1,18 +1,18 @@
 package gen4;
 
 import battlecode.common.*;
-import gen4.helpers.GoldMiningHelper;
-import gen4.helpers.LeadMiningHelper;
-import gen4.helpers.AttackHelper;
+import gen4.miner.GoldMiningHelper;
+import gen4.miner.LeadMiningHelper;
+import gen4.soldier.AttackHelper;
 import gen4.common.CommsHelper;
 import gen4.soldier.BellmanFordMovement;
 import gen4.soldier.BugPathingMovement;
-import gen4.util.Logger;
-import gen4.types.SymmetryType;
+import gen4.common.util.Logger;
+import gen4.common.SymmetryType;
 
 import static gen4.RobotPlayer.*;
-import static gen4.util.Functions.getBits;
-import static gen4.util.Functions.setBits;
+import static gen4.common.util.Functions.getBits;
+import static gen4.common.util.Functions.setBits;
 
 import java.util.Random;
 
