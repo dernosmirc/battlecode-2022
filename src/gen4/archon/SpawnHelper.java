@@ -46,7 +46,8 @@ public strictfp class SpawnHelper {
 		return 450;
 	}
 
-	private static double getSageGoldThreshold() {
+	private static double getSageGoldThreshold() throws GameActionException {
+		if (CommsHelper.getCentralArchonIndex() != Archon.myIndex) return 1000;
 		if (rc.getRoundNum() < 1500) return 20;
 		return 85;
 	}

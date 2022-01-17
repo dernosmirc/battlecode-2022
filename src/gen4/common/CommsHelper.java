@@ -165,4 +165,8 @@ public strictfp class CommsHelper {
 		}
 		return p;
 	}
+
+	public static int getCentralArchonIndex() throws GameActionException {
+		return Functions.getBits(rc.readSharedArray(4), 11, 12);
+	}
 }
