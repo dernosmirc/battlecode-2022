@@ -30,17 +30,20 @@ public strictfp class SpawnHelper {
 		return 0.100;
 	}
 
+	private static double getLabBuilderProbability() {
+		if (labBuildersBuilt > 0) return 0;
+		if (watchtowerBuildersBuilt >= 2) return 1;
+		return 0;
+	}
+
 	private static double getSkipWeight() {
 		return 0.0;
 	}
 
 	private static double getLeadThreshold() {
-		/*if (rc.getRoundNum() < 750) return 75;
-		if (rc.getRoundNum() < 1000) return 220;
-		if (rc.getRoundNum() < 1250) return 250;
-		if (rc.getRoundNum() < 1500) return 400;
-		return 500;*/
-		return 75;
+		if (rc.getRoundNum() < 1000) return 75;
+		if (rc.getRoundNum() < 1500) return 225;
+		return 450;
 	}
 
 	private static double getLeadIncomeThreshold() {
@@ -55,6 +58,8 @@ public strictfp class SpawnHelper {
 	private static int minersBuilt = 0;
 	private static int soldiersBuilt = 0;
 	private static int buildersBuilt = 0;
+	private static int labBuildersBuilt = 0;
+	private static int watchtowerBuildersBuilt = 0;
 
 	public static void incrementDroidsBuilt(RobotType droid) throws GameActionException {
 		switch (droid) {
@@ -240,13 +245,12 @@ public strictfp class SpawnHelper {
 			return RobotType.MINER;
 		}
 		if (rand < sol + min + bui) {
-			if (buildersBuilt >= 3) {
-				CommsHelper.setBuilderType(
-						random.nextDouble() > 0.5 ? BuilderType.LabBuilder : BuilderType.WatchtowerBuilder,
-						Archon.myIndex
-				);
+			if (random.nextDouble() < getLabBuilderProbability()) {
+				CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
+				labBuildersBuilt++;
 			} else {
 				CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
+				watchtowerBuildersBuilt++;
 			}
 			return RobotType.BUILDER;
 		}
