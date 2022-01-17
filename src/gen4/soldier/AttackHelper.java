@@ -14,7 +14,7 @@ public strictfp class AttackHelper {
 	// BUILDER
 	// SOLDIER
 	// SAGE
-	private static final int[] priority = {4, 0, 5, 2, 1, 6, 3};
+	private static final int[] priority = {3, 0, 4, 2, 1, 5, 6};
 
 	public static void attack() throws GameActionException {
 		if (!rc.isActionReady()) {
