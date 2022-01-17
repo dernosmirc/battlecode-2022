@@ -105,15 +105,18 @@ public class BuildingHelper {
         return optimal;
     }
 
-    public static boolean isCornerMine() throws GameActionException {
-        MapLocation corner = getOptimalLabLocation(), my = rc.getLocation(), ideal = my;
+    public static boolean isCornerMine(MapLocation my) throws GameActionException {
+        MapLocation corner = getOptimalLabLocation(), ideal = my;
         MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
         int myDistance = corner.distanceSquaredTo(my), least = myDistance;
         for (int i = archons.length; --i >= 0;) {
-            int total = archons[i].distanceSquaredTo(corner);
-            if (total < least || (total == least && i < Archon.myIndex)) {
-                least = total;
-                ideal = archons[i];
+            MapLocation ml = archons[i];
+            if (ml != null) {
+                int total = ml.distanceSquaredTo(corner);
+                if (total < least || (total == least && i < Archon.myIndex)) {
+                    least = total;
+                    ideal = ml;
+                }
             }
         }
         return ideal == my;

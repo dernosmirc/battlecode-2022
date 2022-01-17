@@ -3,6 +3,7 @@ package gen4.common;
 import battlecode.common.MapLocation;
 import battlecode.common.GameActionException;
 import gen4.builder.BuilderType;
+import gen4.builder.BuildingHelper;
 
 import static gen4.RobotPlayer.*;
 import static gen4.common.Functions.getBits;
@@ -208,5 +209,64 @@ public strictfp class CommsHelper {
 		}
 
 		return archonIndex;
+	}
+
+	public static void updateLabBuilt(int archonIndex) throws GameActionException {
+		rc.writeSharedArray(
+				14 + archonIndex,
+				Functions.setBits(rc.readSharedArray(14+archonIndex), 15, 15, 1)
+		);
+	}
+
+	public static boolean isLabBuilt(int archonIndex) throws GameActionException {
+		return Functions.getBits(rc.readSharedArray(14+archonIndex), 15, 15) == 1;
+	}
+
+	public static void incrementWatchtowersBuilt(int archonIndex) throws GameActionException {
+		int val = rc.readSharedArray(10 + archonIndex);
+		int count = Functions.getBits(val, 12, 15) + 1;
+		val = Functions.setBits(val, 12, 15, count);
+		rc.writeSharedArray(10 + archonIndex, val);
+	}
+
+	public static int getWatchtowerCount(int archonIndex) throws GameActionException {
+		return Functions.getBits(rc.readSharedArray(10+archonIndex), 12, 15);
+	}
+
+	public static boolean minWatchtowersBuilt(int count) throws GameActionException {
+		boolean[] dead = getDeadArchons();
+		for (int i = maxArchonCount; --i >= 0;) {
+			if (!dead[i]) {
+				if (getWatchtowerCount(i) < count) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	public static boolean allLabsBuilt() throws GameActionException {
+		MapLocation[] archons = getFriendlyArchonLocations();
+		for (int i = archons.length; --i >= 0;) {
+			MapLocation ml = archons[i];
+			if (ml != null) {
+				if (BuildingHelper.isCornerMine(ml) != isLabBuilt(i)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	public static boolean allLArchonsMutated(int level) throws GameActionException {
+		boolean[] dead = getDeadArchons();
+		for (int i = maxArchonCount; --i >= 0;) {
+			if (!dead[i]) {
+				if (Functions.getBits(rc.readSharedArray(14+i), 13, 14) != level) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 }

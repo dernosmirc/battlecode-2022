@@ -2,6 +2,7 @@ package gen4;
 
 import battlecode.common.*;
 import gen4.builder.BuildingHelper;
+import gen4.common.CommsHelper;
 import gen4.common.MovementHelper;
 import gen4.builder.MutationHelper;
 import gen4.builder.BuilderType;
@@ -55,6 +56,12 @@ public strictfp class Builder {
 							rc.canBuildRobot(nextBuilding.type, buildDirection)
 			) {
 				rc.buildRobot(nextBuilding.type, buildDirection);
+				switch (nextBuilding.type) {
+					case WATCHTOWER:
+						CommsHelper.incrementWatchtowersBuilt(myArchonIndex);
+					case LABORATORY:
+						CommsHelper.updateLabBuilt(myArchonIndex);
+				}
 				nextBuilding = null;
 			} else {
 				MovementHelper.tryMove(buildDirection,
@@ -76,7 +83,8 @@ public strictfp class Builder {
 		}
 		direction = Functions.getPerpendicular(myArchonLocation.directionTo(rc.getLocation()));
 		if (direction != null) {
-			MovementHelper.tryMove(direction, false);
+			// TODO Improve
+			MovementHelper.tryMove(direction, true);
 		}
 	}
 

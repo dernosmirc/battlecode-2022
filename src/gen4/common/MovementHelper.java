@@ -3,7 +3,13 @@ package gen4.common;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import gen3.util.Vector;
+import gen4.common.util.Pair;
 
+import java.util.Comparator;
+import java.util.PriorityQueue;
+
+import static gen4.RobotPlayer.directions;
 import static gen4.RobotPlayer.rc;
 
 public class MovementHelper {

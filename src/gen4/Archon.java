@@ -42,6 +42,7 @@ public strictfp class Archon {
 		if (lastRoundHp != rc.getHealth()) {
 			lastRoundHp = rc.getHealth();
 			int val = Functions.setBits(rc.readSharedArray(14 + myIndex), 0, 10, lastRoundHp);
+			val = Functions.setBits(val, 13, 14, rc.getLevel());
 			rc.writeSharedArray(14 + myIndex, val);
 		}
 	}

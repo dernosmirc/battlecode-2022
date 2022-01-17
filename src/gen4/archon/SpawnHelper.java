@@ -5,6 +5,7 @@ import gen4.Archon;
 import gen4.builder.BuildingHelper;
 import gen4.common.CommsHelper;
 import gen4.builder.BuilderType;
+import gen4.common.Functions;
 
 import java.util.Random;
 
@@ -31,21 +32,23 @@ public strictfp class SpawnHelper {
 		return 0.100;
 	}
 
-	private static double getLabBuilderProbability() throws GameActionException {
-		if (labBuildersBuilt > 0 || !BuildingHelper.isCornerMine()) return 0;
-		if (CommsHelper.getEnemyArchonCount() > rc.getArchonCount()) return 0;
-		if (watchtowerBuildersBuilt >= 2) return 1;
-		return 0;
-	}
-
 	private static double getSkipWeight() {
 		return 0.0;
 	}
 
-	private static double getLeadThreshold() {
+	private static double getLeadThreshold() throws GameActionException {
 		if (rc.getRoundNum() < 1000) return 75;
-		if (rc.getRoundNum() < 1500) return 225;
-		return 450;
+		if (rc.getRoundNum() < 1250 &&
+				!CommsHelper.minWatchtowersBuilt(1)
+		) return 225;
+		if (rc.getRoundNum() < 1500 &&
+				!CommsHelper.minWatchtowersBuilt(2)
+		) return 225;
+		if (rc.getRoundNum() < 1750 && (
+				!CommsHelper.allLabsBuilt() ||
+						!CommsHelper.allLArchonsMutated(2)
+		)) return 450;
+		return 75;
 	}
 
 	private static double getSageGoldThreshold() throws GameActionException {
@@ -75,8 +78,8 @@ public strictfp class SpawnHelper {
 				break;
 		}
 		droidsBuilt++;
-		int int16 = setBits(droidsBuilt, 12, 15, buildersBuilt);
-		rc.writeSharedArray(10 + Archon.myIndex, int16);
+		int val = Functions.setBits(rc.readSharedArray(10 + Archon.myIndex), 0, 11, droidsBuilt);
+		rc.writeSharedArray(10 + Archon.myIndex, val);
 	}
 
 	private static boolean[] archonDead = new boolean[4];
@@ -120,6 +123,16 @@ public strictfp class SpawnHelper {
 			}
 		}
 		return p;
+	}
+
+	private static boolean isBuilderAround() {
+		RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam);
+		for (int i = ris.length; --i >= 0;) {
+			if (ris[i].type == RobotType.BUILDER) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static final boolean[] builderSpawned = new boolean[8];
@@ -219,13 +232,30 @@ public strictfp class SpawnHelper {
 		if (soldiersBuilt < 6) return RobotType.SOLDIER;
 		if (minersBuilt < 5) return RobotType.MINER;
 		if (soldiersBuilt < 9) return RobotType.SOLDIER;
-		if (buildersBuilt < 1) {
+		if (!isBuilderAround()) {
 			CommsHelper.setBuilderType(BuilderType.RepairBuilder, Archon.myIndex);
 			return RobotType.BUILDER;
 		}
 
 		if (getSageGoldThreshold() <= rc.getTeamGoldAmount(myTeam)) {
 			return RobotType.SAGE;
+		}
+
+		if (
+				rc.getRoundNum() >= 1000 && watchtowerBuildersBuilt < 1 ||
+				rc.getRoundNum() >= 1250 && watchtowerBuildersBuilt < 2
+		) {
+			CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
+			watchtowerBuildersBuilt++;
+			return RobotType.BUILDER;
+		}
+
+		if (
+				rc.getRoundNum() >= 1500 && labBuildersBuilt < 1
+		) {
+			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
+			labBuildersBuilt++;
+			return RobotType.BUILDER;
 		}
 
 		double sol = getSoldierWeight(),
@@ -249,13 +279,8 @@ public strictfp class SpawnHelper {
 			return RobotType.MINER;
 		}
 		if (rand < sol + min + bui) {
-			if (random.nextDouble() < getLabBuilderProbability()) {
-				CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
-				labBuildersBuilt++;
-			} else {
-				CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
-				watchtowerBuildersBuilt++;
-			}
+			CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
+			watchtowerBuildersBuilt++;
 			return RobotType.BUILDER;
 		}
 		return null;
