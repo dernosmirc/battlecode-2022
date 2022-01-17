@@ -2,7 +2,6 @@ package gen4.archon;
 
 import battlecode.common.*;
 import gen4.Archon;
-import gen4.builder.BuildingHelper;
 import gen4.common.CommsHelper;
 import gen4.builder.BuilderType;
 import gen4.common.Functions;
@@ -11,9 +10,12 @@ import java.util.Random;
 
 import static gen4.RobotPlayer.*;
 import static gen4.common.Functions.getBits;
-import static gen4.common.Functions.setBits;
 
 public strictfp class SpawnHelper {
+	private static final int WATCHTOWER_WINDOW = 25;
+	private static final int ARCHON_MUTATE_WINDOW = 50;
+	private static final int LAB_WINDOW = 25;
+
 	private static final Random random = new Random(rc.getID());
 
 	private static double getSoldierWeight() {
@@ -37,17 +39,18 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getLeadThreshold() throws GameActionException {
-		if (rc.getRoundNum() < 1000) return 75;
-		if (rc.getRoundNum() < 1250 &&
+		if (1250 <= rc.getRoundNum() && rc.getRoundNum() < 1250 + WATCHTOWER_WINDOW &&
 				!CommsHelper.minWatchtowersBuilt(1)
 		) return 225;
-		if (rc.getRoundNum() < 1500 &&
+		if (1375 <= rc.getRoundNum() && rc.getRoundNum() < 1375 + WATCHTOWER_WINDOW &&
 				!CommsHelper.minWatchtowersBuilt(2)
 		) return 225;
-		if (rc.getRoundNum() < 1750 && (
-				!CommsHelper.allLabsBuilt() ||
-						!CommsHelper.allLArchonsMutated(2)
-		)) return 450;
+		if (1500 <= rc.getRoundNum() && rc.getRoundNum() < 1500 + ARCHON_MUTATE_WINDOW &&
+				!CommsHelper.allLArchonsMutated(2)
+		) return 450;
+		if (1625 <= rc.getRoundNum() && rc.getRoundNum() < 1625 + LAB_WINDOW &&
+				!CommsHelper.allLabsBuilt()
+		) return 300;
 		return 75;
 	}
 
@@ -242,8 +245,8 @@ public strictfp class SpawnHelper {
 		}
 
 		if (
-				rc.getRoundNum() >= 1000 && watchtowerBuildersBuilt < 1 ||
-				rc.getRoundNum() >= 1250 && watchtowerBuildersBuilt < 2
+				1250 <= rc.getRoundNum() && rc.getRoundNum() < 1250 + WATCHTOWER_WINDOW && watchtowerBuildersBuilt < 1 ||
+				1375 <= rc.getRoundNum() && rc.getRoundNum() < 1375 + WATCHTOWER_WINDOW && watchtowerBuildersBuilt < 2
 		) {
 			CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
 			watchtowerBuildersBuilt++;
@@ -251,7 +254,7 @@ public strictfp class SpawnHelper {
 		}
 
 		if (
-				rc.getRoundNum() >= 1500 && labBuildersBuilt < 1
+				1625 <= rc.getRoundNum() && rc.getRoundNum() < 1625 + LAB_WINDOW && labBuildersBuilt < 1
 		) {
 			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
 			labBuildersBuilt++;

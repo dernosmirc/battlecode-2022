@@ -13,7 +13,7 @@ import static gen4.common.Functions.getDistance;
 public strictfp class CommsHelper {
 
 	// TODO improve hyperparameter
-	private static final double ENEMY_ZONE_FACTOR = 8.5;
+	private static final double ENEMY_ZONE_FACTOR = 8;
 
 	public static MapLocation getLocationFrom12Bits(int bits) {
 		return new MapLocation(getBits(bits, 6, 11), getBits(bits, 0, 5));
@@ -156,7 +156,7 @@ public strictfp class CommsHelper {
 		if (enemyArchons == null) {
 			return false;
 		}
-		int zoneRadius = (int) (Math.sqrt((rc.getMapWidth() + rc.getMapHeight()) / 2.0) * ENEMY_ZONE_FACTOR);
+		int zoneRadius = (int) (Math.sqrt(Math.max(rc.getMapWidth(), rc.getMapHeight())) * ENEMY_ZONE_FACTOR);
 		for (int i = enemyArchons.length; --i >= 0;) {
 			if (enemyArchons[i] != null && l.isWithinDistanceSquared(enemyArchons[i], zoneRadius)) {
 				return true;
@@ -262,7 +262,7 @@ public strictfp class CommsHelper {
 		boolean[] dead = getDeadArchons();
 		for (int i = maxArchonCount; --i >= 0;) {
 			if (!dead[i]) {
-				if (Functions.getBits(rc.readSharedArray(14+i), 13, 14) != level) {
+				if (Functions.getBits(rc.readSharedArray(14+i), 13, 14) < level) {
 					return false;
 				}
 			}
