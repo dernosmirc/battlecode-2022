@@ -65,7 +65,7 @@ public strictfp class AttackHelper {
 						robotsInDirection[rc.getLocation().directionTo(robot.location).ordinal()] += 1.5;
 						break;
 				}
-			} else {
+			} else if (rc.getLocation().distanceSquaredTo(robot.location) <= myType.actionRadiusSquared - 3) {
 				switch (robot.type) {
 					case SOLDIER:
 						++ourRobots;
