@@ -33,6 +33,8 @@ public strictfp class SpawnHelper {
 	private static double getLabBuilderProbability() {
 		if (labBuildersBuilt > 0) return 0;
 		if (watchtowerBuildersBuilt >= 2) return 1;
+		// TODO send one lab builder to each corner
+		// TODO do not spawn if my archon < enemy archo
 		return 0;
 	}
 
@@ -50,14 +52,6 @@ public strictfp class SpawnHelper {
 		if (CommsHelper.getCentralArchonIndex() != Archon.myIndex) return 1000;
 		if (rc.getRoundNum() < 1500) return 20;
 		return 85;
-	}
-
-	private static double getLeadIncomeThreshold() {
-		if (rc.getRoundNum() < 150) return 2;
-		if (rc.getRoundNum() < 500) return 2;
-		if (rc.getRoundNum() < 1000) return 2;
-		if (rc.getRoundNum() < 1500) return 2;
-		return 2;
 	}
 
 	private static int droidsBuilt = 0;

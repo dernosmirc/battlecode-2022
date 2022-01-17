@@ -16,7 +16,6 @@ import static gen4.common.Functions.sigmoid;
 
 public strictfp class Miner {
 	private static final double GOLD_MINER_RATIO = 0.25;
-	private static final int ANTI_SOLDIER_MOMENTUM = 4;
 	private static double getExplorerRatio() {
 		return 0.5 * sigmoid((300-rc.getRoundNum())/200.0);
 	}
@@ -56,12 +55,6 @@ public strictfp class Miner {
 			return MovementHelper.tryMove(goldDirection, false);
 		}
 
-		Direction runAway = getAntiSoldierDirection();
-		if (runAway != null) {
-			rc.setIndicatorString("anti soldier");
-			return MovementHelper.tryMove(runAway, false);
-		}
-
 		if (!isExplorer && isGoldMiner) {
 			goldDirection = GoldMiningHelper.spotGoldOnGrid();
 			if (goldDirection != null) {
@@ -85,7 +78,10 @@ public strictfp class Miner {
 			myDirection = Functions.getPerpendicular(antiCorner);
 		}
 		rc.setIndicatorString("no clue");
-		if (CommsHelper.isLocationInEnemyZone(rc.getLocation().add(myDirection))) {
+		if (
+				!CommsHelper.isLocationInEnemyZone(rc.getLocation()) &&
+				CommsHelper.isLocationInEnemyZone(rc.getLocation().add(myDirection))
+		) {
 			myDirection = myDirection.opposite();
 		}
 		return MovementHelper.moveAndAvoid(myDirection, myArchonLocation, 2);
@@ -112,34 +108,5 @@ public strictfp class Miner {
 				break;
 			}
 		}
-	}
-
-
-	private static Direction antiSoldier = null;
-	private static int momentum = 0;
-	private static Direction getAntiSoldierDirection() {
-		if (momentum > 0) {
-			Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
-			if (antiCorner != null) {
-				momentum = 0;
-				return antiCorner;
-			}
-			momentum--;
-			return antiSoldier;
-		}
-		int dx = 0, dy = 0, count = 0;
-		for (RobotInfo ri: rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
-			if (ri.type == RobotType.SOLDIER) {
-				Direction d = ri.location.directionTo(rc.getLocation());
-				dx += d.dx;
-				dy += d.dy;
-				count++;
-			}
-		}
-		if (count < 1) return null;
-		if (dx == 0 && dy == 0) return null;
-		myDirection = antiSoldier = new MapLocation(0, 0).directionTo(new MapLocation(dx, dy));
-		momentum = count * ANTI_SOLDIER_MOMENTUM;
-		return antiSoldier;
 	}
 }
