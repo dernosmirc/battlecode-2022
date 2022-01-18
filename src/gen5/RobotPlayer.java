@@ -8,7 +8,7 @@ import java.util.Comparator;
 public strictfp class RobotPlayer {
 
 	// toggle logs
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
 
 	public static RobotController rc;
 	public static Team myTeam, enemyTeam;

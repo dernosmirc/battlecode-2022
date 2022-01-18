@@ -1,10 +1,13 @@
 package gen5.common;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
+import battlecode.common.*;
 
-import static gen5.RobotPlayer.rc;
+import gen5.RobotPlayer;
+import gen5.common.generated.Heuristics20;
+import gen5.common.util.Logger;
+import gen5.common.util.Vector;
+
+import static gen5.RobotPlayer.*;
 
 public class MovementHelper {
 
@@ -107,6 +110,176 @@ public class MovementHelper {
         }
         Direction optimalDirection = whereGreedyTryMove(dir);
 
-        return optimalDirection != null ? tryMove(optimalDirection, true) : false;
+        return optimalDirection != null && tryMove(optimalDirection, true);
+    }
+
+    /*
+    * approx bellmanFord for normal directions
+    *
+    *
+    * */
+
+    private static final int BELLMANFORD_ITERATIONS = 2;
+
+    private static int[][] distancesDump, parentDump;
+    private static boolean[][] occupiedDump;
+    private static final int INFINITY = 100000;
+    private static int radius;
+    private static int diameter;
+    public static void prepareBellmanFord() {
+        int rSq = myType.visionRadiusSquared, r, d, size;
+
+        radius = r = (int) Math.sqrt(rSq);
+        diameter = d = r * 2 + 1;
+        size = d+1;
+
+        distancesDump = new int[size][size];
+        parentDump = new int[size][size];
+        occupiedDump = new boolean[size][size];
+
+        for (int i = size; --i >= 0;) {
+            for (int j = size; --j >= 0;) {
+                distancesDump[i][j] = INFINITY;
+                occupiedDump[i][j] = true;
+            }
+        }
+    }
+
+    private static Vector<Direction> path = null;
+    private static Direction pathDirection = null;
+    public static void moveBellmanFord(Direction dir) throws GameActionException {
+        if (dir == null || dir == Direction.CENTER) {
+            path = null;
+            pathDirection = null;
+            return;
+        }
+
+        if (dir != pathDirection) {
+            pathDirection = dir;
+            path = getBellmanFordPath(dir);
+        }
+
+        if (rc.canMove(path.last())) {
+            rc.move(path.popLast());
+        }
+
+        if (path.isEmpty()) {
+            pathDirection = null;
+            path = null;
+        }
+    }
+
+
+    private static Vector<Direction> getBellmanFordPath(Direction dir) throws GameActionException {
+        Logger log = new Logger("Bellman Ford", false);
+        RobotController rc = RobotPlayer.rc;
+        MapLocation rn = rc.getLocation();
+        int ordinal = dir.ordinal();
+        int[] locationX = Heuristics20.locationDumpX[ordinal],
+                locationY = Heuristics20.locationDumpY[ordinal],
+                destinationX = Heuristics20.destinationDumpX[ordinal],
+                destinationY = Heuristics20.destinationDumpY[ordinal],
+                dirX = Heuristics20.directionDumpX[ordinal],
+                dirY = Heuristics20.directionDumpY[ordinal];
+        int[][] dist = distancesDump,
+                parent = parentDump;
+        boolean[][] notOccupied = occupiedDump;
+
+        int r = radius, d = diameter, rnInd = r * d + r,
+                rnX = rn.x, rnY = rn.y,
+                rnX_r = rnX - r, rnY_r = rnY - r;
+
+        log.log("init variables");
+
+        for (int i = d; --i >= 0;) {
+            for (int j = d; --j >= 0;) {
+                dist[i][j] = INFINITY;
+                notOccupied[i][j] = true;
+            }
+        }
+
+        log.log("filled arrays");
+
+        RobotInfo[] ris = rc.senseNearbyRobots();
+        for (int i = ris.length; --i >= 0;) {
+            RobotInfo ri = ris[i];
+            if (ri != null && (ri.mode == RobotMode.PROTOTYPE || ri.mode == RobotMode.TURRET)) {
+                int x = ri.location.x - rnX_r, y = ri.location.y - rnY_r;
+                notOccupied[x][y] = false;
+            }
+        }
+
+        log.log("detected nearby fixed bots");
+
+        dist[r][r] = 0;
+
+        // 1st iteration
+        for (int li = locationX.length; --li >= 0;) {
+            for (int di = dirX.length; --di >= 0;) {
+                int vx = locationX[li], vy = locationY[li];
+                int ux = vx + dirX[di], uy = vy + dirY[di];
+                if (ux < 0 || uy < 0) {
+                    continue;
+                }
+                int lx = rnX_r + locationX[li], ly = rnY_r + locationY[li];
+                MapLocation location = new MapLocation(lx, ly);
+                if (notOccupied[vx][vy] && rc.canSenseLocation(location)) {
+                    int w = rc.senseRubble(location);
+                    if (dist[vx][vy] > dist[ux][uy] + w) {
+                        dist[vx][vy] = dist[ux][uy] + w;
+                        parent[vx][vy] = ux * d + uy;
+                    }
+                }
+            }
+        }
+
+        log.log("first iteration");
+
+        // 2nd iteration
+        for (int li = locationX.length; --li >= 0;) {
+            for (int di = dirX.length; --di >= 0;) {
+                int vx = locationX[li], vy = locationY[li];
+                int ux = vx + dirX[di], uy = vy + dirY[di];
+                if (ux < 0 || uy < 0) {
+                    continue;
+                }
+                int lx = rnX_r + locationX[li], ly = rnY_r + locationY[li];
+                MapLocation location = new MapLocation(lx, ly);
+                if (notOccupied[vx][vy] && rc.canSenseLocation(location)) {
+                    int w = rc.senseRubble(location);
+                    if (dist[vx][vy] > dist[ux][uy] + w) {
+                        dist[vx][vy] = dist[ux][uy] + w;
+                        parent[vx][vy] = ux * d + uy;
+                    }
+                }
+            }
+        }
+
+        log.log("second iteration");
+
+        // find best destination
+        int minDistance = INFINITY, minInd = -1;
+        for (int li = destinationX.length; --li >= 0;) {
+            int vx = destinationX[li], vy = destinationY[li];
+            if (minDistance > dist[vx][vy]) {
+                minDistance = dist[vx][vy];
+                minInd = vx * d + vy;
+            }
+        }
+
+        log.log("best destination");
+
+        // construct path
+        Vector<Direction> ret = new Vector<>(20);
+        MapLocation lastLocation = new MapLocation(minInd / d, minInd % d);
+        while (minInd != rnInd) {
+            minInd = parent[minInd/d][minInd % d];
+            MapLocation n = new MapLocation(minInd / d, minInd % d);
+            ret.add(n.directionTo(lastLocation));
+            lastLocation = n;
+        }
+        log.log("constructed path");
+        log.flush();
+        return ret;
     }
 }
