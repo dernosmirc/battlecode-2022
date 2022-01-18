@@ -64,7 +64,7 @@ public strictfp class Soldier {
 		updateGuessedEnemyArchonSymmetries();
 
 		String movement = System.getProperty(
-				"bc.testing.team-" + myTeam.name().toLowerCase() + ".movement",
+				"bc.testing.team-" + myTeam.name() + ".movement",
 				"bellmanford"
 		);
 		switch (movement) {

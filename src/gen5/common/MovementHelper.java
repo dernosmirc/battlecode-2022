@@ -3,7 +3,7 @@ package gen5.common;
 import battlecode.common.*;
 
 import gen5.RobotPlayer;
-import gen5.common.generated.Heuristics20;
+import gen5.common.generated.Heuristics13;
 import gen5.common.util.Logger;
 import gen5.common.util.Vector;
 
@@ -124,10 +124,11 @@ public class MovementHelper {
     private static int[][] distancesDump, parentDump;
     private static boolean[][] occupiedDump;
     private static final int INFINITY = 100000;
-    private static int radius;
+    private static int radius, radiusSquared;
     private static int diameter;
     public static void prepareBellmanFord() {
-        int rSq = myType.visionRadiusSquared, r, d, size;
+        int rSq = 13, r, d, size;
+        radiusSquared = rSq;
 
         radius = r = (int) Math.sqrt(rSq);
         diameter = d = r * 2 + 1;
@@ -147,20 +148,21 @@ public class MovementHelper {
 
     private static Vector<Direction> path = null;
     private static Direction pathDirection = null;
+    private static MapLocation lastLocation = null;
     public static void moveBellmanFord(Direction dir) throws GameActionException {
         if (dir == null || dir == Direction.CENTER) {
-            path = null;
             pathDirection = null;
             return;
         }
 
-        if (dir != pathDirection) {
+        if (dir != pathDirection || !rc.getLocation().equals(lastLocation)) {
             pathDirection = dir;
             path = getBellmanFordPath(dir);
         }
 
         if (rc.canMove(path.last())) {
             rc.move(path.popLast());
+            lastLocation = rc.getLocation();
         }
 
         if (path.isEmpty()) {
@@ -169,18 +171,17 @@ public class MovementHelper {
         }
     }
 
-
     private static Vector<Direction> getBellmanFordPath(Direction dir) throws GameActionException {
         Logger log = new Logger("Bellman Ford", false);
         RobotController rc = RobotPlayer.rc;
         MapLocation rn = rc.getLocation();
         int ordinal = dir.ordinal();
-        int[] locationX = Heuristics20.locationDumpX[ordinal],
-                locationY = Heuristics20.locationDumpY[ordinal],
-                destinationX = Heuristics20.destinationDumpX[ordinal],
-                destinationY = Heuristics20.destinationDumpY[ordinal],
-                dirX = Heuristics20.directionDumpX[ordinal],
-                dirY = Heuristics20.directionDumpY[ordinal];
+        int[] locationX = Heuristics13.locationDumpX[ordinal],
+                locationY = Heuristics13.locationDumpY[ordinal],
+                destinationX = Heuristics13.destinationDumpX[ordinal],
+                destinationY = Heuristics13.destinationDumpY[ordinal],
+                dirX = Heuristics13.directionDumpX[ordinal],
+                dirY = Heuristics13.directionDumpY[ordinal];
         int[][] dist = distancesDump,
                 parent = parentDump;
         boolean[][] notOccupied = occupiedDump;
@@ -200,7 +201,7 @@ public class MovementHelper {
 
         log.log("filled arrays");
 
-        RobotInfo[] ris = rc.senseNearbyRobots();
+        RobotInfo[] ris = rc.senseNearbyRobots(radiusSquared);
         for (int i = ris.length; --i >= 0;) {
             RobotInfo ri = ris[i];
             if (ri != null && (ri.mode == RobotMode.PROTOTYPE || ri.mode == RobotMode.TURRET)) {
@@ -279,7 +280,7 @@ public class MovementHelper {
             lastLocation = n;
         }
         log.log("constructed path");
-        log.flush();
+        //log.flush();
         return ret;
     }
 }
