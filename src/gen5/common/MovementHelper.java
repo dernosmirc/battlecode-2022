@@ -184,13 +184,12 @@ public class MovementHelper {
         if (rc.canMove(path.last())) {
             rc.move(path.popLast());
             lastLocation = rc.getLocation();
+            if (path.isEmpty()) {
+                pathDirection = null;
+            }
             return true;
         }
 
-        if (path.isEmpty()) {
-            pathDirection = null;
-            path = null;
-        }
         return false;
     }
 
