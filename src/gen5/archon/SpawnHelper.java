@@ -57,13 +57,14 @@ public strictfp class SpawnHelper {
 
 	private static double getSageGoldThreshold() throws GameActionException {
 		if (CommsHelper.getCentralArchon() != Archon.myIndex) return 1000;
-		if (rc.getRoundNum() < 1500) return 20;
+		if (rc.getRoundNum() < 1500 && sagesBuilt <= 3) return 20;
 		return 85;
 	}
 
 	private static int droidsBuilt = 0;
 	private static int minersBuilt = 0;
 	private static int soldiersBuilt = 0;
+	private static int sagesBuilt = 0;
 	private static int buildersBuilt = 0;
 	private static int labBuildersBuilt = 0;
 	private static int watchtowerBuildersBuilt = 0;
@@ -79,6 +80,9 @@ public strictfp class SpawnHelper {
 				break;
 			case BUILDER:
 				buildersBuilt++;
+				break;
+			case SAGE:
+				sagesBuilt++;
 				break;
 		}
 		droidsBuilt++;

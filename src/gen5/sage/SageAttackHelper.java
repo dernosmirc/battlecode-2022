@@ -45,7 +45,7 @@ public class SageAttackHelper {
             }
         }
 
-        if (maxPriority == -1 || maxHp < 30) {
+        if (maxPriority == -1 || maxHp < 35) {
             return;
         }
 
