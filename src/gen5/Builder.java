@@ -33,13 +33,13 @@ public strictfp class Builder {
 	private static void act() throws GameActionException {
 		Pair<MapLocation, Boolean> mutate = MutationHelper.getLocationToMutate();
 		if (mutate != null) {
-			if (mutate.value) {
-				if (rc.canMutate(mutate.key)) {
-					rc.mutate(mutate.key);
+			if (mutate.b) {
+				if (rc.canMutate(mutate.a)) {
+					rc.mutate(mutate.a);
 					return;
 				}
 			} else {
-				MovementHelper.tryMove(rc.getLocation().directionTo(mutate.key), false);
+				MovementHelper.tryMove(rc.getLocation().directionTo(mutate.a), false);
 			}
 		}
 
@@ -102,6 +102,7 @@ public strictfp class Builder {
 
 	public static void init() throws GameActionException {
 		maxArchonCount = 0;
+		MovementHelper.prepareBellmanFord();
 		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {

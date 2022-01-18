@@ -48,6 +48,22 @@ public class Vector<T> implements Iterable<T> {
         return container[i];
     }
 
+    public boolean isEmpty() {
+        return length == 0;
+    }
+
+    public T popLast() {
+        return container[--length];
+    }
+
+    public T last() {
+        return container[length-1];
+    }
+
+    public void resize(int length) {
+        this.length = length;
+    }
+
     public boolean has(T a) {
         for (int i = 0; i < length; i++) {
             if (a.equals(container[i])) {

@@ -1,19 +1,19 @@
 package gen5.common.util;
 
 public class Pair<K, V> {
-    public K key;
-    public V value;
+    public K a;
+    public V b;
 
     public Pair(K key, V value) {
-        this.key = key;
-        this.value = value;
+        this.a = key;
+        this.b = value;
     }
 
-    public K getKey() {
-        return key;
+    public K getA() {
+        return a;
     }
 
-    public V getValue() {
-        return value;
+    public V getB() {
+        return b;
     }
 }

@@ -63,11 +63,15 @@ public strictfp class Soldier {
 
 		updateGuessedEnemyArchonSymmetries();
 
-		switch (myTeam) {
-			case A:
-				//BugPathingMovement.move();
-				//break;
-			case B:
+		String movement = System.getProperty(
+				"bc.testing.team-" + myTeam.name().toLowerCase() + ".movement",
+				"bellmanford"
+		);
+		switch (movement) {
+			case "bugpathing":
+				BugPathingMovement.move();
+				break;
+			case "bellmanford":
 				BellmanFordMovement.move();
 				break;
 		}

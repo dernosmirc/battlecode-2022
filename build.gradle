@@ -215,6 +215,8 @@ task run(type: JavaExec, dependsOn: 'build') {
         '-Dbc.game.team-b='+project.property('teamB'),
         '-Dbc.game.team-a.url='+project.property('classLocationA'),
         '-Dbc.game.team-b.url='+project.property('classLocationB'),
+        '-Dbc.testing.team-a.movement='+project.property('movementTypeA'),
+        '-Dbc.testing.team-b.movement='+project.property('movementTypeB'),
         '-Dbc.game.maps='+project.property('maps'),
         '-Dbc.server.save-file=' +project.property('replay')
     ]
@@ -241,6 +243,8 @@ task runFromSaturn(type: JavaExec, dependsOn: 'build') {
         '-Dbc.game.team-b.url='+project.property('classLocationB'),
         '-Dbc.game.team-a.package='+project.property('packageNameA'),
         '-Dbc.game.team-b.package='+project.property('packageNameB'),
+        '-Dbc.testing.team-a.movement='+project.property('movementTypeA'),
+        '-Dbc.testing.team-b.movement='+project.property('movementTypeB'),
         '-Dbc.game.maps='+project.property('maps'),
         '-Dbc.server.save-file=' +project.property('replay')
     ]
@@ -262,6 +266,8 @@ task runFromClient(type: JavaExec, dependsOn: 'build') {
             '-Dbc.game.team-b='+project.property('teamB'),
             '-Dbc.game.team-a.url='+project.property('classLocationA'),
             '-Dbc.game.team-b.url='+project.property('classLocationB'),
+            '-Dbc.testing.team-a.movement='+project.property('movementTypeA'),
+            '-Dbc.testing.team-b.movement='+project.property('movementTypeB'),
             '-Dbc.game.maps='+project.property('maps'),
             '-Dbc.server.save-file=' + project.property('replay')
     ]
@@ -283,6 +289,8 @@ task runDebug(type: JavaExec, dependsOn: 'build') {
             '-Dbc.game.team-b='+project.property('teamB'),
             '-Dbc.game.team-a.url='+project.property('classLocationA'),
             '-Dbc.game.team-b.url='+project.property('classLocationB'),
+            '-Dbc.testing.team-a.movement='+project.property('movementTypeA'),
+            '-Dbc.testing.team-b.movement='+project.property('movementTypeB'),
             '-Dbc.game.maps='+project.property('maps'),
             '-Dbc.server.save-file=' + project.property('replay')
     ]

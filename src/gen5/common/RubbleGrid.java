@@ -6,13 +6,13 @@ import battlecode.common.*;
 import static gen5.RobotPlayer.*;
 
 public class RubbleGrid {
-    
+
     public static final int INFINITY = 101;
 
     public final int radiusSquared, radius, diameter;
     public final MapLocation center;
 
-    private int centerX, centerY, centerX_r, centerY_r;
+    private final int centerX, centerY, centerX_r, centerY_r;
 
     public RubbleGrid (MapLocation loc, int radiusSquared) {
         this.radiusSquared = radiusSquared;
