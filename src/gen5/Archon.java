@@ -12,11 +12,15 @@ import static gen5.common.Functions.getBits;
 import static gen5.common.Functions.setBits;
 
 public strictfp class Archon {
+	private static final int DEFENSE_ROUNDS_THRESHOLD = 5;
+
 	public static int myIndex;
 	private static int buildDirectionIndex = 0;
 
 	private static boolean[] isPossibleEnemyArchonSymmetry;
 	private static int symmetryIndex = 0;
+
+	private static int lastDefenseRound = -100;
 
 	private static final RobotType[] priority = {
 			RobotType.SAGE,
@@ -90,8 +94,13 @@ public strictfp class Archon {
 					break;
 			}
 			if (defenseNeeded) {
+				lastDefenseRound = rc.getRoundNum();
 				break;
 			}
+		}
+
+		if (!defenseNeeded && rc.getRoundNum() - lastDefenseRound < DEFENSE_ROUNDS_THRESHOLD) {
+			defenseNeeded = true;
 		}
 
 		int value = rc.readSharedArray(32 + myIndex);

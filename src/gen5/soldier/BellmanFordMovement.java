@@ -13,17 +13,22 @@ import static gen5.Soldier.*;
 import static gen5.common.Functions.getDistance;
 
 public class BellmanFordMovement {
-    private static int INNER_DEFENSE_RADIUS = 4;
-    private static int OUTER_DEFENSE_RADIUS = 8;
-    private static int INNER_ATTACK_RADIUS = 8;
-    private static int OUTER_ATTACK_RADIUS = 13;
+    private static final int INNER_DEFENSE_RADIUS = 4;
+    private static final int OUTER_DEFENSE_RADIUS = 8;
+    private static final int INNER_ATTACK_RADIUS = 8;
+    private static final int OUTER_ATTACK_RADIUS = 13;
 
-    private static int HEAL_THRESHOLD = 20;
+    private static final int HEAL_THRESHOLD = 20; // 21
+    private static final int FULL_HEAL_THRESHOLD = 45;
 
     public static void move() throws GameActionException {
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
+        if (defenseLocation != null) {
+            circleAround(defenseLocation);
+            return;
+        }
 
-        RobotInfo[] robots = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam);
+        RobotInfo[] robots = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam); // try vision radius?
         RobotInfo archon = null;
         for (int i = robots.length; --i >= 0; ) {
             RobotInfo robot = robots[i];
@@ -33,46 +38,31 @@ public class BellmanFordMovement {
             }
         }
 
-        if (defenseLocation == null && archon != null && rc.getHealth() < 45) {
-            defenseLocation = archon.location;
+        if (archon != null && rc.getHealth() < FULL_HEAL_THRESHOLD) {
+            circleAround(archon.location);
+            return;
         }
 
-        if (defenseLocation == null && rc.getHealth() <= HEAL_THRESHOLD) {
+        if (rc.getHealth() <= HEAL_THRESHOLD) {
             MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
             int minDistance = rc.getMapWidth() * rc.getMapHeight();
-            int archonIndex = 0;
+            MapLocation archonLocation = null;
             for (int i = maxArchonCount; --i >= 0; ) {
                 if (archons[i] != null) {
+                    // if (i == myArchonIndex) {
+                    //     archonLocation = archons[i];
+                    //     break;
+                    // }
+
                     int distance = getDistance(archons[i], rc.getLocation());
                     if (distance < minDistance) {
                         minDistance = distance;
-                        archonIndex = i;
+                        archonLocation = archons[i];
                     }
                 }
             }
 
-            defenseLocation = new MapLocation(archons[archonIndex].x, archons[archonIndex].y);
-        }
-
-        if (defenseLocation != null) {
-            int distance = rc.getLocation().distanceSquaredTo(defenseLocation);
-            if (distance < INNER_DEFENSE_RADIUS) {
-                Direction dir = rc.getLocation().directionTo(defenseLocation).opposite();
-                MovementHelper.greedyTryMove(dir);
-            } else if (INNER_DEFENSE_RADIUS <= distance && distance <= OUTER_DEFENSE_RADIUS) {
-                DefenseHelper.tryMoveRight(defenseLocation);
-            } else if (distance <= RobotType.ARCHON.visionRadiusSquared) {
-                Direction dir = rc.getLocation().directionTo(defenseLocation);
-                if (MovementHelper.greedyTryMove(dir)) {
-                    return;
-                } else {
-                    DefenseHelper.tryMoveRightAndBack(dir);
-                }
-            } else {
-                Direction dir = rc.getLocation().directionTo(defenseLocation);
-                MovementHelper.greedyTryMove(dir);
-            }
-
+            circleAround(archonLocation);
             return;
         }
 
@@ -112,5 +102,25 @@ public class BellmanFordMovement {
 
         dir = rc.getLocation().directionTo(guessedEnemyArchonLocation);
         MovementHelper.greedyTryMove(dir);
+    }
+
+    private static void circleAround(MapLocation location) throws GameActionException {
+        int distance = rc.getLocation().distanceSquaredTo(location);
+        if (distance < INNER_DEFENSE_RADIUS) {
+            Direction dir = rc.getLocation().directionTo(location).opposite();
+            MovementHelper.greedyTryMove(dir);
+        } else if (INNER_DEFENSE_RADIUS <= distance && distance <= OUTER_DEFENSE_RADIUS) {
+            DefenseHelper.tryMoveRight(location);
+        } else if (distance <= RobotType.ARCHON.visionRadiusSquared) {
+            Direction dir = rc.getLocation().directionTo(location);
+            if (MovementHelper.greedyTryMove(dir)) {
+                return;
+            } else {
+                DefenseHelper.tryMoveRightAndBack(dir);
+            }
+        } else {
+            Direction dir = rc.getLocation().directionTo(location);
+            MovementHelper.greedyTryMove(dir);
+        }
     }
 }
