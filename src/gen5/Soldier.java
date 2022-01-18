@@ -63,6 +63,7 @@ public strictfp class Soldier {
 		}
 
 		updateGuessedEnemyArchonSymmetries();
+		logger.log("Before movement");
 
 		String movement = System.getProperty(
 				"bc.testing.team-" + myTeam.name() + ".movement",
@@ -76,6 +77,8 @@ public strictfp class Soldier {
 				BellmanFordMovement.move();
 				break;
 		}
+
+		logger.log("After movement");
 
 		// Update lead and gold sources nearby to help miners
 		LeadMiningHelper.updateLeadAmountInGridCell();

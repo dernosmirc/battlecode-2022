@@ -70,12 +70,16 @@ public class BellmanFordMovement {
         }
 
         Direction dir = AttackHelper.shouldMoveBack();
+        MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (dir != null) {
+            if (enemyArchonLocation == null && guessedEnemyArchonLocation == null) {
+                TailHelper.updateTarget();
+            }
+
             MovementHelper.greedyTryMove(dir);
             return;
         }
 
-        MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (enemyArchonLocation != null) {
             if (sensedEnemyAttackRobot) {
                 int distance = rc.getLocation().distanceSquaredTo(enemyArchonLocation);
