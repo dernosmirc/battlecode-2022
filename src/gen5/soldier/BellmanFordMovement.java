@@ -7,6 +7,7 @@ import battlecode.common.RobotType;
 import battlecode.common.RobotInfo;
 import gen5.common.CommsHelper;
 import gen5.common.MovementHelper;
+import gen5.soldier.TailHelper;
 
 import static gen5.RobotPlayer.*;
 import static gen5.Soldier.*;
@@ -94,9 +95,16 @@ public class BellmanFordMovement {
         }
 
         if (guessedEnemyArchonLocation == null) {
-            // TODO: Go to nearest alive archon instead
-            dir = rc.getLocation().directionTo(myArchonLocation);
-            MovementHelper.greedyTryMove(dir);
+            TailHelper.updateTarget();
+            if (TailHelper.foundTarget()) {
+                MapLocation target = TailHelper.getTargetLocation();
+                dir = rc.getLocation().directionTo(target);
+                MovementHelper.greedyTryMove(dir);
+            } else {
+                dir = directions[rng.nextInt(directions.length)];
+                MovementHelper.greedyTryMove(dir);
+            }
+
             return;
         }
 
