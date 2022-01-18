@@ -3,7 +3,7 @@ package gen5.common;
 import battlecode.common.*;
 
 import gen5.RobotPlayer;
-import gen5.common.generated.Heuristics13;
+import gen5.common.generated.Heuristics20;
 import gen5.common.util.Logger;
 import gen5.common.util.Vector;
 
@@ -126,7 +126,7 @@ public class MovementHelper {
     private static int diameter;
     private static boolean arraysFilled = false;
     public static void prepareBellmanFord() {
-        int rSq = 13, r, d, size;
+        int rSq = 20, r, d, size;
         radiusSquared = rSq;
 
         radius = r = (int) Math.sqrt(rSq);
@@ -194,12 +194,12 @@ public class MovementHelper {
         RobotController rc = RobotPlayer.rc;
         MapLocation rn = rc.getLocation();
         int ordinal = dir.ordinal();
-        int[] locationX = Heuristics13.locationDumpX[ordinal],
-                locationY = Heuristics13.locationDumpY[ordinal],
-                destinationX = Heuristics13.destinationDumpX[ordinal],
-                destinationY = Heuristics13.destinationDumpY[ordinal],
-                dirX = Heuristics13.directionDumpX[ordinal],
-                dirY = Heuristics13.directionDumpY[ordinal];
+        int[] locationX = Heuristics20.locationDumpX[ordinal],
+                locationY = Heuristics20.locationDumpY[ordinal],
+                destinationX = Heuristics20.destinationDumpX[ordinal],
+                destinationY = Heuristics20.destinationDumpY[ordinal],
+                dirX = Heuristics20.directionDumpX[ordinal],
+                dirY = Heuristics20.directionDumpY[ordinal];
         int[][] dist = distancesDump,
                 parent = parentDump;
         boolean[][] notOccupied = occupiedDump;
@@ -228,6 +228,9 @@ public class MovementHelper {
         dist[r][r] = 0;
         arraysFilled = false;
         int vx, vy, ux, uy, w;
+        int dirX0 = dirX[0], dirY0 = dirY[0];
+        int dirX1 = dirX[1], dirY1 = dirY[1];
+        int dirX2 = dirX[2], dirY2 = dirY[2];
 
         // 1st iteration
         for (int li = locationX.length; --li >= 0;) {
@@ -238,12 +241,25 @@ public class MovementHelper {
             );
             if (notOccupied[vx][vy] && rc.canSenseLocation(location)) {
                 w = rc.senseRubble(location);
-                for (int di = dirX.length; --di >= 0;) {
-                    ux = vx + dirX[di];
-                    uy = vy + dirY[di];
-                    if (ux < 0 || uy < 0) {
-                        continue;
+                // unrolled loop, ugly but faster
+                ux = vx + dirX2; uy = vy + dirY2;
+                if (ux >= 0 && uy >= 0) {
+                    if (dist[vx][vy] > dist[ux][uy] + w) {
+                        dist[vx][vy] = dist[ux][uy] + w;
+                        parent[vx][vy] = ux * d + uy;
                     }
+                }
+                // another direction
+                ux = vx + dirX1; uy = vy + dirY1;
+                if (ux >= 0 && uy >= 0) {
+                    if (dist[vx][vy] > dist[ux][uy] + w) {
+                        dist[vx][vy] = dist[ux][uy] + w;
+                        parent[vx][vy] = ux * d + uy;
+                    }
+                }
+                // another direction
+                ux = vx + dirX0; uy = vy + dirY0;
+                if (ux >= 0 && uy >= 0) {
                     if (dist[vx][vy] > dist[ux][uy] + w) {
                         dist[vx][vy] = dist[ux][uy] + w;
                         parent[vx][vy] = ux * d + uy;
@@ -263,12 +279,25 @@ public class MovementHelper {
             );
             if (notOccupied[vx][vy] && rc.canSenseLocation(location)) {
                 w = rc.senseRubble(location);
-                for (int di = dirX.length; --di >= 0;) {
-                    ux = vx + dirX[di];
-                    uy = vy + dirY[di];
-                    if (ux < 0 || uy < 0) {
-                        continue;
+                // unrolled loop, ugly but faster
+                ux = vx + dirX2; uy = vy + dirY2;
+                if (ux >= 0 && uy >= 0) {
+                    if (dist[vx][vy] > dist[ux][uy] + w) {
+                        dist[vx][vy] = dist[ux][uy] + w;
+                        parent[vx][vy] = ux * d + uy;
                     }
+                }
+                // another direction
+                ux = vx + dirX1; uy = vy + dirY1;
+                if (ux >= 0 && uy >= 0) {
+                    if (dist[vx][vy] > dist[ux][uy] + w) {
+                        dist[vx][vy] = dist[ux][uy] + w;
+                        parent[vx][vy] = ux * d + uy;
+                    }
+                }
+                // another direction
+                ux = vx + dirX0; uy = vy + dirY0;
+                if (ux >= 0 && uy >= 0) {
                     if (dist[vx][vy] > dist[ux][uy] + w) {
                         dist[vx][vy] = dist[ux][uy] + w;
                         parent[vx][vy] = ux * d + uy;
@@ -294,7 +323,7 @@ public class MovementHelper {
         log.log("best destination");
 
         // construct path
-        Vector<Direction> ret = new Vector<>(20);
+        Vector<Direction> ret = new Vector<>(6);
         MapLocation lastLocation = new MapLocation(minInd / d, minInd % d);
         while (minInd != rnInd) {
             minInd = parent[minInd/d][minInd % d];
