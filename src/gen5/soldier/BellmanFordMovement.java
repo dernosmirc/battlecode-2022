@@ -9,6 +9,8 @@ import gen5.common.CommsHelper;
 import gen5.common.MovementHelper;
 import gen5.soldier.TailHelper;
 
+import java.util.Random;
+
 import static gen5.RobotPlayer.*;
 import static gen5.Soldier.*;
 import static gen5.common.Functions.getDistance;
@@ -21,6 +23,8 @@ public class BellmanFordMovement {
 
     private static final int HEAL_THRESHOLD = 20; // 21
     private static final int FULL_HEAL_THRESHOLD = 45;
+
+    private static final Random rng = new Random(rc.getID());
 
     public static void move() throws GameActionException {
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();

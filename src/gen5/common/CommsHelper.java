@@ -19,6 +19,11 @@ public strictfp class CommsHelper {
 		return new MapLocation(getBits(bits, 6, 11), getBits(bits, 0, 5));
 	}
 
+	public static int getBitsFromLocation(MapLocation loc) {
+		int val = Functions.setBits(0, loc.x, 6, 11);
+		return Functions.setBits(val, loc.y, 0, 5);
+	}
+
 	public static MapLocation getEnemyArchonLocation() throws GameActionException {
 		MapLocation archonLocation = null;
 		MapLocation centre = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
