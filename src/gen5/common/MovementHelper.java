@@ -119,13 +119,12 @@ public class MovementHelper {
     *
     * */
 
-    private static final int BELLMANFORD_ITERATIONS = 2;
-
     private static int[][] distancesDump, parentDump;
     private static boolean[][] occupiedDump;
     private static final int INFINITY = 100000;
     private static int radius, radiusSquared;
     private static int diameter;
+    private static boolean arraysFilled = false;
     public static void prepareBellmanFord() {
         int rSq = 13, r, d, size;
         radiusSquared = rSq;
@@ -144,6 +143,23 @@ public class MovementHelper {
                 occupiedDump[i][j] = true;
             }
         }
+        arraysFilled = true;
+    }
+
+    private static void fillArrays() {
+        if (arraysFilled) {
+            return;
+        }
+        int d = diameter;
+        int[][] dist = distancesDump;
+        boolean[][] notOccupied = occupiedDump;
+        for (int i = d; --i >= 0;) {
+            for (int j = d; --j >= 0;) {
+                dist[i][j] = INFINITY;
+                notOccupied[i][j] = true;
+            }
+        }
+        arraysFilled = true;
     }
 
     private static Vector<Direction> path = null;
@@ -158,6 +174,8 @@ public class MovementHelper {
         if (dir != pathDirection || !rc.getLocation().equals(lastLocation)) {
             pathDirection = dir;
             path = getBellmanFordPath(dir);
+        } else {
+            fillArrays();
         }
 
         if (rc.canMove(path.last())) {
@@ -192,12 +210,7 @@ public class MovementHelper {
 
         log.log("init variables");
 
-        for (int i = d; --i >= 0;) {
-            for (int j = d; --j >= 0;) {
-                dist[i][j] = INFINITY;
-                notOccupied[i][j] = true;
-            }
-        }
+        fillArrays();
 
         log.log("filled arrays");
 
@@ -213,19 +226,24 @@ public class MovementHelper {
         log.log("detected nearby fixed bots");
 
         dist[r][r] = 0;
+        arraysFilled = false;
+        int vx, vy, ux, uy, w;
 
         // 1st iteration
         for (int li = locationX.length; --li >= 0;) {
-            for (int di = dirX.length; --di >= 0;) {
-                int vx = locationX[li], vy = locationY[li];
-                int ux = vx + dirX[di], uy = vy + dirY[di];
-                if (ux < 0 || uy < 0) {
-                    continue;
-                }
-                int lx = rnX_r + locationX[li], ly = rnY_r + locationY[li];
-                MapLocation location = new MapLocation(lx, ly);
-                if (notOccupied[vx][vy] && rc.canSenseLocation(location)) {
-                    int w = rc.senseRubble(location);
+            vx = locationX[li];
+            vy = locationY[li];
+            MapLocation location = new MapLocation(
+                    rnX_r + locationX[li], rnY_r + locationY[li]
+            );
+            if (notOccupied[vx][vy] && rc.canSenseLocation(location)) {
+                w = rc.senseRubble(location);
+                for (int di = dirX.length; --di >= 0;) {
+                    ux = vx + dirX[di];
+                    uy = vy + dirY[di];
+                    if (ux < 0 || uy < 0) {
+                        continue;
+                    }
                     if (dist[vx][vy] > dist[ux][uy] + w) {
                         dist[vx][vy] = dist[ux][uy] + w;
                         parent[vx][vy] = ux * d + uy;
@@ -238,16 +256,19 @@ public class MovementHelper {
 
         // 2nd iteration
         for (int li = locationX.length; --li >= 0;) {
-            for (int di = dirX.length; --di >= 0;) {
-                int vx = locationX[li], vy = locationY[li];
-                int ux = vx + dirX[di], uy = vy + dirY[di];
-                if (ux < 0 || uy < 0) {
-                    continue;
-                }
-                int lx = rnX_r + locationX[li], ly = rnY_r + locationY[li];
-                MapLocation location = new MapLocation(lx, ly);
-                if (notOccupied[vx][vy] && rc.canSenseLocation(location)) {
-                    int w = rc.senseRubble(location);
+            vx = locationX[li];
+            vy = locationY[li];
+            MapLocation location = new MapLocation(
+                    rnX_r + locationX[li], rnY_r + locationY[li]
+            );
+            if (notOccupied[vx][vy] && rc.canSenseLocation(location)) {
+                w = rc.senseRubble(location);
+                for (int di = dirX.length; --di >= 0;) {
+                    ux = vx + dirX[di];
+                    uy = vy + dirY[di];
+                    if (ux < 0 || uy < 0) {
+                        continue;
+                    }
                     if (dist[vx][vy] > dist[ux][uy] + w) {
                         dist[vx][vy] = dist[ux][uy] + w;
                         parent[vx][vy] = ux * d + uy;
@@ -258,10 +279,12 @@ public class MovementHelper {
 
         log.log("second iteration");
 
+
         // find best destination
         int minDistance = INFINITY, minInd = -1;
         for (int li = destinationX.length; --li >= 0;) {
-            int vx = destinationX[li], vy = destinationY[li];
+            vx = destinationX[li];
+            vy = destinationY[li];
             if (minDistance > dist[vx][vy]) {
                 minDistance = dist[vx][vy];
                 minInd = vx * d + vy;
