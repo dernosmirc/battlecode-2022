@@ -18,7 +18,7 @@ import static gen5.common.Functions.setBits;
 import java.util.Random;
 
 public strictfp class Soldier {
-	private static final Random rng = new Random(rc.getID());
+	public static final Random rng = new Random(rc.getID());
 
 	public static MapLocation myArchonLocation;
 	public static int myArchonIndex;

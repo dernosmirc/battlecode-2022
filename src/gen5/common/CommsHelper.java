@@ -20,8 +20,8 @@ public strictfp class CommsHelper {
 	}
 
 	public static int getBitsFromLocation(MapLocation loc) {
-		int val = Functions.setBits(0, loc.x, 6, 11);
-		return Functions.setBits(val, loc.y, 0, 5);
+		int val = setBits(0, 6, 11, loc.x);
+		return setBits(val, 0, 5, loc.y);
 	}
 
 	public static MapLocation getEnemyArchonLocation() throws GameActionException {
