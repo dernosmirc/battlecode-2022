@@ -43,28 +43,24 @@ public class SageMovementHelper {
 
     public static void move() throws GameActionException {
         if (rc.getHealth() < HP_THRESHOLD || rc.getActionCooldownTurns()/10 >= TURNS_THRESHOLD) {
-            rc.setIndicatorString("healing");
             defenseRevolution(myArchonLocation);
             return;
         }
 
         Direction attack = SageAttackHelper.getArchonAttackDirection();
         if (attack != null) {
-            rc.setIndicatorString("Archon Attack");
             MovementHelper.tryMove(attack, false);
             return;
         }
 
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
         if (defenseLocation != null) {
-            rc.setIndicatorString("defending");
             defenseRevolution(defenseLocation);
             return;
         }
 
         Direction dir = AttackHelper.shouldMoveBack();
         if (dir != null) {
-            rc.setIndicatorString("moving back");
             Direction d = MovementHelper.whereGreedyTryMove(dir);
             if (d != null) {
                 MapLocation tentativeMoveLocation = rc.getLocation().add(d);
@@ -82,13 +78,11 @@ public class SageMovementHelper {
 
         MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (enemyArchonLocation != null) {
-            rc.setIndicatorString("attacking");
             dir = rc.getLocation().directionTo(enemyArchonLocation);
             MovementHelper.greedyTryMove(dir);
             return;
         }
 
-        rc.setIndicatorString("chilling");
         defenseRevolution(myArchonLocation);
     }
 }

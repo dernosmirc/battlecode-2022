@@ -30,7 +30,6 @@ public class SageAttackHelper {
             if (robot.type == RobotType.ARCHON) {
                 if (rc.canEnvision(AnomalyType.FURY)) {
                     rc.envision(AnomalyType.FURY);
-                    rc.setIndicatorString("FURY!");
                     return;
                 }
             }
@@ -52,7 +51,6 @@ public class SageAttackHelper {
 
         if (robotToAttack != null && rc.canAttack(robotToAttack.location)) {
             rc.attack(robotToAttack.location);
-            rc.setIndicatorString("normal attack!");
         }
     }
 
