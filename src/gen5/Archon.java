@@ -22,23 +22,39 @@ public strictfp class Archon {
 
 	private static int lastDefenseRound = -100;
 
-	private static final RobotType[] priority = {
-			RobotType.SAGE,
-			RobotType.SOLDIER,
-			RobotType.MINER,
-			RobotType.BUILDER,
-	};
+
+	// ARCHON
+	// LABORATORY
+	// WATCHTOWER
+	// MINER
+	// BUILDER
+	// SOLDIER
+	// SAGE
+	public static final int[] priority = {0, 0, 0, 2, 1, 3, 4};
 
 	private static MapLocation getHealLocation() {
-		RobotInfo[] infos = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam);
-		for (RobotType type: priority) {
-			for (RobotInfo ri : infos) {
-				if (ri.type == type) {
-					return ri.location;
-				}
+		if (!rc.isActionReady()) {
+			return null;
+		}
+
+		int minHp = 2000;
+		int maxPriority = -1;
+		MapLocation robotLoc = null;
+		RobotInfo[] ris = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam);
+		for (int i = ris.length; --i >= 0; ) {
+			RobotInfo robot = ris[i];
+			int typeIndex = robot.type.ordinal();
+			int p = priority[typeIndex];
+			if (p > maxPriority) {
+				maxPriority = p;
+				minHp = robot.health;
+				robotLoc = robot.location;
+			} else if (p == maxPriority && robot.health < minHp) {
+				minHp = robot.health;
+				robotLoc = robot.location;
 			}
 		}
-		return null;
+		return robotLoc;
 	}
 
 	private static int lastRoundHp = 0;
