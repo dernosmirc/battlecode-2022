@@ -16,13 +16,16 @@ public class BugPathingHelper {
     private static int ACCEPTABLE_RUBBLE = 25;
     private static int ACCEPTABLE_WALL_MOVES = 15;
     private static int WIDTH_RUBBLE_THRESHOLD = 40;
-    private static int WIDTH_CHECK_WALL_MOVES = 7;
+    private static int WIDTH_CHECK_WALL_MOVES = 5;
     /**
      * The direction that we are trying to use to go around the obstacle.
      * It is null if we are not trying to go around an obstacle.
      */
     private static Direction bugDirection = null;
-
+    /**
+     * Previous target at which loop is aimed at
+     */
+    private static MapLocation loopTarget = null;
     /**
      * True iff looping around obstacle, false elsewhere
      */
@@ -125,14 +128,14 @@ public class BugPathingHelper {
     /**
      * Set values back to default
      */
-    public static void setDefault(){
-        anomaly = false;
+    public static void setDefault(){;
         bugDirection = null;
         startLocation = null;
         gen3_2 = false;
         wallMoveCount = 0;
         initialDirection = null;
         loopTowardsSide = 0;
+        loopTarget = null;
     }
 
     /**
@@ -178,41 +181,51 @@ public class BugPathingHelper {
      * @throws GameActionException
      *
      */
+
+    private static void debugString(MapLocation target){
+        // indicator string log
+        String indicator = "";
+        indicator += gen3_2;
+        indicator += loopTowardsSide;
+        if (loopTarget == null){
+            indicator += "00";
+        }
+        else{
+            indicator += loopTarget.toString();
+        }
+        if (startLocation == null){
+            indicator += "00";
+        }
+        else{
+            indicator += startLocation.toString();
+        }
+        if (initialDirection == null){
+            indicator += "?";
+        }
+        else{
+            indicator += initialDirection.toString();
+        }
+        if (bugDirection == null){
+            indicator += "?";
+        }
+        else{
+            indicator += bugDirection.toString();
+        }
+        indicator += wallMoveCount;
+        indicator += anomaly;
+        indicator += (target.x + "," + target.y);
+        // IS_LOOP, LOOP_TOWARDS_SIDE, LOOP_TARGET,START_LOC, INITIAL_DIR, BUG_DIR, WALL_MOVE_COUNT, ANOMALY, TARGET
+        rc.setIndicatorString(indicator);
+    }
+
     public static void moveTowards(MapLocation target) throws GameActionException {
+        if (DEBUG){
+            debugString(target);
+        }
         if (!rc.isMovementReady()) {
             // If our cooldown is too high, then don't even bother!
             // There is nothing we can do anyway.
             return;
-        }
-
-        if (DEBUG) {
-            // indicator string log
-            String indicator = "";
-            indicator += gen3_2;
-            indicator += loopTowardsSide;
-            if (startLocation == null){
-                indicator += "00";
-            }
-            else{
-                indicator += (startLocation.x + "," + startLocation.y);
-            }
-            if (initialDirection == null){
-                indicator += "?";
-            }
-            else{
-                indicator += initialDirection.toString();
-            }
-            if (bugDirection == null){
-                indicator += "?";
-            }
-            else{
-                indicator += bugDirection.toString();
-            }
-            indicator += wallMoveCount;
-            indicator += anomaly;
-            indicator += (target.x + "," + target.y);
-            // IS_LOOP, LOOP_TOWARDS,START_LOC, INITIAL_DIR, BUG_DIR, WALL_MOVE_COUNT, ANOMALY, TARGET
-            rc.setIndicatorString(indicator);
         }
         MapLocation currentLocation = rc.getLocation();
         // if (currentLocation == target) // this is BAD! see Lecture 2 for why.
@@ -228,7 +241,9 @@ public class BugPathingHelper {
         else{
             anomaly = false;
         }
-
+        if (loopTarget != null && gen3_2 && !loopTarget.equals(target)){
+            setDefault();
+        }
         // Calculate new direction
         MapLocation newLocation = new MapLocation(rc.getLocation().x, rc.getLocation().y);
         Direction newDirection = newLocation.directionTo(target);
@@ -262,6 +277,7 @@ public class BugPathingHelper {
             initialDirection = d;
         } else {
             gen3_2 = true;
+            loopTarget = target;
             if (startLocation == null){
                 startLocation = new MapLocation(currentLocation.x, currentLocation.y);
                 rc.setIndicatorDot(startLocation, 255, 0, 0);
