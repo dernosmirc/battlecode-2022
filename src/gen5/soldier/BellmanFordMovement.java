@@ -24,8 +24,6 @@ public class BellmanFordMovement {
     private static final int HEAL_THRESHOLD = 20; // 21
     private static final int FULL_HEAL_THRESHOLD = 45;
 
-    private static final Random rng = new Random(rc.getID());
-
     public static void move() throws GameActionException {
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
         if (defenseLocation != null) {
