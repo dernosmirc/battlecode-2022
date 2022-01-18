@@ -332,7 +332,7 @@ public class MovementHelper {
             lastLocation = n;
         }
         log.log("constructed path");
-        log.flush();
+        //log.flush();
         return ret;
     }
 }

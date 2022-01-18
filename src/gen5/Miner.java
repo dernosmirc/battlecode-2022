@@ -45,7 +45,7 @@ public strictfp class Miner {
 		logger.log("Updating Lead");
 		LeadMiningHelper.updateLeadAmountInGridCell();
 		logger.log("Updated Lead");
-		logger.flush();
+		//logger.flush();
 	}
 
 	private static boolean move() throws GameActionException {
