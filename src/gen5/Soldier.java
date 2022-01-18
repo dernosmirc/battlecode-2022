@@ -1,14 +1,16 @@
 package gen5;
 
 import battlecode.common.*;
+import gen5.soldier.BellmanFordMovement;
+import gen5.soldier.BugPathingMovement;
 import gen5.miner.GoldMiningHelper;
 import gen5.miner.LeadMiningHelper;
 import gen5.soldier.AttackHelper;
 import gen5.common.CommsHelper;
-import gen5.soldier.BellmanFordMovement;
 import gen5.common.util.Logger;
 import gen5.common.SymmetryType;
 
+import static gen5.RobotPlayer.myTeam;
 import static gen5.RobotPlayer.*;
 import static gen5.common.Functions.getBits;
 import static gen5.common.Functions.setBits;
@@ -62,11 +64,15 @@ public strictfp class Soldier {
 
 		updateGuessedEnemyArchonSymmetries();
 
-		switch (myTeam) {
-			case A:
-				//BugPathingMovement.move();
-				//break;
-			case B:
+		String movement = System.getProperty(
+				"bc.testing.team-" + myTeam.name().toLowerCase() + ".movement",
+				"bellmanford"
+		);
+		switch (movement) {
+			case "bugpathing":
+				BugPathingMovement.move();
+				break;
+			case "bellmanford":
 				BellmanFordMovement.move();
 				break;
 		}
