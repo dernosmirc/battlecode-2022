@@ -16,7 +16,8 @@ public strictfp class RobotPlayer {
      * these variables are static, in Battlecode they aren't actually shared between your robots.
      */
     static int turnCount = 0;
-
+    private static boolean isTurret = true;
+    private static boolean shouldMove = true;
     /**
      * A random number generator.
      * We will use this RNG to make some random moves. The Random class is provided by the java.util.Random
@@ -95,24 +96,93 @@ public strictfp class RobotPlayer {
         // Your code should never reach here (unless it's intentional)! Self-destruction imminent...
     }
 
+    public static int getDistance(MapLocation location1, MapLocation location2) {
+        return Math.max(Math.abs(location1.x - location2.x), Math.abs(location1.y - location2.y));
+    }
     /**
      * Run a single turn for an Archon.
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
     static void runArchon(RobotController rc) throws GameActionException {
-        // Pick a direction to build in.
-        Direction dir = directions[rng.nextInt(directions.length)];
-        if (rng.nextBoolean()) {
-            // Let's try to build a miner.
-            rc.setIndicatorString("Trying to build a miner");
-            if (rc.canBuildRobot(RobotType.MINER, dir)) {
-                rc.buildRobot(RobotType.MINER, dir);
+//        if (!rc.isMovementReady()){
+//            return;
+//        }
+        MapLocation targetLoc = null;
+        int x = rc.getMapWidth() - 1, y = rc.getMapHeight() - 1;
+        int mx = 100000;
+        for (int i = 3; i >= 0; i--){
+            if (targetLoc == null){
+                targetLoc = new MapLocation(0, 0);
+                mx = Math.min(mx, getDistance(targetLoc, rc.getLocation()));
             }
-        } else {
-            // Let's try to build a soldier.
-            rc.setIndicatorString("Trying to build a soldier");
-            if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
-                rc.buildRobot(RobotType.SOLDIER, dir);
+            else if (i == 1){
+                if (getDistance(rc.getLocation(), new MapLocation(x, 0)) <= mx){
+                    targetLoc = new MapLocation(x, 0);
+                    mx = Math.min(mx, getDistance(rc.getLocation(), new MapLocation(x, 0)));
+                }
+            }
+            else if(i == 2){
+                if (getDistance(rc.getLocation(), new MapLocation(0, y)) <= mx){
+                    targetLoc = new MapLocation(0, y);
+                    mx = Math.min(mx, getDistance(rc.getLocation(), new MapLocation(0, y)));
+                }
+            }
+            else{
+                if (getDistance(rc.getLocation(), new MapLocation(x, y)) <= mx){
+                    targetLoc = new MapLocation(x, y);
+                    mx = Math.min(mx, getDistance(rc.getLocation(), new MapLocation(x, y)));
+                }
+            }
+        }
+        MapLocation me = rc.getLocation();
+        if (me.distanceSquaredTo(targetLoc) <= 13){
+            shouldMove = false;
+        }
+        if (shouldMove){
+            if (isTurret){
+                if (rc.canTransform()){
+                    rc.transform();
+                    isTurret = false;
+                }
+            }
+        }
+        else{
+            if (!isTurret){
+                if (rc.canTransform()){
+                    rc.transform();
+                    isTurret = true;
+                }
+            }
+        }
+        // System.out.println(rc.getMovementCooldownTurns());
+        if (!shouldMove && isTurret){
+            // Pick a direction to build in.
+            Direction dir = directions[rng.nextInt(directions.length)];
+            if (rng.nextBoolean()) {
+                // Let's try to build a miner.
+                rc.setIndicatorString("Trying to build a miner");
+                if (rc.canBuildRobot(RobotType.MINER, dir)) {
+                    rc.buildRobot(RobotType.MINER, dir);
+                }
+            } else {
+                // Let's try to build a soldier.
+                rc.setIndicatorString("Trying to build a soldier");
+                if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
+                    rc.buildRobot(RobotType.SOLDIER, dir);
+                }
+            }
+        }
+        else if (shouldMove && !isTurret){
+            Direction d = rc.getLocation().directionTo(targetLoc);
+            // System.out.println("SHOULD_MOVE");
+            if (rc.canMove(d)){
+                rc.move(d);
+            }
+            else if (rc.canMove(d.rotateLeft())){
+                rc.move(d.rotateLeft());
+            }
+            else if(rc.canMove(d.rotateRight())){
+                rc.move(d.rotateRight());
             }
         }
     }
@@ -122,8 +192,8 @@ public strictfp class RobotPlayer {
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
     static void runMiner(RobotController rc) throws GameActionException {
-        // Try to mine on squares around us.
         MapLocation me = rc.getLocation();
+        // Try to mine on squares around us.
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
                 MapLocation mineLocation = new MapLocation(me.x + dx, me.y + dy);
