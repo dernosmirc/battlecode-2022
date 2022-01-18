@@ -34,10 +34,6 @@ public strictfp class Miner {
 
 		GoldMiningHelper.updateGoldAmountInGridCell();
 
-		if (rc.isMovementReady()) {
-			move();
-		}
-
 		if (LeadMiningHelper.canMineLead()) {
 			LeadMiningHelper.mineLead();
 		}
@@ -46,6 +42,10 @@ public strictfp class Miner {
 		LeadMiningHelper.updateLeadAmountInGridCell();
 		logger.log("Updated Lead");
 		//logger.flush();
+
+		if (rc.isMovementReady()) {
+			move();
+		}
 	}
 
 	private static boolean move() throws GameActionException {

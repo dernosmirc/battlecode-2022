@@ -165,15 +165,18 @@ public class MovementHelper {
     private static Vector<Direction> path = null;
     private static Direction pathDirection = null;
     private static MapLocation lastLocation = null;
-    public static void moveBellmanFord(Direction dir) throws GameActionException {
+    public static boolean moveBellmanFord(Direction dir) throws GameActionException {
         if (dir == null || dir == Direction.CENTER) {
             pathDirection = null;
-            return;
+            return false;
         }
 
         if (dir != pathDirection || !rc.getLocation().equals(lastLocation)) {
-            pathDirection = dir;
             path = getBellmanFordPath(dir);
+            if (path == null) {
+                return false;
+            }
+            pathDirection = dir;
         } else {
             fillArrays();
         }
@@ -181,12 +184,14 @@ public class MovementHelper {
         if (rc.canMove(path.last())) {
             rc.move(path.popLast());
             lastLocation = rc.getLocation();
+            return true;
         }
 
         if (path.isEmpty()) {
             pathDirection = null;
             path = null;
         }
+        return false;
     }
 
     private static Vector<Direction> getBellmanFordPath(Direction dir) throws GameActionException {
@@ -321,6 +326,10 @@ public class MovementHelper {
         }
 
         log.log("best destination");
+
+        if (minInd == -1) {
+            return null;
+        }
 
         // construct path
         Vector<Direction> ret = new Vector<>(6);
