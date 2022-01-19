@@ -37,7 +37,9 @@ public strictfp class Miner {
 
 		if (rc.isMovementReady()) {
 			logger.log("moving");
-			move();
+			if (!move()) {
+				MovementHelper.tryMove(myDirection, false);
+			};
 			logger.log("moved");
 		}
 
@@ -87,7 +89,7 @@ public strictfp class Miner {
 		isExplorer = random.nextDouble() < getExplorerRatio();
 		myDirection = Functions.getRandomDirection();
 		maxArchonCount = 0;
-		MovementHelper.prepareBellmanFord(13);
+		MovementHelper.prepareBellmanFord(20);
 		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {

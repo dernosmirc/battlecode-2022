@@ -44,6 +44,9 @@ public class MovementHelper {
     }
 
     public static boolean tryMove (Direction dir, boolean force) throws GameActionException {
+        if (dir == null || dir == Direction.CENTER) {
+            dir = Functions.getRandomDirection();
+        }
         if (rc.isMovementReady()) {
             if (!force) {
                 Direction[] dirs = {
@@ -138,7 +141,7 @@ public class MovementHelper {
 
         if (path == null || path.isEmpty()) {
             pathDirection = null;
-            return false;
+            return tryMove(getInstantaneousDirection(), false);
         }
         Direction d = path.last();
         if (rc.canMove(d)) {
@@ -159,6 +162,10 @@ public class MovementHelper {
 
         if (!rc.getLocation().isWithinDistanceSquared(mapLocation, BellmanFord.radiusSquared)) {
             return moveBellmanFord(rc.getLocation().directionTo(mapLocation));
+        }
+
+        if (!rc.getLocation().isWithinDistanceSquared(mapLocation, 5)) {
+            return tryMove(rc.getLocation().directionTo(mapLocation), false);
         }
 
         boolean usingBellman = false;

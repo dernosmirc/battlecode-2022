@@ -35,11 +35,7 @@ public class BellmanFord {
 
         RobotInfo[] ris = rc.senseNearbyRobots(radiusSquared);
         for (int i = ris.length; --i >= 0;) {
-            RobotInfo ri = ris[i];
-            if (ri != null && (ri.mode == RobotMode.PROTOTYPE || ri.mode == RobotMode.TURRET)) {
-                int x = ri.location.x - rnX_r, y = ri.location.y - rnY_r;
-                notOccupied[x][y] = false;
-            }
+            notOccupied[ris[i].location.x - rnX_r][ris[i].location.y - rnY_r] = false;
         }
 
         dist[r][r] = 0;
@@ -138,12 +134,8 @@ public class BellmanFord {
         fillArrays();
 
         RobotInfo[] ris = rc.senseNearbyRobots(radiusSquared);
-        for (int i = ris.length; --i >= 0; ) {
-            RobotInfo ri = ris[i];
-            if (ri != null && (ri.mode == RobotMode.PROTOTYPE || ri.mode == RobotMode.TURRET)) {
-                int x = ri.location.x - rnX_r, y = ri.location.y - rnY_r;
-                notOccupied[x][y] = false;
-            }
+        for (int i = ris.length; --i >= 0;) {
+            notOccupied[ris[i].location.x - rnX_r][ris[i].location.y - rnY_r] = false;
         }
 
         dist[r][r] = 0;
