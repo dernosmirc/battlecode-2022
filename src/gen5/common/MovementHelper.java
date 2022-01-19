@@ -141,7 +141,7 @@ public class MovementHelper {
 
         if (path == null || path.isEmpty()) {
             pathDirection = null;
-            return tryMove(getInstantaneousDirection(), false);
+            return tryMove(dir, false);
         }
         Direction d = path.last();
         if (rc.canMove(d)) {
@@ -164,7 +164,7 @@ public class MovementHelper {
             return moveBellmanFord(rc.getLocation().directionTo(mapLocation));
         }
 
-        if (!rc.getLocation().isWithinDistanceSquared(mapLocation, 5)) {
+        if (rc.getLocation().isWithinDistanceSquared(mapLocation, 2)) {
             return tryMove(rc.getLocation().directionTo(mapLocation), false);
         }
 

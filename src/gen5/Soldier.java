@@ -80,9 +80,13 @@ public strictfp class Soldier {
 
 		logger.log("After movement");
 
-		// Update lead and gold sources nearby to help miners
-		LeadMiningHelper.updateLeadAmountInGridCell();
-		GoldMiningHelper.updateGoldAmountInGridCell();
+		if (Clock.getBytecodesLeft() >= 4000) {
+			logger.log("Updating Lead and gold");
+			// Update lead and gold sources nearby to help miners
+			LeadMiningHelper.updateLeadAmountInGridCell();
+			GoldMiningHelper.updateGoldAmountInGridCell();
+			logger.log("Updated Lead and gold");
+		}
 
 		logger.flush();
 	}

@@ -37,9 +37,7 @@ public strictfp class Miner {
 
 		if (rc.isMovementReady()) {
 			logger.log("moving");
-			if (!move()) {
-				MovementHelper.tryMove(myDirection, false);
-			};
+			move();
 			logger.log("moved");
 		}
 
