@@ -13,7 +13,7 @@ import static gen5.RobotPlayer.*;
 import static gen5.common.Functions.getBits;
 
 public strictfp class SpawnHelper {
-	private static final int WATCHTOWER_WINDOW = 25;
+	private static final int WATCHTOWER_WINDOW = 50;
 	private static final int ARCHON_MUTATE_WINDOW = 100;
 	private static final int LAB_WINDOW = 50;
 
