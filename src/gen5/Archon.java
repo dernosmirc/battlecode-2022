@@ -202,5 +202,14 @@ public strictfp class Archon {
 
 		isPossibleEnemyArchonSymmetry = new boolean[3];
 		isPossibleEnemyArchonSymmetry[0] = isPossibleEnemyArchonSymmetry[1] = isPossibleEnemyArchonSymmetry[2] = true;
+
+		int mapArea = rc.getMapHeight() * rc.getMapWidth();
+		if (mapArea <= 33 * 33) {
+			SpawnHelper.mapSizeType = 0;
+		} else if (mapArea <= 47 * 47) {
+			SpawnHelper.mapSizeType = 1;
+		} else {
+			SpawnHelper.mapSizeType = 2;
+		}
 	}
 }

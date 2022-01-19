@@ -172,6 +172,8 @@ public class LeadMiningHelper {
     }
 
     public static void updateLeadAmountInGridCell() throws GameActionException {
+        if (rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam).length >= 5) return;
+        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length >= 40) return;
         MetalInfo[] infos = getLeadOnGrid(), adj = getAdjacentLeadInfos();
         MetalInfo bestCandidate = new MetalInfo(0, rc.getLocation());
         for (int i = adj.length; --i >= 0;) {

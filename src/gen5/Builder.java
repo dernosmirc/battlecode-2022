@@ -70,18 +70,17 @@ public strictfp class Builder {
 		}
 	}
 
-	private static void move() throws GameActionException {
+	private static boolean move() throws GameActionException {
 		Direction direction = BuildingHelper.getAntiArchonDirection(myArchonLocation);
 		if (direction != null) {
-			MovementHelper.tryMove(direction, false);
-			return;
+			return MovementHelper.tryMove(direction, false);
 		}
 		direction = BuildingHelper.getRepairDirection();
 		if (direction != null) {
-			MovementHelper.tryMove(direction, false);
-			return;
+			return MovementHelper.tryMove(direction, false);
 		}
 		SageMovementHelper.defenseRevolution(myArchonLocation);
+		return true;
 	}
 
 	public static void run() throws GameActionException {

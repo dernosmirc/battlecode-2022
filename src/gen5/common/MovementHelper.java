@@ -118,10 +118,21 @@ public class MovementHelper {
         return optimalDirection != null && tryMove(optimalDirection, true);
     }
 
+
     public static void prepareBellmanFord(int rSq) {
         BellmanFord.prepareBellmanFord(rSq);
+        // check for vortex
+        AnomalyScheduleEntry[] anomalies = rc.getAnomalySchedule();
+        vortexRounds = new Vector<>(anomalies.length);
+        for (int i = anomalies.length; --i >= 0;) {
+            AnomalyScheduleEntry anomaly = anomalies[i];
+            if (anomaly.anomalyType == AnomalyType.VORTEX) {
+                vortexRounds.add(anomaly.roundNumber);
+            }
+        }
     }
 
+    private static Vector<Integer> vortexRounds;
     private static Vector<Direction> path = null;
     private static Direction pathDirection = null;
     private static MapLocation destination = null;
@@ -130,6 +141,11 @@ public class MovementHelper {
         if (dir == null || dir == Direction.CENTER) {
             pathDirection = null;
             return false;
+        }
+
+        if (!vortexRounds.isEmpty() && vortexRounds.last() == rc.getRoundNum()) {
+            pathDirection = null;
+            vortexRounds.popLast();
         }
 
         boolean usingBellman = false;
@@ -166,6 +182,11 @@ public class MovementHelper {
 
         if (rc.getLocation().isWithinDistanceSquared(mapLocation, 2)) {
             return tryMove(rc.getLocation().directionTo(mapLocation), false);
+        }
+
+        if (!vortexRounds.isEmpty() && vortexRounds.last() == rc.getRoundNum()) {
+            pathDirection = null;
+            vortexRounds.popLast();
         }
 
         boolean usingBellman = false;

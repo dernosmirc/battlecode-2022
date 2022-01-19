@@ -11,13 +11,12 @@ import gen5.common.util.Logger;
 import java.util.Random;
 
 import static gen5.RobotPlayer.*;
-import static gen5.common.Functions.getBits;
-import static gen5.common.Functions.sigmoid;
+import static gen5.common.Functions.*;
 
 public strictfp class Miner {
-	private static final double GOLD_MINER_RATIO = 0.25;
+	private static final double GOLD_MINER_RATIO = 0.5;
 	private static double getExplorerRatio() {
-		return 0.5 * sigmoid((300-rc.getRoundNum())/200.0);
+		return 0.65 * sigmoid((300-rc.getRoundNum())/200.0);
 	}
 
 	private static MapLocation myArchonLocation;
@@ -27,6 +26,7 @@ public strictfp class Miner {
 	private static boolean isExplorer = false;
 	private static final Random random = new Random(rc.getID());
 
+	private static int stillCount = 0;
 	public static void run() throws GameActionException {
 		Logger logger = new Logger("Miner", true);
 		int round = rc.getRoundNum();
@@ -37,7 +37,14 @@ public strictfp class Miner {
 
 		if (rc.isMovementReady()) {
 			logger.log("moving");
-			move();
+			if (!move()) {
+				stillCount++;
+			}
+			if (stillCount > 3) {
+				if (MovementHelper.tryMove(getRandomDirection(), false)) {
+					stillCount = 0;
+				}
+			}
 			logger.log("moved");
 		}
 
@@ -49,6 +56,7 @@ public strictfp class Miner {
 		//logger.flush();
 	}
 
+	private static boolean clockwise = false;
 	private static boolean move() throws GameActionException {
 		MapLocation gold = GoldMiningHelper.spotGold();
 		if (gold != null) {
@@ -71,12 +79,16 @@ public strictfp class Miner {
 
 		Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
 		if (antiCorner != null) {
-			myDirection = Functions.getPerpendicular(antiCorner);
+			myDirection = getPerpendicular(antiCorner);
+		}
+		if (clockwise) {
+			myDirection = myDirection.opposite();
 		}
 		if (
 				!CommsHelper.isLocationInEnemyZone(rc.getLocation()) &&
 				CommsHelper.isLocationInEnemyZone(rc.getLocation().add(myDirection))
 		) {
+			clockwise = !clockwise;
 			myDirection = myDirection.opposite();
 		}
 		return MovementHelper.moveBellmanFord(myDirection);
@@ -97,7 +109,7 @@ public strictfp class Miner {
 				);
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
 					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
-					myDirection = myArchonLocation.directionTo(rc.getLocation());
+					myDirection = getRandomDirection();
 					myArchonIndex = i - 32;
 				}
 			} else {
