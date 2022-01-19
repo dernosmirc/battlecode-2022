@@ -60,8 +60,8 @@ public strictfp class Miner {
 			if (goldDirection != null) {
 				rc.setIndicatorString("gold afar");
 				// TODO change
-				//MovementHelper.moveBellmanFord(goldDirection);
-				MovementHelper.tryMove(goldDirection, false);
+				MovementHelper.moveBellmanFord(goldDirection);
+				//MovementHelper.tryMove(goldDirection, false);
 				return true;
 			}
 		}
@@ -73,8 +73,8 @@ public strictfp class Miner {
 		if (!isExplorer && (leadDirection = LeadMiningHelper.spotLeadOnGrid()) != null) {
 			rc.setIndicatorString("lead afar");
 			// TODO change
-			// MovementHelper.moveBellmanFord(leadDirection);
-			MovementHelper.tryMove(leadDirection, false);
+			MovementHelper.moveBellmanFord(leadDirection);
+			//MovementHelper.tryMove(leadDirection, false);
 			return true;
 		}
 
@@ -98,7 +98,7 @@ public strictfp class Miner {
 		isExplorer = random.nextDouble() < getExplorerRatio();
 		myDirection = Functions.getRandomDirection();
 		maxArchonCount = 0;
-		MovementHelper.prepareBellmanFord();
+		MovementHelper.prepareBellmanFord(20);
 		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {

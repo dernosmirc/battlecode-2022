@@ -39,3 +39,5 @@ battlecode-2022.sublime-workspace
 
 gradle.properties
 src/gen0/
+/generator/.idea/
+/generator/generated/

@@ -1,101 +1,103 @@
 package gen5.common.generated;
-	
-	
-public class Heuristics13 implements HeuristicProvider {
+
+
+public class Heuristics13 implements HeuristicsProvider {
 
 	private final int[][] locationDumpX = {
-		{ 1, 5, 1, 5, 2, 4, 3, 2, 4, 3, 2, 4, 3, },
-		{ 5, 6, 3, 6, 4, 6, 5, 3, 5, 4, 5, 4, 3, 4, },
-		{ 6, 6, 5, 5, 6, 6, 6, 5, 5, 5, 4, 4, 4, },
-		{ 5, 6, 3, 6, 4, 6, 5, 3, 5, 4, 5, 4, 3, 4, },
-		{ 1, 5, 1, 5, 2, 4, 3, 2, 4, 3, 2, 4, 3, },
-		{ 0, 1, 0, 3, 0, 2, 1, 1, 3, 1, 2, 2, 2, 3, },
-		{ 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 2, 2, 2, },
-		{ 0, 1, 0, 3, 0, 2, 1, 1, 3, 1, 2, 2, 2, 3, },
+		{ 2, 6, 2, 6, 3, 5, 4, 3, 5, 4, 3, 5, 4, },
+		{ 6, 7, 4, 7, 5, 7, 6, 4, 6, 5, 6, 5, 4, 5, },
+		{ 7, 7, 6, 6, 7, 7, 7, 6, 6, 6, 5, 5, 5, },
+		{ 6, 7, 4, 7, 5, 7, 6, 4, 6, 5, 6, 5, 4, 5, },
+		{ 2, 6, 2, 6, 3, 5, 4, 3, 5, 4, 3, 5, 4, },
+		{ 1, 2, 1, 4, 1, 3, 2, 2, 4, 2, 3, 3, 3, 4, },
+		{ 1, 1, 2, 2, 1, 1, 1, 2, 2, 2, 3, 3, 3, },
+		{ 1, 2, 1, 4, 1, 3, 2, 2, 4, 2, 3, 3, 3, 4, },
 	};
 
 	private final int[][] locationDumpY = {
-		{ 6, 6, 5, 5, 6, 6, 6, 5, 5, 5, 4, 4, 4, },
-		{ 6, 5, 6, 3, 6, 4, 5, 5, 3, 5, 4, 4, 4, 3, },
-		{ 1, 5, 1, 5, 2, 4, 3, 2, 4, 3, 2, 4, 3, },
-		{ 0, 1, 0, 3, 0, 2, 1, 1, 3, 1, 2, 2, 2, 3, },
-		{ 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 2, 2, 2, },
-		{ 1, 0, 3, 0, 2, 0, 1, 3, 1, 2, 1, 2, 3, 2, },
-		{ 1, 5, 1, 5, 2, 4, 3, 2, 4, 3, 2, 4, 3, },
-		{ 5, 6, 3, 6, 4, 6, 5, 3, 5, 4, 5, 4, 3, 4, },
+		{ 7, 7, 6, 6, 7, 7, 7, 6, 6, 6, 5, 5, 5, },
+		{ 7, 6, 7, 4, 7, 5, 6, 6, 4, 6, 5, 5, 5, 4, },
+		{ 2, 6, 2, 6, 3, 5, 4, 3, 5, 4, 3, 5, 4, },
+		{ 1, 2, 1, 4, 1, 3, 2, 2, 4, 2, 3, 3, 3, 4, },
+		{ 1, 1, 2, 2, 1, 1, 1, 2, 2, 2, 3, 3, 3, },
+		{ 2, 1, 4, 1, 3, 1, 2, 4, 2, 3, 2, 3, 4, 3, },
+		{ 2, 6, 2, 6, 3, 5, 4, 3, 5, 4, 3, 5, 4, },
+		{ 6, 7, 4, 7, 5, 7, 6, 4, 6, 5, 6, 5, 4, 5, },
 	};
 
 	private final int[][] directionDumpX = {
-		{ 1, -1, 0, },
-		{ 0, -1, -1, },
-		{ -1, -1, -1, },
-		{ 0, -1, -1, },
-		{ 1, -1, 0, },
-		{ 0, 1, 1, },
-		{ 1, 1, 1, },
-		{ 1, 0, 1, },
+		{ 1, -1, 1, -1, 0, },
+		{ 1, -1, 0, -1, -1, },
+		{ 0, 0, -1, -1, -1, },
+		{ 1, -1, 0, -1, -1, },
+		{ 1, -1, 1, -1, 0, },
+		{ 1, -1, 0, 1, 1, },
+		{ 0, 0, 1, 1, 1, },
+		{ 1, -1, 1, 0, 1, },
 	};
 
 	private final int[][] directionDumpY = {
-		{ -1, -1, -1, },
-		{ -1, 0, -1, },
-		{ -1, 1, 0, },
-		{ 1, 0, 1, },
-		{ 1, 1, 1, },
-		{ 1, 0, 1, },
-		{ 1, -1, 0, },
-		{ 0, -1, -1, },
+		{ 0, 0, -1, -1, -1, },
+		{ -1, 1, -1, 0, -1, },
+		{ 1, -1, -1, 1, 0, },
+		{ 1, -1, 1, 0, 1, },
+		{ 0, 0, 1, 1, 1, },
+		{ -1, 1, 1, 0, 1, },
+		{ 1, -1, 1, -1, 0, },
+		{ 1, -1, 0, -1, -1, },
 	};
 
 	private final int[][] destinationDumpX = {
-		{ 1, 5, 2, 4, 3, },
-		{ 4, 6, 5, 5, 6, },
-		{ 6, 6, 6, 6, 6, },
-		{ 4, 6, 5, 5, 6, },
-		{ 1, 5, 2, 4, 3, },
-		{ 0, 2, 1, 0, 1, },
-		{ 0, 0, 0, 0, 0, },
-		{ 0, 2, 1, 0, 1, },
+		{ 2, 6, 3, 5, 4, },
+		{ 5, 7, 6, 6, 7, },
+		{ 7, 7, 7, 7, 7, },
+		{ 5, 7, 6, 6, 7, },
+		{ 2, 6, 3, 5, 4, },
+		{ 1, 3, 2, 1, 2, },
+		{ 1, 1, 1, 1, 1, },
+		{ 1, 3, 2, 1, 2, },
 	};
 
 	private final int[][] destinationDumpY = {
-		{ 6, 6, 6, 6, 6, },
-		{ 6, 4, 5, 6, 5, },
-		{ 1, 5, 2, 4, 3, },
-		{ 0, 2, 1, 0, 1, },
-		{ 0, 0, 0, 0, 0, },
-		{ 2, 0, 1, 1, 0, },
-		{ 1, 5, 2, 4, 3, },
-		{ 4, 6, 5, 5, 6, },
+		{ 7, 7, 7, 7, 7, },
+		{ 7, 5, 6, 7, 6, },
+		{ 2, 6, 3, 5, 4, },
+		{ 1, 3, 2, 1, 2, },
+		{ 1, 1, 1, 1, 1, },
+		{ 3, 1, 2, 2, 1, },
+		{ 2, 6, 3, 5, 4, },
+		{ 5, 7, 6, 6, 7, },
 	};
 
+
 	@Override
-	public int[][] getDestinationsX() {
-		return destinationDumpX;
+	public int[] getDestinationsX(int d) {
+		return destinationDumpX[d];
 	}
 
 	@Override
-	public int[][] getDestinationsY() {
-		return destinationDumpY;
+	public int[] getDestinationsY(int d) {
+		return destinationDumpY[d];
 	}
 
 	@Override
-	public int[][] getLocationsX() {
-		return locationDumpX;
+	public int[] getLocationsX(int d) {
+		return locationDumpX[d];
 	}
 
 	@Override
-	public int[][] getLocationsY() {
-		return locationDumpY;
+	public int[] getLocationsY(int d) {
+		return locationDumpY[d];
 	}
 
 	@Override
-	public int[][] getDirectionsX() {
-		return directionDumpX;
+	public int[] getDirectionsX(int d) {
+		return directionDumpX[d];
 	}
 
 	@Override
-	public int[][] getDirectionsY() {
-		return directionDumpY;
+	public int[] getDirectionsY(int d) {
+		return directionDumpY[d];
 	}
+
 }
