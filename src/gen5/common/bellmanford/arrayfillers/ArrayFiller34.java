@@ -1,5 +1,7 @@
-package gen5.common.generated;
+package gen5.common.bellmanford.arrayfillers;
 
+
+import gen5.common.bellmanford.ArrayFiller;
 
 public class ArrayFiller34 implements ArrayFiller {
 

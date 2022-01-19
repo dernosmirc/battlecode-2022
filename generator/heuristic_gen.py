@@ -86,7 +86,7 @@ def generate_heuristics(radius_squared):
 		d_dump.append(my[-5:])
 
 	file = open(f"generated/Heuristics{rsq}.java", 'w')
-	file.write(f'''package gen5.common.generated;
+	file.write(f'''package gen5.common.bellmanford;
 
 
 public class Heuristics{rsq} implements HeuristicsProvider {{

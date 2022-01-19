@@ -107,7 +107,7 @@ public class LeadMiningHelper {
         return infos;
     }
 
-    public static Direction spotLeadOnGrid() throws GameActionException {
+    public static MapLocation spotLeadOnGrid() throws GameActionException {
         MapLocation location = rc.getLocation(), leadLoc = null;
         double maxFac = 0;
         MetalInfo[] infos = getLeadOnGrid();
@@ -121,8 +121,7 @@ public class LeadMiningHelper {
                 }
             }
         }
-        if (leadLoc == null) return null;
-        else return location.directionTo(leadLoc);
+        return leadLoc;
     }
 
     private static int getLocationIndex(MetalInfo[] infos, MapLocation location) {
@@ -195,7 +194,9 @@ public class LeadMiningHelper {
     }
 
     public static void mineLead() throws GameActionException {
-        for (MapLocation mp: rc.senseNearbyLocationsWithLead(myType.actionRadiusSquared, 2)) {
+        MapLocation[] mps = rc.senseNearbyLocationsWithLead(myType.actionRadiusSquared, 2);
+        for (int i = mps.length; --i >= 0;) {
+            MapLocation mp = mps[i];
             while (rc.isActionReady() && rc.senseLead(mp) > 1) {
                 rc.mineLead(mp);
             }
@@ -205,22 +206,19 @@ public class LeadMiningHelper {
         }
     }
 
-    public static boolean canMineLead() throws GameActionException {
-        return rc.senseNearbyLocationsWithLead(myType.actionRadiusSquared, 2).length > 0;
-    }
-
-    public static Direction spotLead() throws GameActionException {
-        MapLocation location = rc.getLocation();
-        Direction best = null;
+    public static MapLocation spotLead() throws GameActionException {
+        MapLocation location = null;
         int bestFactor = 0;
-        for (MapLocation mp: rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared)) {
+        MapLocation[] mps = rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared);
+        for (int i = mps.length; --i >= 0;) {
+            MapLocation mp = mps[i];
             int factor = rc.senseLead(mp) - 1;
             if (factor > bestFactor) {
-                best = location.directionTo(mp);
+                location = mp;
                 bestFactor = factor;
             }
         }
-        return best;
+        return location;
     }
 
     public static Direction getAntiEdgeDirection() {

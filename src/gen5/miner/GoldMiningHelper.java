@@ -5,6 +5,8 @@ import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import gen5.common.Functions;
 
+import java.util.Map;
+
 import static gen5.RobotPlayer.myType;
 import static gen5.RobotPlayer.rc;
 
@@ -117,18 +119,19 @@ public class GoldMiningHelper {
         }
     }
 
-    public static Direction spotGold() throws GameActionException {
+    public static MapLocation spotGold() throws GameActionException {
         MapLocation best = null;
         int bestGold = 0;
-        for (MapLocation mp: rc.senseNearbyLocationsWithGold(myType.visionRadiusSquared)) {
+        MapLocation[] mps = rc.senseNearbyLocationsWithGold(myType.visionRadiusSquared);
+        for (int i = mps.length; --i >= 0;) {
+            MapLocation mp = mps[i];
             int gold = rc.senseGold(mp);
             if (gold > bestGold) {
                 best = mp;
                 bestGold = gold;
             }
         }
-        if (best == null) return null;
-        else return rc.getLocation().directionTo(best);
+        return best;
     }
 
     public static MapLocation getGoldLocation() throws GameActionException {
@@ -145,7 +148,7 @@ public class GoldMiningHelper {
         return best;
     }
 
-    public static Direction spotGoldOnGrid() throws GameActionException {
+    public static MapLocation spotGoldOnGrid() throws GameActionException {
         MapLocation location = rc.getLocation(), goldLoc = null;
         double maxFac = 0;
         MetalInfo[] infos = getGoldOnGrid();
@@ -159,8 +162,7 @@ public class GoldMiningHelper {
                 }
             }
         }
-        if (goldLoc == null) return null;
-        else return location.directionTo(goldLoc);
+        return goldLoc;
     }
 
     public static void mineGold() throws GameActionException {

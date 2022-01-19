@@ -1,5 +1,7 @@
-package gen5.common.generated;
+package gen5.common.bellmanford.heuristics;
 
+
+import gen5.common.bellmanford.HeuristicsProvider;
 
 public class Heuristics13 implements HeuristicsProvider {
 

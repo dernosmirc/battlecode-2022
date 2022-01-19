@@ -29,68 +29,57 @@ public strictfp class Miner {
 
 	public static void run() throws GameActionException {
 		Logger logger = new Logger("Miner", true);
+		int round = rc.getRoundNum();
 
 		GoldMiningHelper.mineGold();
-
 		GoldMiningHelper.updateGoldAmountInGridCell();
-
-		if (LeadMiningHelper.canMineLead()) {
-			LeadMiningHelper.mineLead();
-		}
-
-		logger.log("Updating Lead");
-		LeadMiningHelper.updateLeadAmountInGridCell();
-		logger.log("Updated Lead");
-		//logger.flush();
+		LeadMiningHelper.mineLead();
 
 		if (rc.isMovementReady()) {
+			logger.log("moving");
 			move();
+			logger.log("moved");
 		}
+
+		if (Clock.getBytecodesLeft() >= 3500 && round == rc.getRoundNum()) {
+			logger.log("Updating Lead");
+			LeadMiningHelper.updateLeadAmountInGridCell();
+			logger.log("Updated Lead");
+		}
+		//logger.flush();
 	}
 
 	private static boolean move() throws GameActionException {
-		Direction goldDirection = GoldMiningHelper.spotGold();
-		if (goldDirection != null) {
-			rc.setIndicatorString("gold near");
-			return MovementHelper.tryMove(goldDirection, false);
+		MapLocation gold = GoldMiningHelper.spotGold();
+		if (gold != null) {
+			return MovementHelper.moveBellmanFord(gold);
 		}
-
 		if (!isExplorer && isGoldMiner) {
-			goldDirection = GoldMiningHelper.spotGoldOnGrid();
-			if (goldDirection != null) {
-				rc.setIndicatorString("gold afar");
-				// TODO change
-				MovementHelper.moveBellmanFord(goldDirection);
-				//MovementHelper.tryMove(goldDirection, false);
-				return true;
+			gold = GoldMiningHelper.spotGoldOnGrid();
+			if (gold != null) {
+				return MovementHelper.moveBellmanFord(gold);
 			}
 		}
-		Direction leadDirection = LeadMiningHelper.spotLead();
-		if (leadDirection != null) {
-			rc.setIndicatorString("lead near");
-			return MovementHelper.moveAndAvoid(leadDirection, myArchonLocation, 2);
+
+		MapLocation lead = LeadMiningHelper.spotLead();
+		if (lead != null) {
+			return MovementHelper.moveBellmanFord(lead);
 		}
-		if (!isExplorer && (leadDirection = LeadMiningHelper.spotLeadOnGrid()) != null) {
-			rc.setIndicatorString("lead afar");
-			// TODO change
-			MovementHelper.moveBellmanFord(leadDirection);
-			//MovementHelper.tryMove(leadDirection, false);
-			return true;
+		if (!isExplorer && (lead = LeadMiningHelper.spotLeadOnGrid()) != null) {
+			return MovementHelper.moveBellmanFord(lead);
 		}
 
 		Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
 		if (antiCorner != null) {
-			rc.setIndicatorString("anti corner");
 			myDirection = Functions.getPerpendicular(antiCorner);
 		}
-		rc.setIndicatorString("no clue");
 		if (
 				!CommsHelper.isLocationInEnemyZone(rc.getLocation()) &&
 				CommsHelper.isLocationInEnemyZone(rc.getLocation().add(myDirection))
 		) {
 			myDirection = myDirection.opposite();
 		}
-		return MovementHelper.moveAndAvoid(myDirection, myArchonLocation, 2);
+		return MovementHelper.moveBellmanFord(myDirection);
 	}
 
 	public static void init() throws GameActionException {
@@ -98,7 +87,7 @@ public strictfp class Miner {
 		isExplorer = random.nextDouble() < getExplorerRatio();
 		myDirection = Functions.getRandomDirection();
 		maxArchonCount = 0;
-		MovementHelper.prepareBellmanFord(20);
+		MovementHelper.prepareBellmanFord(13);
 		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {

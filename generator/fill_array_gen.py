@@ -26,7 +26,7 @@ jobs = [
 
 file = open(f'generated/ArrayFiller{radiusSquared}.java', 'w')
 
-file.write(f'''package gen5.common.generated;
+file.write(f'''package gen5.common.bellmanford;
 
 
 public class ArrayFiller{radiusSquared} implements ArrayFiller {{

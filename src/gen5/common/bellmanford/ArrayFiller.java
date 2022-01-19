@@ -1,4 +1,4 @@
-package gen5.common.generated;
+package gen5.common.bellmanford;
 
 
 public interface ArrayFiller {
