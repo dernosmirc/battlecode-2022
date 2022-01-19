@@ -118,6 +118,12 @@ public class MovementHelper {
         return optimalDirection != null && tryMove(optimalDirection, true);
     }
 
+    /*
+    * @param
+    * accepted values for rSq = {13, 20, 34}
+    *
+    *
+    * */
 
     public static void prepareBellmanFord(int rSq) {
         BellmanFord.prepareBellmanFord(rSq);
