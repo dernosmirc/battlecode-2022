@@ -1,9 +1,9 @@
 package gen5.common.generated;
 	
 	
-public class Heuristics13 {
+public class Heuristics13 implements HeuristicProvider {
 
-	public static int[][] locationDumpX = {
+	private final int[][] locationDumpX = {
 		{ 1, 5, 1, 5, 2, 4, 3, 2, 4, 3, 2, 4, 3, },
 		{ 5, 6, 3, 6, 4, 6, 5, 3, 5, 4, 5, 4, 3, 4, },
 		{ 6, 6, 5, 5, 6, 6, 6, 5, 5, 5, 4, 4, 4, },
@@ -14,7 +14,7 @@ public class Heuristics13 {
 		{ 0, 1, 0, 3, 0, 2, 1, 1, 3, 1, 2, 2, 2, 3, },
 	};
 
-	public static int[][] locationDumpY = {
+	private final int[][] locationDumpY = {
 		{ 6, 6, 5, 5, 6, 6, 6, 5, 5, 5, 4, 4, 4, },
 		{ 6, 5, 6, 3, 6, 4, 5, 5, 3, 5, 4, 4, 4, 3, },
 		{ 1, 5, 1, 5, 2, 4, 3, 2, 4, 3, 2, 4, 3, },
@@ -25,7 +25,7 @@ public class Heuristics13 {
 		{ 5, 6, 3, 6, 4, 6, 5, 3, 5, 4, 5, 4, 3, 4, },
 	};
 
-	public static int[][] directionDumpX = {
+	private final int[][] directionDumpX = {
 		{ 1, -1, 0, },
 		{ 0, -1, -1, },
 		{ -1, -1, -1, },
@@ -36,7 +36,7 @@ public class Heuristics13 {
 		{ 1, 0, 1, },
 	};
 
-	public static int[][] directionDumpY = {
+	private final int[][] directionDumpY = {
 		{ -1, -1, -1, },
 		{ -1, 0, -1, },
 		{ -1, 1, 0, },
@@ -47,7 +47,7 @@ public class Heuristics13 {
 		{ 0, -1, -1, },
 	};
 
-	public static int[][] destinationDumpX = {
+	private final int[][] destinationDumpX = {
 		{ 1, 5, 2, 4, 3, },
 		{ 4, 6, 5, 5, 6, },
 		{ 6, 6, 6, 6, 6, },
@@ -58,7 +58,7 @@ public class Heuristics13 {
 		{ 0, 2, 1, 0, 1, },
 	};
 
-	public static int[][] destinationDumpY = {
+	private final int[][] destinationDumpY = {
 		{ 6, 6, 6, 6, 6, },
 		{ 6, 4, 5, 6, 5, },
 		{ 1, 5, 2, 4, 3, },
@@ -68,4 +68,34 @@ public class Heuristics13 {
 		{ 1, 5, 2, 4, 3, },
 		{ 4, 6, 5, 5, 6, },
 	};
+
+	@Override
+	public int[][] getDestinationsX() {
+		return destinationDumpX;
+	}
+
+	@Override
+	public int[][] getDestinationsY() {
+		return destinationDumpY;
+	}
+
+	@Override
+	public int[][] getLocationsX() {
+		return locationDumpX;
+	}
+
+	@Override
+	public int[][] getLocationsY() {
+		return locationDumpY;
+	}
+
+	@Override
+	public int[][] getDirectionsX() {
+		return directionDumpX;
+	}
+
+	@Override
+	public int[][] getDirectionsY() {
+		return directionDumpY;
+	}
 }

@@ -59,7 +59,9 @@ public strictfp class Miner {
 			goldDirection = GoldMiningHelper.spotGoldOnGrid();
 			if (goldDirection != null) {
 				rc.setIndicatorString("gold afar");
-				MovementHelper.moveBellmanFord(goldDirection);
+				// TODO change
+				//MovementHelper.moveBellmanFord(goldDirection);
+				MovementHelper.tryMove(goldDirection, false);
 				return true;
 			}
 		}
@@ -70,7 +72,9 @@ public strictfp class Miner {
 		}
 		if (!isExplorer && (leadDirection = LeadMiningHelper.spotLeadOnGrid()) != null) {
 			rc.setIndicatorString("lead afar");
-			MovementHelper.moveBellmanFord(leadDirection);
+			// TODO change
+			// MovementHelper.moveBellmanFord(leadDirection);
+			MovementHelper.tryMove(leadDirection, false);
 			return true;
 		}
 
