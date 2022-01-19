@@ -28,6 +28,7 @@ public strictfp class Builder {
 	public static Direction myDirection;
 	public static int myArchonIndex;
 	private static ConstructionInfo nextBuilding;
+	private static ConstructionInfo constructedBuilding = null;
 	public static BuilderType myBuilderType;
 
 	private static void act() throws GameActionException {
@@ -62,6 +63,7 @@ public strictfp class Builder {
 					case LABORATORY:
 						CommsHelper.updateLabBuilt(myArchonIndex);
 				}
+				constructedBuilding = nextBuilding;
 				nextBuilding = null;
 			} else {
 				MovementHelper.tryMove(buildDirection,
@@ -83,8 +85,37 @@ public strictfp class Builder {
 		return true;
 	}
 
+	public static void mutateLab() throws GameActionException{
+		if (constructedBuilding == null){
+			return;
+		}
+		if (rc.getLocation().distanceSquaredTo(constructedBuilding.location) > rc.getType().actionRadiusSquared){
+			MovementHelper.moveBellmanFord(rc.getLocation().directionTo(constructedBuilding.location));
+			return;
+		}
+		RobotInfo[] rbInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, myTeam);
+		RobotInfo lab = null;
+		int len = rbInfo.length;
+		for (int i = 0; i < len; i++){
+			if (rbInfo[i].location == constructedBuilding.location && rbInfo[i].type == constructedBuilding.type){
+				lab = rbInfo[i];
+			}
+		}
+		if (lab == null){
+			return;
+		}
+		if (rc.getRoundNum() > 1200 && lab.level == 1){
+			if (rc.canMutate(lab.location)){
+				rc.mutate(lab.location);
+			}
+		}
+	}
+
 	public static void run() throws GameActionException {
 		Logger logger = new Logger("Builder", true);
+		if (rc.getRoundNum() > 1150){
+			mutateLab();
+		}
 		if (rc.isActionReady()) {
 			act();
 		}
