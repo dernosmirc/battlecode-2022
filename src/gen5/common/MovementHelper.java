@@ -213,7 +213,6 @@ public class MovementHelper {
     }
 
     private static Vector<Direction> getBellmanFordPath(Direction dir) throws GameActionException {
-        Logger log = new Logger("Bellman Ford", false);
         RobotController rc = RobotPlayer.rc;
         MapLocation rn = rc.getLocation();
         int ordinal = dir.ordinal();
@@ -232,11 +231,7 @@ public class MovementHelper {
                 rnX = rn.x, rnY = rn.y,
                 rnX_r = rnX - r, rnY_r = rnY - r;
 
-        log.log("init variables");
-
         fillArrays();
-
-        log.log("filled arrays");
 
         RobotInfo[] ris = rc.senseNearbyRobots(radiusSquared);
         for (int i = ris.length; --i >= 0;) {
@@ -246,8 +241,6 @@ public class MovementHelper {
                 notOccupied[x][y] = false;
             }
         }
-
-        log.log("detected nearby fixed bots");
 
         dist[r][r] = 0;
         arraysFilled = false;
@@ -298,8 +291,6 @@ public class MovementHelper {
             }
         }
 
-        log.log("first iteration");
-
         // find best destination
         int minDistance = INFINITY, minInd = -1;
         for (int li = destinationX.length; --li >= 0;) {
@@ -310,8 +301,6 @@ public class MovementHelper {
                 minInd = vx * d + vy;
             }
         }
-
-        log.log("best destination");
 
         if (minInd == -1) {
             return null;
@@ -326,8 +315,6 @@ public class MovementHelper {
             ret.add(n.directionTo(lastLocation));
             lastLocation = n;
         }
-        log.log("constructed path");
-        log.flush();
         return ret;
     }
 }
