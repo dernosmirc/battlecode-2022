@@ -18,9 +18,9 @@ public enum SymmetryType {
 		boolean isVertical = location1.x + location2.x + 1 == rc.getMapWidth();
 		if (isHorizontal && isVertical) {
 			return SymmetryType.ROTATIONAL;
-		} else if (isHorizontal) {
+		} else if (isHorizontal && location1.x == location2.x) {
 			return SymmetryType.HORIZONTAL;
-		} else if (isVertical) {
+		} else if (isVertical && location1.y == location2.y) {
 			return SymmetryType.VERTICAL;
 		} else {
 			return SymmetryType.NONE;

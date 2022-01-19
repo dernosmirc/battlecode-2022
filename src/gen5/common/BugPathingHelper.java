@@ -332,10 +332,10 @@ public class BugPathingHelper {
                     updateMovement(bugDirection);
                     wallMoveCount += 1;
                     if (loopTowardsSide == 1){
-                        bugDirection = bugDirection.rotateLeft();
+                        bugDirection = bugDirection.rotateRight();
                     }
                     else{
-                        bugDirection = bugDirection.rotateRight();
+                        bugDirection = bugDirection.rotateLeft();
                     }
                     if (DEBUG){
                         rc.setIndicatorDot(rc.getLocation(), 0, 255, 0);
@@ -343,10 +343,10 @@ public class BugPathingHelper {
                     break;
                 } else {
                     if (loopTowardsSide == 1){
-                        bugDirection = bugDirection.rotateRight();
+                        bugDirection = bugDirection.rotateLeft();
                     }
                     else{
-                        bugDirection = bugDirection.rotateLeft();
+                        bugDirection = bugDirection.rotateRight();
                     }
                 }
             }

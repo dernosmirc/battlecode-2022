@@ -68,13 +68,17 @@ public class BugPathingMovement {
         }
 
         Direction dir = AttackHelper.shouldMoveBack();
+        MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (dir != null) {
+            if (enemyArchonLocation == null && guessedEnemyArchonLocation == null) {
+                TailHelper.updateTarget();
+            }
+            
             BugPathingHelper.setDefault();
             MovementHelper.greedyTryMove(dir);
             return;
         }
 
-        MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (enemyArchonLocation != null) {
             if (sensedEnemyAttackRobot) {
                 int distance = rc.getLocation().distanceSquaredTo(enemyArchonLocation);
@@ -93,8 +97,15 @@ public class BugPathingMovement {
         }
 
         if (guessedEnemyArchonLocation == null) {
-            // TODO: Go to nearest alive archon instead
-            BugPathingHelper.moveTowards(myArchonLocation);
+            TailHelper.updateTarget();
+            if (TailHelper.foundTarget()) {
+                MapLocation target = TailHelper.getTargetLocation();
+                BugPathingHelper.moveTowards(target);
+            } else {
+                dir = directions[rng.nextInt(directions.length)];
+                MovementHelper.greedyTryMove(dir);
+            }
+
             return;
         }
 
