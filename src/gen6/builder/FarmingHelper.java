@@ -2,7 +2,11 @@ package gen6.builder;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.RobotInfo;
+import battlecode.common.RobotMode;
 import gen6.common.CommsHelper;
+
+import java.awt.*;
 
 import static gen6.RobotPlayer.myType;
 import static gen6.RobotPlayer.rc;
@@ -54,7 +58,10 @@ public class FarmingHelper {
         for (int i = mls.length; --i >= 0; ) {
             MapLocation ml = mls[i];
             if (isLocationInFarm(ml) && rc.senseLead(ml) == 0) {
-                return ml;
+                RobotInfo ri = rc.senseRobotAtLocation(ml);
+                if (ri != null && (ri.mode == RobotMode.DROID || ri.mode == RobotMode.PORTABLE)) {
+                    return ml;
+                }
             }
         }
         return null;
