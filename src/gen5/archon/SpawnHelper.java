@@ -176,7 +176,7 @@ public strictfp class SpawnHelper {
 	}
 
 	private static Direction getOptimalMinerSpawnDirection() throws GameActionException {
-		if (rc.getRoundNum() > 500){
+		if (rc.getRoundNum() > 100){
 			return getOptimalSoldierSpawnDirection();
 		}
 		int[] minersInDirection = new int[8];
