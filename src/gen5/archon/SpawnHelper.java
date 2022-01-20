@@ -159,12 +159,27 @@ public strictfp class SpawnHelper {
 		return null;
 	}
 
-	private static Direction getOptimalSoldierSpawnDirection() {
-		MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
-		return rc.getLocation().directionTo(center);
+	private static Direction getOptimalSoldierSpawnDirection() throws GameActionException{
+		int minRubble = 1000;
+		Direction d = null;
+		Direction cur = Direction.NORTH;
+		MapLocation curLoc = rc.getLocation();
+		for (int i = 8; --i >= 0; ){
+			MapLocation loc = curLoc.add(cur);
+			if (rc.canSenseLocation(loc) && !rc.isLocationOccupied(loc) && rc.senseRubble(loc) < minRubble){
+				minRubble = rc.senseRubble(loc);
+				d = cur;
+			}
+			cur = cur.rotateRight();
+		}
+		if (d == null)	return Direction.NORTH;
+		else	return d;
 	}
 
 	private static Direction getOptimalMinerSpawnDirection() throws GameActionException {
+		if (rc.getRoundNum() > 500){
+			return getOptimalSoldierSpawnDirection();
+		}
 		int[] minersInDirection = new int[8];
 		for (RobotInfo robot : rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam)) {
 			if (robot.type == RobotType.MINER) {
