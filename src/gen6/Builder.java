@@ -111,7 +111,7 @@ public strictfp class Builder {
 			return MovementHelper.tryMove(repair, false);
 		}
 		if (myBuilderType == BuilderType.FarmSeed) {
-			if (rc.getLocation().isWithinDistanceSquared(farmCenter, 2)) {
+			if (rc.getLocation().isWithinDistanceSquared(farmCenter, 65)) {
 				rc.setIndicatorString("farm near");
 				return MovementHelper.tryMove(FarmingHelper.getBaldSpot(), false);
 			}

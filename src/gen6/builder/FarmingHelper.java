@@ -9,7 +9,7 @@ import static gen6.RobotPlayer.rc;
 
 public class FarmingHelper {
 
-    private static final int FARM_RADIUS_SQUARED = 20;
+    private static final int FARM_RADIUS_SQUARED = 25;
 
     public static MapLocation getFarmCenter() throws GameActionException {
         int minDistance = Integer.MAX_VALUE, w = rc.getMapWidth()-1, h = rc.getMapHeight()-1;
