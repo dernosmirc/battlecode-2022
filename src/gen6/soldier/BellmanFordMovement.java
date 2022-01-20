@@ -18,7 +18,7 @@ public strictfp class BellmanFordMovement {
     private static final int INNER_ATTACK_RADIUS = 8;
     private static final int OUTER_ATTACK_RADIUS = 13;
 
-    public static final int HEAL_THRESHOLD = 20; // 21
+    public static final int HEAL_THRESHOLD = 15; // 21
     private static final int FULL_HEAL_THRESHOLD = 45;
 
     private static final int INNER_CONCAVE_RADIUS = 8;
