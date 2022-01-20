@@ -15,14 +15,19 @@ import static gen5.RobotPlayer.*;
 import static gen5.Soldier.*;
 import static gen5.common.Functions.getDistance;
 
-public class BellmanFordMovement {
+public strictfp class BellmanFordMovement {
     private static final int INNER_DEFENSE_RADIUS = 4;
     private static final int OUTER_DEFENSE_RADIUS = 8;
     private static final int INNER_ATTACK_RADIUS = 8;
     private static final int OUTER_ATTACK_RADIUS = 13;
 
-    private static final int HEAL_THRESHOLD = 20; // 21
+    public static final int HEAL_THRESHOLD = 20; // 21
     private static final int FULL_HEAL_THRESHOLD = 45;
+
+    private static final int INNER_CONCAVE_RADIUS = 8;
+    private static final int OUTER_CONCAVE_RADIUS = 13;
+
+    private static int slideDirection = 0;
 
     public static void move() throws GameActionException {
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
@@ -71,11 +76,23 @@ public class BellmanFordMovement {
 
         Direction dir = AttackHelper.shouldMoveBack();
         MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
+        TailHelper.updateTarget();
         if (dir != null) {
-            if (enemyArchonLocation == null && guessedEnemyArchonLocation == null) {
-                TailHelper.updateTarget();
-            }
+            // if (enemyArchonLocation == null && guessedEnemyArchonLocation == null) {
+            //     TailHelper.updateTarget();
+            // }
 
+            MovementHelper.greedyTryMove(dir);
+            return;
+        }
+
+        if (tryConcave()) {
+            return;
+        }
+
+        if (TailHelper.foundTarget() && TailHelper.getTargetPriority() >= 5) {
+            MapLocation target = TailHelper.getTargetLocation();
+            dir = rc.getLocation().directionTo(target);
             MovementHelper.greedyTryMove(dir);
             return;
         }
@@ -101,7 +118,7 @@ public class BellmanFordMovement {
         }
 
         if (guessedEnemyArchonLocation == null) {
-            TailHelper.updateTarget();
+            // TailHelper.updateTarget();
             if (TailHelper.foundTarget()) {
                 MapLocation target = TailHelper.getTargetLocation();
                 dir = rc.getLocation().directionTo(target);
@@ -116,6 +133,105 @@ public class BellmanFordMovement {
 
         dir = rc.getLocation().directionTo(guessedEnemyArchonLocation);
         MovementHelper.greedyTryMove(dir);
+    }
+
+    private static boolean tryConcave() throws GameActionException {
+        String s = "here ";
+        RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
+        RobotInfo nearestRobot = null;
+        int minDistance = 100000;
+        for (int i = enemyRobots.length; --i >= 0; ) {
+            RobotInfo robot = enemyRobots[i];
+            switch (robot.type) {
+                case SOLDIER:
+                case SAGE:
+                case WATCHTOWER:
+                case ARCHON:
+                    int distance = rc.getLocation().distanceSquaredTo(robot.location);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearestRobot = robot;
+                    }
+                    break;
+            }
+        }
+
+        if (nearestRobot == null) {
+            return false;
+        }
+
+        if (minDistance < INNER_CONCAVE_RADIUS) {
+            Direction dir = MovementHelper.whereGreedyTryMove(
+                                rc.getLocation().directionTo(nearestRobot.location).opposite());
+            if (dir == null) {
+                return true;
+            } else {
+                MapLocation tentativeMoveLocation = rc.getLocation().add(dir);
+                int rubbleHere = rc.senseRubble(rc.getLocation());
+                int rubbleThere = rc.senseRubble(tentativeMoveLocation);
+                if (rubbleThere < rubbleHere) {
+                    MovementHelper.tryMove(dir, true);
+                }
+            }
+
+            return true;
+        }
+
+        if (minDistance <= OUTER_CONCAVE_RADIUS) {
+            Direction dir = getBestLateralDirection(rc.getLocation().directionTo(nearestRobot.location), nearestRobot);
+            rc.setIndicatorString(s + dir.ordinal());
+            if (dir != Direction.CENTER) {
+                MovementHelper.tryMove(dir, true);
+            }
+
+            return true;
+        }
+
+        if (MovementHelper.greedyTryMove(rc.getLocation().directionTo(nearestRobot.location))) {
+            return true;
+        }
+
+        if (slideDirection == 0) {
+            slideDirection = rng.nextBoolean() ? 1 : -1;
+        }
+        Direction dir = rc.getLocation().directionTo(nearestRobot.location);
+        switch (slideDirection) {
+            case 1:
+                dir = dir.rotateRight().rotateRight();
+                break;
+            case -1:
+                dir = dir.rotateLeft().rotateLeft();
+                break;
+        }
+
+        MovementHelper.greedyTryMove(dir);
+        return true;
+    }
+
+    private static Direction getBestLateralDirection(Direction dir, RobotInfo enemyRobot) throws GameActionException {
+        Direction left = dir.rotateLeft().rotateLeft();
+        Direction right = dir.rotateRight().rotateRight();
+        MapLocation leftLocation = rc.getLocation().add(left);
+        MapLocation rightLocation = rc.getLocation().add(right);
+
+        Direction best = Direction.CENTER;
+        int minRubble = rc.senseRubble(rc.getLocation());
+        if (leftLocation.isWithinDistanceSquared(enemyRobot.location, myType.actionRadiusSquared) && rc.canMove(left)) {
+            int rubble = rc.senseRubble(leftLocation);
+            if (rubble < minRubble) {
+                minRubble = rubble;
+                best = left;
+            }
+        }
+        if (rightLocation.isWithinDistanceSquared(enemyRobot.location, myType.actionRadiusSquared) && rc.canMove(right)) {
+            int rubble = rc.senseRubble(rightLocation);
+            if (rubble < minRubble) {
+                minRubble = rubble;
+                best = right;
+            }
+        }
+
+        return best;
     }
 
     private static void circleAround(MapLocation location) throws GameActionException {

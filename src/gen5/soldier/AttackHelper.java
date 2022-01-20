@@ -5,6 +5,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.Direction;
 
 import static gen5.RobotPlayer.*;
+import static gen5.soldier.BellmanFordMovement.HEAL_THRESHOLD;
 
 public strictfp class AttackHelper {
 	// ARCHON
@@ -65,7 +66,8 @@ public strictfp class AttackHelper {
 						robotsInDirection[rc.getLocation().directionTo(robot.location).ordinal()] += 1.5;
 						break;
 				}
-			} else if (rc.getLocation().distanceSquaredTo(robot.location) <= myType.actionRadiusSquared - 3) {
+			} else if (rc.getLocation().distanceSquaredTo(robot.location) <= myType.actionRadiusSquared
+						&& robot.health > HEAL_THRESHOLD) {
 				switch (robot.type) {
 					case SOLDIER:
 						++ourRobots;
