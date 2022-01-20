@@ -243,25 +243,19 @@ public strictfp class SpawnHelper {
 
 		switch (mapSizeType) {
 			case 0:
-				if (minersBuilt < 1) return RobotType.MINER;
+				/*if (minersBuilt < 1) return RobotType.MINER;
 				if (soldiersBuilt < 3) return RobotType.SOLDIER;
 				if (minersBuilt < 2) return RobotType.MINER;
 				if (soldiersBuilt < 6) return RobotType.SOLDIER;
 				if (minersBuilt < 3) return RobotType.MINER;
 				if (soldiersBuilt < 9) return RobotType.SOLDIER;
-				break;
+				break;*/
 			case 1:
-				if (minersBuilt < 3) return RobotType.MINER;
-				if (soldiersBuilt < 6) return RobotType.SOLDIER;
-				if (minersBuilt < 5) return RobotType.MINER;
-				if (soldiersBuilt < 9) return RobotType.SOLDIER;
-				break;
 			case 2:
 				if (minersBuilt < 3) return RobotType.MINER;
 				if (soldiersBuilt < 6) return RobotType.SOLDIER;
 				if (minersBuilt < 5) return RobotType.MINER;
 				if (soldiersBuilt < 9) return RobotType.SOLDIER;
-				break;
 		}
 
 		if (!isBuilderAround()) {
