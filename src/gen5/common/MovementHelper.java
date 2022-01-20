@@ -182,10 +182,6 @@ public class MovementHelper {
             return false;
         }
 
-        if (!rc.getLocation().isWithinDistanceSquared(mapLocation, BellmanFord.radiusSquared)) {
-            return moveBellmanFord(rc.getLocation().directionTo(mapLocation));
-        }
-
         if (rc.getLocation().isWithinDistanceSquared(mapLocation, 2)) {
             return tryMove(rc.getLocation().directionTo(mapLocation), false);
         }
@@ -197,7 +193,11 @@ public class MovementHelper {
 
         boolean usingBellman = false;
         if (destination != mapLocation || !rc.getLocation().equals(lastLocation)) {
-            path = getBellmanFordPath(mapLocation, false);
+            if (!rc.getLocation().isWithinDistanceSquared(mapLocation, BellmanFord.radiusSquared)) {
+                path = getBellmanFordPath(rc.getLocation().directionTo(mapLocation));
+            } else {
+                path = getBellmanFordPath(mapLocation, false);
+            }
             usingBellman = true;
             destination = mapLocation;
         }
