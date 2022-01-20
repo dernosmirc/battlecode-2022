@@ -12,8 +12,8 @@ import static gen5.RobotPlayer.*;
 
 public class MutationHelper {
 
-    private static final int THRESHOLD_WATCHTOWER_LEAD = 400;
-    private static final int THRESHOLD_ARCHON_LEAD = 400;
+    private static final int THRESHOLD_WATCHTOWER_LEAD = 300;
+    private static final int THRESHOLD_ARCHON_LEAD = 300;
 
     private static final int THRESHOLD_WATCHTOWER_GOLD = 80;
     private static final int THRESHOLD_ARCHON_GOLD = 80;

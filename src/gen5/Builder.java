@@ -119,7 +119,6 @@ public strictfp class Builder {
 		if (rc.isActionReady()) {
 			act();
 		}
-
 		MapLocation construction = null;
 		if (nextBuilding != null && rc.getTeamLeadAmount(myTeam) > nextBuilding.type.buildCostLead) {
 			construction = nextBuilding.location;
@@ -127,6 +126,7 @@ public strictfp class Builder {
 		if (rc.isMovementReady() && BuildingHelper.shouldMove(myArchonLocation, construction)) {
 			move();
 		}
+
 		logger.flush();
 	}
 

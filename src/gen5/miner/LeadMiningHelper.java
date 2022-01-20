@@ -6,10 +6,12 @@ import battlecode.common.MapLocation;
 
 import gen5.common.CommsHelper;
 import gen5.common.Functions;
+import gen5.common.MovementHelper;
 import gen5.common.SymmetryType;
 import gen5.common.util.Vector;
 
 import static gen5.RobotPlayer.*;
+import static gen5.common.Functions.getPerpendicular;
 
 public class LeadMiningHelper {
 
@@ -223,34 +225,43 @@ public class LeadMiningHelper {
         return location;
     }
 
-    public static Direction getAntiEdgeDirection() {
-        int x = rc.getLocation().x - 1, y = rc.getLocation().y - 1,
-                w = rc.getMapWidth() - 2, h = rc.getMapHeight() - 2;
+    public static Direction getAntiEdgeDirection(boolean clockwise) {
+        int x = rc.getLocation().x - 2, y = rc.getLocation().y - 2,
+                w = rc.getMapWidth() - 4, h = rc.getMapHeight() - 4;
 
-        if (x == 0 && y == h) {
-            return Direction.SOUTHEAST;
+        Direction anti = null;
+        if (x <= 0 && y >= h) {
+            anti = Direction.SOUTHEAST;
         }
-        if (y == 0 && x == 0) {
-            return Direction.NORTHEAST;
+        if (y <= 0 && x <= 0) {
+            anti = Direction.NORTHEAST;
         }
-        if (y == h && x == w) {
-            return Direction.SOUTHWEST;
+        if (y >= h && x >= w) {
+            anti = Direction.SOUTHWEST;
         }
-        if (x == w && y == 0) {
-            return Direction.NORTHWEST;
+        if (x >= w && y <= 0) {
+            anti = Direction.NORTHWEST;
         }
-        if (x == 0) {
-            return Direction.EAST;
+        if (x <= 0) {
+            anti = Direction.EAST;
         }
-        if (y == 0) {
-            return Direction.NORTH;
+        if (y <= 0) {
+            anti = Direction.NORTH;
         }
-        if (y == h) {
-            return Direction.SOUTH;
+        if (y >= h) {
+            anti = Direction.SOUTH;
         }
-        if (x == w) {
-            return Direction.WEST;
+        if (x >= w) {
+            anti = Direction.WEST;
         }
-        return null;
+
+        if (anti == null) {
+            return null;
+        }
+
+        if (clockwise) {
+            return getPerpendicular(anti).opposite();
+        }
+        return getPerpendicular(anti);
     }
 }

@@ -14,7 +14,7 @@ import static gen5.common.Functions.getBits;
 
 public strictfp class SpawnHelper {
 	private static final int WATCHTOWER_WINDOW = 50;
-	private static final int ARCHON_MUTATE_WINDOW = 100;
+	private static final int ARCHON_MUTATE_WINDOW = 50;
 	private static final int LAB_WINDOW = 50;
 
 	private static final Random random = new Random(rc.getID());
@@ -40,7 +40,7 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getLeadThreshold() throws GameActionException {
-		if (750 <= rc.getRoundNum() && rc.getRoundNum() < 750 + ARCHON_MUTATE_WINDOW &&
+		if (1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + ARCHON_MUTATE_WINDOW &&
 				!CommsHelper.allLArchonsMutated(2)
 		) return 375;
 		if (1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + LAB_WINDOW &&

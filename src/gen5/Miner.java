@@ -58,6 +58,11 @@ public strictfp class Miner {
 
 	private static boolean clockwise = false;
 	private static boolean move() throws GameActionException {
+		Direction antiSoldier = getAntiSoldierDirection();
+		if (antiSoldier != null) {
+			return MovementHelper.moveBellmanFord(antiSoldier);
+		}
+
 		MapLocation gold = GoldMiningHelper.spotGold();
 		if (gold != null) {
 			return MovementHelper.moveBellmanFord(gold);
@@ -77,18 +82,19 @@ public strictfp class Miner {
 			return MovementHelper.moveBellmanFord(lead);
 		}
 
-		Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection();
+		boolean gotFromAntiCorner = false;
+		Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection(clockwise);
 		if (antiCorner != null) {
-			myDirection = getPerpendicular(antiCorner);
-		}
-		if (clockwise) {
-			myDirection = myDirection.opposite();
+			myDirection = antiCorner;
+			gotFromAntiCorner = true;
 		}
 		if (
 				!CommsHelper.isLocationInEnemyZone(rc.getLocation()) &&
-				CommsHelper.isLocationInEnemyZone(rc.getLocation().add(myDirection))
+						CommsHelper.isLocationInEnemyZone(Functions.translate(rc.getLocation(), myDirection, 3))
 		) {
-			clockwise = !clockwise;
+			if (gotFromAntiCorner) {
+				clockwise = !clockwise;
+			}
 			myDirection = myDirection.opposite();
 		}
 		return MovementHelper.moveBellmanFord(myDirection);
@@ -109,12 +115,50 @@ public strictfp class Miner {
 				);
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
 					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
-					myDirection = getRandomDirection();
+					if (rc.getRoundNum() > 100) {
+						myDirection = getRandomDirection();
+					} else {
+						myDirection = myArchonLocation.directionTo(rc.getLocation());
+					}
 					myArchonIndex = i - 32;
 				}
 			} else {
 				break;
 			}
 		}
+	}
+
+	private static final int ANTI_SOLDIER_MOMENTUM = 5;
+	private static Direction antiSoldier = null;
+	private static int momentum = 0;
+	private static Direction getAntiSoldierDirection() throws GameActionException {
+		int dx = 0, dy = 0, count = 0;
+		for (RobotInfo ri: rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
+			if (ri.type.canAttack() || ri.type == RobotType.ARCHON) {
+				Direction d = ri.location.directionTo(rc.getLocation());
+				dx += d.dx;
+				dy += d.dy;
+				count++;
+			}
+		}
+		if (count < 1) {
+			if (momentum > 0) {
+				if (!rc.onTheMap(translate(rc.getLocation(), antiSoldier, 3))) {
+					momentum = 0;
+					return null;
+				}
+				momentum--;
+				return antiSoldier;
+			}
+			return null;
+		}
+
+		if (dx == 0 && dy == 0) {
+			return null;
+		}
+
+		myDirection = antiSoldier = directionTo(dx, dy);
+		momentum = count * ANTI_SOLDIER_MOMENTUM;
+		return antiSoldier;
 	}
 }

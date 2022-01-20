@@ -37,23 +37,26 @@ public strictfp class Archon {
 			return null;
 		}
 
-		int minHp = 2000;
+		int maxHpDiff = 0;
 		int maxPriority = -1;
 		MapLocation robotLoc = null;
 		RobotInfo[] ris = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam);
 		for (int i = ris.length; --i >= 0; ) {
 			RobotInfo robot = ris[i];
 			int typeIndex = robot.type.ordinal();
-			int p = priority[typeIndex];
+			int p = priority[typeIndex], hpDiff = robot.type.getMaxHealth(robot.level) - robot.health;
 			if (p > maxPriority) {
 				maxPriority = p;
-				minHp = robot.health;
+				maxHpDiff = hpDiff;
 				robotLoc = robot.location;
-			} else if (p == maxPriority && robot.health < minHp) {
-				minHp = robot.health;
+			} else if (
+					p == maxPriority && maxHpDiff < hpDiff
+			) {
+				maxHpDiff = hpDiff;
 				robotLoc = robot.location;
 			}
 		}
+		if (maxHpDiff == 0) return null;
 		return robotLoc;
 	}
 
