@@ -97,8 +97,10 @@ public strictfp class BellmanFordMovement {
 
         if (TailHelper.foundTarget() && TailHelper.getTargetPriority() >= 5) {
             MapLocation target = TailHelper.getTargetLocation();
-            dir = rc.getLocation().directionTo(target);
-            MovementHelper.greedyTryMove(dir);
+            // dir = rc.getLocation().directionTo(target);
+            // MovementHelper.greedyTryMove(dir);
+            // MovementHelper.moveBellmanFord(target);
+            moveTowards(target);
             return;
         }
 
@@ -109,14 +111,21 @@ public strictfp class BellmanFordMovement {
                 // if (distance < INNER_ATTACK_RADIUS) keep spawn blocking?
                 if (distance <= OUTER_ATTACK_RADIUS) {
                     // stay here
-                } else if (MovementHelper.greedyTryMove(dir)) {
-                    return;
                 } else {
-                    DefenseHelper.tryMoveRightAndBack(dir);
+                    // MovementHelper.moveBellmanFord(enemyArchonLocation);
+                    moveTowards(enemyArchonLocation);
                 }
+
+                // else if (MovementHelper.greedyTryMove(dir)) {
+                //     return;
+                // } else {
+                //     DefenseHelper.tryMoveRightAndBack(dir);
+                // }
             } else {
-                dir = rc.getLocation().directionTo(enemyArchonLocation);
-                MovementHelper.greedyTryMove(dir);
+                // dir = rc.getLocation().directionTo(enemyArchonLocation);
+                // MovementHelper.greedyTryMove(dir);
+                // MovementHelper.moveBellmanFord(enemyArchonLocation);
+                moveTowards(enemyArchonLocation);
             }
 
             return;
@@ -126,8 +135,10 @@ public strictfp class BellmanFordMovement {
             // TailHelper.updateTarget();
             if (TailHelper.foundTarget()) {
                 MapLocation target = TailHelper.getTargetLocation();
-                dir = rc.getLocation().directionTo(target);
-                MovementHelper.greedyTryMove(dir);
+                // dir = rc.getLocation().directionTo(target);
+                // MovementHelper.greedyTryMove(dir);
+                // MovementHelper.moveBellmanFord(target);
+                moveTowards(target);
             } else {
                 dir = directions[rng.nextInt(directions.length)];
                 MovementHelper.greedyTryMove(dir);
@@ -136,8 +147,10 @@ public strictfp class BellmanFordMovement {
             return;
         }
 
-        dir = rc.getLocation().directionTo(guessedEnemyArchonLocation);
-        MovementHelper.greedyTryMove(dir);
+        // dir = rc.getLocation().directionTo(guessedEnemyArchonLocation);
+        // MovementHelper.greedyTryMove(dir);
+        // MovementHelper.moveBellmanFord(guessedEnemyArchonLocation);
+        moveTowards(guessedEnemyArchonLocation);
     }
 
     private static boolean tryConcave() throws GameActionException {
@@ -254,8 +267,18 @@ public strictfp class BellmanFordMovement {
                 DefenseHelper.tryMoveRightAndBack(dir);
             }
         } else {
-            Direction dir = rc.getLocation().directionTo(location);
-            MovementHelper.greedyTryMove(dir);
+            // Direction dir = rc.getLocation().directionTo(location);
+            // MovementHelper.greedyTryMove(dir);
+            // MovementHelper.moveBellmanFord(location);
+            moveTowards(location);
         }
+    }
+
+    private static void moveTowards(MapLocation location) throws GameActionException {
+        if (MovementHelper.moveBellmanFord(location))
+            return;
+
+        Direction dir = rc.getLocation().directionTo(location);
+        MovementHelper.greedyTryMove(dir);
     }
 }

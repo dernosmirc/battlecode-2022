@@ -7,6 +7,7 @@ import gen5.miner.GoldMiningHelper;
 import gen5.miner.LeadMiningHelper;
 import gen5.soldier.AttackHelper;
 import gen5.common.CommsHelper;
+import gen5.common.MovementHelper;
 import gen5.common.util.Logger;
 import gen5.common.SymmetryType;
 
@@ -232,5 +233,7 @@ public strictfp class Soldier {
 		} else {
 			guessedEnemyArchonLocation = SymmetryType.getSymmetricalLocation(centralArchon, symmetryType);
 		}
+
+		MovementHelper.prepareBellmanFord(20);
 	}
 }
