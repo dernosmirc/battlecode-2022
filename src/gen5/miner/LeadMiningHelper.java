@@ -1,18 +1,14 @@
 package gen5.miner;
 
-import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-
 import battlecode.common.RobotInfo;
 import gen5.common.CommsHelper;
 import gen5.common.Functions;
-import gen5.common.MovementHelper;
 import gen5.common.SymmetryType;
 import gen5.common.util.Vector;
 
 import static gen5.RobotPlayer.*;
-import static gen5.common.Functions.getPerpendicular;
 
 public class LeadMiningHelper {
 
@@ -175,7 +171,7 @@ public class LeadMiningHelper {
     }
 
     private static boolean shouldUpdateGrid() {
-        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length >= 30) return false;
+        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length >= 12) return false;
         int count = 0;
         RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
         for (int i = ris.length; --i >= 0;) {
