@@ -1,8 +1,8 @@
 package gen5.archon;
 
 import battlecode.common.*;
+
 import gen5.Archon;
-import gen5.builder.BuildingHelper;
 import gen5.common.CommsHelper;
 import gen5.builder.BuilderType;
 import gen5.common.Functions;
@@ -261,7 +261,7 @@ public strictfp class SpawnHelper {
 		}
 
 		if (
-				labBuildersBuilt < 1 && BuildingHelper.isCornerMine(rc.getLocation()) &&
+				labBuildersBuilt < 1 &&
 						1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + LAB_WINDOW
 		) {
 			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);

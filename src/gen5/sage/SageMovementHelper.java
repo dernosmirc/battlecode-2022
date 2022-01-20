@@ -102,7 +102,7 @@ public class SageMovementHelper {
             int dif = chargeRounds.last() - rc.getRoundNum();
             if (dif <= 0) {
                 chargeRounds.popLast();
-            } if (dif < 100) {
+            } if (dif < 75) {
                 return BuildingHelper.getOptimalLabLocation();
             }
         }

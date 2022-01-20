@@ -90,9 +90,9 @@ public strictfp class Builder {
 		if (direction != null) {
 			return MovementHelper.tryMove(direction, false);
 		}
-		direction = BuildingHelper.getRepairDirection();
-		if (direction != null) {
-			return MovementHelper.tryMove(direction, false);
+		MapLocation repair = BuildingHelper.getRepairLocation();
+		if (repair != null) {
+			return MovementHelper.moveBellmanFord(repair);
 		}
 		SageMovementHelper.defenseRevolution(myArchonLocation);
 		return true;
