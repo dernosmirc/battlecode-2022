@@ -60,7 +60,7 @@ public strictfp class Miner {
 		logger.flush();
 	}
 
-	private static boolean clockwise = false;
+	private static boolean clockwise = random.nextDouble() > 0.5;
 	private static boolean move() throws GameActionException {
 		Direction antiSoldier = getAntiSoldierDirection();
 		if (antiSoldier != null) {
