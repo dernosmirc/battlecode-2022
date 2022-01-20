@@ -34,34 +34,6 @@ public strictfp class BellmanFordMovement {
             return;
         }
 
-        if (rc.getHealth() <= HEAL_THRESHOLD) {
-            MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
-            int minDistance = rc.getMapWidth() * rc.getMapHeight();
-            MapLocation archonLocation = null;
-            for (int i = maxArchonCount; --i >= 0; ) {
-                if (archons[i] != null) {
-                    // if (i == myArchonIndex) {
-                    //     archonLocation = archons[i];
-                    //     break;
-                    // }
-
-                    int distance = getDistance(archons[i], rc.getLocation());
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        archonLocation = archons[i];
-                    }
-                }
-            }
-
-            if (archonLocation == null) {
-                System.out.println("No friendly archons");
-                return;
-            }
-
-            circleAround(archonLocation);
-            return;
-        }
-
         if (tryConcave()) {
             return;
         }
