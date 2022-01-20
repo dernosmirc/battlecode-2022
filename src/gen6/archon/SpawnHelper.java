@@ -174,7 +174,7 @@ public strictfp class SpawnHelper {
 				return directions[r];
 			}
 		}
-		return null;
+		return getOptimalSoldierSpawnDirection();
 	}
 
 	private static Direction getOptimalSoldierSpawnDirection() throws GameActionException{
