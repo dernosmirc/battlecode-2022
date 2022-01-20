@@ -43,6 +43,10 @@ public class MovementHelper {
         return tryMove(direction, false);
     }
 
+    public static boolean tryMove (MapLocation loc, boolean force) throws GameActionException {
+        return tryMove(rc.getLocation().directionTo(loc), force);
+    }
+
     public static boolean tryMove (Direction dir, boolean force) throws GameActionException {
         if (dir == null || dir == Direction.CENTER) {
             dir = Functions.getRandomDirection();

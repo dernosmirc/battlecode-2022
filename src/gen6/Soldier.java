@@ -1,6 +1,7 @@
 package gen6;
 
 import battlecode.common.*;
+import gen6.common.util.LogCondition;
 import gen6.soldier.BellmanFordMovement;
 import gen6.soldier.BugPathingMovement;
 import gen6.miner.GoldMiningHelper;
@@ -44,7 +45,7 @@ public strictfp class Soldier {
 	}
 
 	public static void run() throws GameActionException {
-		Logger logger = new Logger("Soldier", true);
+		Logger logger = new Logger("Soldier", LogCondition.ExceedsBytecode);
 		sensedEnemyAttackRobot = false;
 		updateEnemyArchonLocations();
 		AttackHelper.attack();
@@ -84,7 +85,7 @@ public strictfp class Soldier {
 		// Update lead and gold sources nearby to help miners
 		GoldMiningHelper.updateGoldAmountInGridCell();
 
-		if (Clock.getBytecodesLeft() > 5000) {
+		if (logger.getTotal() < 6000) {
 			logger.log("Updating Lead and gold");
 			LeadMiningHelper.updateLeadAmountInGridCell();
 			logger.log("Updated Lead and gold");

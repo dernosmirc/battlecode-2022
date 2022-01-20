@@ -9,13 +9,13 @@ public class Logger {
     private int prev, prevRN;
     private final StringBuilder pre = new StringBuilder(), output = new StringBuilder();
     private int totalLogs = 0;
-    private final boolean flushOnlyIfExceeds;
+    private final LogCondition logCondition;
 
     // LogCounts is total number of logs for a class including total.
-    public Logger (String title, boolean flushOnlyIfExceeds) {
+    public Logger (String title, LogCondition condition) {
         start = prev = Clock.getBytecodeNum();
         startRN = prevRN = rc.getRoundNum();
-        this.flushOnlyIfExceeds = flushOnlyIfExceeds;
+        logCondition = condition;
         if (DEBUG) {
             pre.append("Log_Start@").append(prevRN).append(" ");
             output.append(" ").append(title).append('\n');
@@ -32,14 +32,28 @@ public class Logger {
         }
     }
 
+    public int getTotal() {
+        return Clock.getBytecodeNum() - start + (rc.getRoundNum() - startRN) * myType.bytecodeLimit;
+    }
+
     public void flush () {
-        if (DEBUG) {
-            if (!flushOnlyIfExceeds || startRN < rc.getRoundNum()) {
-                log("end\t\t\t");
-                output.append("total ")
-                        .append(Clock.getBytecodeNum() - start + (rc.getRoundNum() - startRN) * myType.bytecodeLimit);
-                pre.append(totalLogs).append(output.toString());
-                System.out.println(pre.toString());
+        if (DEBUG || logCondition == LogCondition.OverrideDebug) {
+            int total = getTotal();
+            switch (logCondition) {
+                case ExceedsRound:
+                    if (startRN == rc.getRoundNum()) {
+                        break;
+                    }
+                case ExceedsBytecode:
+                    if (total < myType.bytecodeLimit) {
+                        break;
+                    }
+                case Always:
+                case OverrideDebug:
+                    log("end\t\t\t");
+                    output.append("total ").append(total);
+                    pre.append(totalLogs).append(output);
+                    System.out.println(pre);
             }
         }
     }
