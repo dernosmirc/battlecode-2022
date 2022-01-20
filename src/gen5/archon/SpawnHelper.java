@@ -31,8 +31,7 @@ public strictfp class SpawnHelper {
 		if (rc.getRoundNum() < 750) return 0.00;
 		if (labBuildersBuilt < 1 && rc.getRoundNum() > 1000) return 0.150;
 		if (labBuildersBuilt < 2 && rc.getRoundNum() > 1000) return 0.075;
-		if (getArchonWatchtowerPriority() > 1) return 0.00;
-		if (watchtowerBuildersBuilt >= 2) return 0.00;
+		if (getArchonWatchtowerPriority() > 1 || watchtowerBuildersBuilt >= 2) return 0.00;
 		if (watchtowerBuildersBuilt >= 1) return 0.05;
 		return 0.10;
 	}
@@ -245,6 +244,7 @@ public strictfp class SpawnHelper {
 	public static int mapSizeType = 0;
 
 	public static RobotType getNextDroid() throws GameActionException {
+		rc.setIndicatorString(watchtowerBuildersBuilt + "");
 		double threshold = getLeadThreshold();
 		if (rc.getTeamLeadAmount(myTeam) < threshold * getArchonDroidPriority()) {
 			return null;
@@ -314,7 +314,7 @@ public strictfp class SpawnHelper {
 			return RobotType.MINER;
 		}
 		if (rand < sol + min + bui) {
-			if (CommsHelper.isLabBuilt(Archon.myIndex) && labBuildersBuilt >= 2) {
+			if (CommsHelper.isLabBuilt(Archon.myIndex) || labBuildersBuilt >= 2) {
 				CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
 				watchtowerBuildersBuilt++;
 			} else {

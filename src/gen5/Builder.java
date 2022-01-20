@@ -61,12 +61,13 @@ public strictfp class Builder {
 					switch (nextBuilding.type) {
 						case WATCHTOWER:
 							CommsHelper.incrementWatchtowersBuilt(myArchonIndex);
+							break;
 						case LABORATORY:
 							CommsHelper.updateLabBuilt(myArchonIndex);
 					}
 					constructedBuilding = nextBuilding;
 					nextBuilding = null;
-				} else {
+				} else if (nextBuilding.type == RobotType.LABORATORY) {
 					MapLocation req = nextBuilding.location;
 					RobotInfo lab = rc.senseRobotAtLocation(req);
 					Direction anti = getAntiEdgeDirection();
@@ -74,8 +75,6 @@ public strictfp class Builder {
 						nextBuilding = new ConstructionInfo(
 								RobotType.LABORATORY, req.add(anti)
 						);
-					} else {
-						nextBuilding = null;
 					}
 				}
 			} else {
@@ -125,6 +124,7 @@ public strictfp class Builder {
 	}
 
 	public static void run() throws GameActionException {
+		rc.setIndicatorString(myBuilderType.name() + ", constr=" + (constructedBuilding != null) + ", next" + (nextBuilding != null));
 		Logger logger = new Logger("Builder", true);
 		if (rc.getRoundNum() > 1150 && rc.getRoundNum() < 1425){
 			mutateLab();
