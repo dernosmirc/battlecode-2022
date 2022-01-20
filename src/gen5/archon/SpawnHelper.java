@@ -29,10 +29,10 @@ public strictfp class SpawnHelper {
 
 	private static double getBuilderWeight() throws GameActionException {
 		if (rc.getRoundNum() < 750) return 0.00;
-		if (labBuildersBuilt < 1) return 0.1;
+		if (labBuildersBuilt < 1 && rc.getRoundNum() > 1000) return 0.2;
 		if (getArchonWatchtowerPriority() > 1) return 0.00;
-		if (buildersBuilt >= 4) return 0.01;
-		if (buildersBuilt >= 2) return 0.05;
+		if (watchtowerBuildersBuilt >= 2) return 0.01;
+		if (watchtowerBuildersBuilt >= 1) return 0.05;
 		return 0.10;
 	}
 

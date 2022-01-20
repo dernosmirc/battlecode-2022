@@ -14,9 +14,9 @@ import static gen5.RobotPlayer.*;
 import static gen5.common.Functions.*;
 
 public strictfp class Miner {
-	private static final double GOLD_MINER_RATIO = 0.5;
+	private static final double GOLD_MINER_RATIO = 0.25;
 	private static double getExplorerRatio() {
-		return 0.65 * sigmoid((300-rc.getRoundNum())/200.0);
+		return 0.5 * sigmoid((300-rc.getRoundNum())/200.0);
 	}
 
 	private static MapLocation myArchonLocation;
@@ -131,7 +131,7 @@ public strictfp class Miner {
 		}
 	}
 
-	private static final int ANTI_SOLDIER_MOMENTUM = 7;
+	private static final int ANTI_SOLDIER_MOMENTUM = 5;
 	private static Direction antiSoldier = null;
 	private static int momentum = 0;
 	private static Direction getAntiSoldierDirection() {

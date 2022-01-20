@@ -2,6 +2,7 @@ package gen5;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import gen5.common.MovementHelper;
 import gen5.sage.SageAttackHelper;
 import gen5.sage.SageMovementHelper;
 
@@ -36,6 +37,7 @@ public strictfp class Sage {
 				break;
 			}
 		}
+		MovementHelper.prepareBellmanFord(34);
 		Soldier.init();
 	}
 

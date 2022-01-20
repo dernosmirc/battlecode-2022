@@ -23,15 +23,15 @@ public class SageAttackHelper {
 
         int maxHp = 0;
         int maxPriority = -1;
+        int furyDamage = 0, chargeDamage = 0;
         RobotInfo robotToAttack = null;
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.actionRadiusSquared, enemyTeam);
         for (int i = enemyRobots.length; --i >= 0; ) {
             RobotInfo robot = enemyRobots[i];
-            if (robot.type == RobotType.ARCHON) {
-                if (rc.canEnvision(AnomalyType.FURY)) {
-                    rc.envision(AnomalyType.FURY);
-                    return;
-                }
+            if (robot.mode == RobotMode.TURRET) {
+                furyDamage += Math.min(robot.health, robot.type.getMaxHealth(robot.level)/10);
+            } else if (robot.mode == RobotMode.DROID) {
+                chargeDamage += Math.min(robot.health, (robot.type.getMaxHealth(robot.level) * 22)/100);
             }
             int typeIndex = robot.type.ordinal();
             int p = priority[typeIndex];
@@ -45,16 +45,30 @@ public class SageAttackHelper {
             }
         }
 
+        if (furyDamage >= maxHp && furyDamage >= chargeDamage) {
+            if (rc.canEnvision(AnomalyType.FURY)) {
+                rc.envision(AnomalyType.FURY);
+                return;
+            }
+        }
+
+        if (chargeDamage >= maxHp && chargeDamage >= furyDamage) {
+            if (rc.canEnvision(AnomalyType.CHARGE)) {
+                rc.envision(AnomalyType.CHARGE);
+                return;
+            }
+        }
+
         if (maxPriority == -1 || maxHp < 35) {
             return;
         }
 
-        if (robotToAttack != null && rc.canAttack(robotToAttack.location)) {
+        if (rc.canAttack(robotToAttack.location)) {
             rc.attack(robotToAttack.location);
         }
     }
 
-    public static Direction getArchonAttackDirection() {
+    public static MapLocation getArchonAttackLocation() {
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
         for (int i = enemyRobots.length; --i >= 0; ) {
 
@@ -62,7 +76,7 @@ public class SageAttackHelper {
                     enemyRobots[i].type == RobotType.ARCHON &&
                     !enemyRobots[i].location.isWithinDistanceSquared(rc.getLocation(), myType.actionRadiusSquared))
             {
-                return rc.getLocation().directionTo(enemyRobots[i].location);
+                return enemyRobots[i].location;
             }
         }
         return null;
