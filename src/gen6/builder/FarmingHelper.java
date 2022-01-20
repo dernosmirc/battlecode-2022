@@ -30,9 +30,11 @@ public class FarmingHelper {
                     total += myArchons[j].distanceSquaredTo(loc);
                 }
             }
-            for (int j = theirArchons.length; --j >= 0; ) {
-                if (theirArchons[j] != null) {
-                    total -= theirArchons[j].distanceSquaredTo(loc);
+            if (theirArchons != null) {
+                for (int j = theirArchons.length; --j >= 0; ) {
+                    if (theirArchons[j] != null) {
+                        total -= theirArchons[j].distanceSquaredTo(loc);
+                    }
                 }
             }
             if (total < minDistance) {
