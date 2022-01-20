@@ -71,6 +71,10 @@ public strictfp class Archon {
 	}
 
 	public static void run() throws GameActionException {
+		// Set count 0 before each round start
+		rc.writeSharedArray(7, 0);
+		rc.writeSharedArray(8, 0);
+		
 		// DON'T SPAWN SOLDIER ON FIRST ROUND
 		if (rc.getRoundNum() == 2) {
 			setCentralArchon();
