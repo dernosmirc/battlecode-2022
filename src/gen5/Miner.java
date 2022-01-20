@@ -78,12 +78,15 @@ public strictfp class Miner {
 		if (lead != null) {
 			return MovementHelper.moveBellmanFord(lead);
 		}
-		if (!isExplorer && (lead = LeadMiningHelper.spotLeadOnGrid()) != null) {
-			return MovementHelper.moveBellmanFord(lead);
+		if (!isExplorer) {
+			lead = LeadMiningHelper.spotLeadOnGrid();
+			if (lead != null) {
+				return MovementHelper.moveBellmanFord(lead);
+			}
 		}
 
 		boolean gotFromAntiCorner = false;
-		Direction antiCorner = LeadMiningHelper.getAntiEdgeDirection(clockwise);
+		Direction antiCorner = Functions.getDirectionAlongEdge(clockwise);
 		if (antiCorner != null) {
 			myDirection = antiCorner;
 			gotFromAntiCorner = true;
@@ -128,10 +131,10 @@ public strictfp class Miner {
 		}
 	}
 
-	private static final int ANTI_SOLDIER_MOMENTUM = 5;
+	private static final int ANTI_SOLDIER_MOMENTUM = 7;
 	private static Direction antiSoldier = null;
 	private static int momentum = 0;
-	private static Direction getAntiSoldierDirection() throws GameActionException {
+	private static Direction getAntiSoldierDirection() {
 		int dx = 0, dy = 0, count = 0;
 		for (RobotInfo ri: rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
 			if (ri.type.canAttack() || ri.type == RobotType.ARCHON) {
@@ -143,7 +146,8 @@ public strictfp class Miner {
 		}
 		if (count < 1) {
 			if (momentum > 0) {
-				if (!rc.onTheMap(translate(rc.getLocation(), antiSoldier, 3))) {
+				antiSoldier = Functions.vectorAddition(antiSoldier, getAntiEdgeDirection());
+				if (antiSoldier == Direction.CENTER) {
 					momentum = 0;
 					return null;
 				}
