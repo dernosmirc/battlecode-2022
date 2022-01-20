@@ -16,6 +16,8 @@ public class SageAttackHelper {
     // SAGE
     private static final int[] priority = {6, -1, 5, -1, -1, 3, 4};
 
+    private static final int SAGE_ATTACK_THRESHOLD = 35;
+
     public static void attack() throws GameActionException {
         if (!rc.isActionReady()) {
             return;
@@ -45,21 +47,21 @@ public class SageAttackHelper {
             }
         }
 
-        if (furyDamage >= maxHp && furyDamage >= chargeDamage) {
+        if (furyDamage >= maxHp && furyDamage >= chargeDamage && furyDamage > 0) {
             if (rc.canEnvision(AnomalyType.FURY)) {
                 rc.envision(AnomalyType.FURY);
                 return;
             }
         }
 
-        if (chargeDamage >= maxHp && chargeDamage >= furyDamage) {
+        if (chargeDamage >= maxHp && chargeDamage >= furyDamage && chargeDamage >= SAGE_ATTACK_THRESHOLD) {
             if (rc.canEnvision(AnomalyType.CHARGE)) {
                 rc.envision(AnomalyType.CHARGE);
                 return;
             }
         }
 
-        if (maxPriority == -1 || maxHp < 35) {
+        if (maxPriority == -1 || maxHp < SAGE_ATTACK_THRESHOLD) {
             return;
         }
 

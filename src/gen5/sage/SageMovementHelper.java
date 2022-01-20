@@ -1,11 +1,10 @@
 package gen5.sage;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotType;
+import battlecode.common.*;
+import gen5.builder.BuildingHelper;
 import gen5.common.CommsHelper;
 import gen5.common.MovementHelper;
+import gen5.common.util.Vector;
 import gen5.soldier.AttackHelper;
 import gen5.soldier.DefenseHelper;
 
@@ -38,6 +37,12 @@ public class SageMovementHelper {
     }
 
     public static void move() throws GameActionException {
+        MapLocation antiCharge = getAntiChargeLocation();
+        if (antiCharge != null) {
+            MovementHelper.moveBellmanFord(antiCharge);
+            return;
+        }
+
         if (rc.getHealth() < HP_THRESHOLD || rc.getActionCooldownTurns()/10 >= TURNS_THRESHOLD) {
             defenseRevolution(myArchonLocation);
             return;
@@ -79,5 +84,28 @@ public class SageMovementHelper {
         }
 
         defenseRevolution(myArchonLocation);
+    }
+
+    private static Vector<Integer> chargeRounds;
+    public static void checkForCharge() {
+        AnomalyScheduleEntry[] entries = rc.getAnomalySchedule();
+        chargeRounds = new Vector<>(entries.length);
+        for (int i = entries.length; --i >= 0;) {
+            if (entries[i].anomalyType == AnomalyType.CHARGE) {
+                chargeRounds.add(entries[i].roundNumber);
+            }
+        }
+    }
+
+    private static MapLocation getAntiChargeLocation() throws GameActionException {
+        if (!chargeRounds.isEmpty()) {
+            int dif = chargeRounds.last() - rc.getRoundNum();
+            if (dif <= 0) {
+                chargeRounds.popLast();
+            } if (dif < 100) {
+                return BuildingHelper.getOptimalLabLocation();
+            }
+        }
+        return null;
     }
 }

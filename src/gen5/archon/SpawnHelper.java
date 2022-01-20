@@ -14,8 +14,8 @@ import static gen5.common.Functions.getBits;
 
 public strictfp class SpawnHelper {
 	private static final int WATCHTOWER_WINDOW = 25;
-	private static final int ARCHON_MUTATE_WINDOW = 50;
-	private static final int LAB_WINDOW = 50;
+	private static final int ARCHON_MUTATE_WINDOW = 75;
+	private static final int LAB_WINDOW = 75;
 
 	private static final Random random = new Random(rc.getID());
 
@@ -29,7 +29,7 @@ public strictfp class SpawnHelper {
 
 	private static double getBuilderWeight() throws GameActionException {
 		if (rc.getRoundNum() < 750) return 0.00;
-		if (labBuildersBuilt < 1 && rc.getRoundNum() > 1000) return 0.2;
+		if (!CommsHelper.isLabBuilt(Archon.myIndex) && rc.getRoundNum() > 1000) return 0.15;
 		if (getArchonWatchtowerPriority() > 1) return 0.00;
 		if (watchtowerBuildersBuilt >= 2) return 0.01;
 		if (watchtowerBuildersBuilt >= 1) return 0.05;
@@ -298,7 +298,7 @@ public strictfp class SpawnHelper {
 			return RobotType.MINER;
 		}
 		if (rand < sol + min + bui) {
-			if (labBuildersBuilt > 0) {
+			if (CommsHelper.isLabBuilt(Archon.myIndex)) {
 				CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
 				watchtowerBuildersBuilt++;
 			} else {

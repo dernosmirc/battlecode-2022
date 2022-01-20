@@ -74,7 +74,7 @@ public class BuildingHelper {
         return repair == null || !myLocation.isWithinDistanceSquared(repair, myType.actionRadiusSquared);
     }
 
-    private static MapLocation getOptimalLabLocation() throws GameActionException {
+    public static MapLocation getOptimalLabLocation() throws GameActionException {
         int minDistance = Integer.MAX_VALUE, w = rc.getMapWidth()-1, h = rc.getMapHeight()-1;
         MapLocation[] enemyArchons = CommsHelper.getEnemyArchonLocations();
         MapLocation[] possible = {
