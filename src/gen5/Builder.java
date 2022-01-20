@@ -86,34 +86,34 @@ public strictfp class Builder {
 	}
 
 	public static void mutateLab() throws GameActionException{
-		if (constructedBuilding == null){
+		if (constructedBuilding == null) {
 			return;
 		}
-		if (rc.getLocation().distanceSquaredTo(constructedBuilding.location) > rc.getType().actionRadiusSquared){
-			MovementHelper.moveBellmanFord(rc.getLocation().directionTo(constructedBuilding.location));
-			return;
-		}
-		RobotInfo[] rbInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, myTeam);
-		RobotInfo lab = null;
-		int len = rbInfo.length;
-		for (int i = 0; i < len; i++){
-			if (rbInfo[i].location == constructedBuilding.location && rbInfo[i].type == constructedBuilding.type){
-				lab = rbInfo[i];
+		MapLocation my = rc.getLocation();
+		if (!my.isWithinDistanceSquared(constructedBuilding.location, myType.actionRadiusSquared)) {
+			if (rc.isMovementReady()) {
+				MovementHelper.moveBellmanFord(my);
 			}
 		}
-		if (lab == null){
+		if (!my.isWithinDistanceSquared(constructedBuilding.location, myType.actionRadiusSquared)) {
 			return;
 		}
-		if (rc.getRoundNum() > 1200 && lab.level == 1){
-			if (rc.canMutate(lab.location)){
-				rc.mutate(lab.location);
+		RobotInfo lab = rc.senseRobotAtLocation(constructedBuilding.location);
+		if (lab == null) {
+			constructedBuilding = null;
+			return;
+		}
+		if (rc.canMutate(lab.location)) {
+			rc.mutate(lab.location);
+			if (lab.level == 3) {
+				constructedBuilding = null;
 			}
 		}
 	}
 
 	public static void run() throws GameActionException {
 		Logger logger = new Logger("Builder", true);
-		if (rc.getRoundNum() > 1150){
+		if (rc.getRoundNum() > 1150 && rc.getRoundNum() < 1425){
 			mutateLab();
 		}
 		if (rc.isActionReady()) {
