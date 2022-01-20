@@ -27,14 +27,15 @@ public strictfp class TailHelper {
 		return getBits(rc.readSharedArray(5), 15, 15) == 1;
 	}
 
-	public static int getTargetRoundNum() throws GameActionException {
-		return getBits(rc.readSharedArray(6), 0, 10);
+	public static int getAttackUnitsAroundTarget() throws GameActionException {
+		return getBits(rc.readSharedArray(6), 0, 5);
 	}
 
 	public static void updateTarget() throws GameActionException {
 		int minHp = 2000;
 		int maxPriority = -1;
 		RobotInfo currentTarget = null;
+		int attackUnitsHere = 0;
 		RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
 		for (int i = enemyRobots.length; --i >= 0; ) {
 			RobotInfo robot = enemyRobots[i];
@@ -48,30 +49,44 @@ public strictfp class TailHelper {
 				minHp = robot.health;
 				currentTarget = robot;
 			}
+
+			// TODO: Different weights to each type
+			switch (robot.type) {
+				case SAGE:
+				case SOLDIER:
+				case WATCHTOWER:
+					++attackUnitsHere;
+					break;
+			}
 		}
 
 		if (foundTarget()) {
 			MapLocation targetLocation = getTargetLocation();
 			int targetPriority = getTargetPriority();
-			int targetRoundNum = getTargetRoundNum();
+			int attackUnitsAroundTarget = getAttackUnitsAroundTarget();
 			boolean targetPresent = true;
+			boolean canUpdate = false;
 			if (rc.getLocation().distanceSquaredTo(targetLocation) <= myType.visionRadiusSquared) {
 				if (rc.canSenseRobotAtLocation(targetLocation)) {
 					RobotInfo robot = rc.senseRobotAtLocation(targetLocation);
 					if (priority[robot.type.ordinal()] != targetPriority || robot.team != enemyTeam) {
 						targetPresent = false;
+					} else if (attackUnitsHere != attackUnitsAroundTarget) {
+						canUpdate = true;
 					}
 				} else {
 					targetPresent = false;
 				}
+			} else {
+				if (currentTarget != null && priority[currentTarget.type.ordinal()] >= targetPriority
+					&& attackUnitsHere > attackUnitsAroundTarget) {
+					canUpdate = true;
+				}
 			}
 
-			boolean canUpdate = false;
 			if (targetPresent) {
 				if (currentTarget != null) {
 					if (priority[currentTarget.type.ordinal()] > targetPriority) {
-						canUpdate = true;
-					} else if (rc.getRoundNum() - targetRoundNum >= TARGET_UPDATE_ROUNDS_THRESHOLD) {
 						canUpdate = true;
 					}
 				}
@@ -84,22 +99,23 @@ public strictfp class TailHelper {
 			}
 
 			if (canUpdate) {
-				updateTargetInArray(currentTarget);
+				updateTargetInArray(currentTarget, attackUnitsHere);
 			}
 		} else {
 			if (currentTarget != null) {
-				updateTargetInArray(currentTarget);
+				updateTargetInArray(currentTarget, attackUnitsHere);
 			}
 		}
 	}
 
-	private static void updateTargetInArray(RobotInfo target) throws GameActionException {
+	private static void updateTargetInArray(RobotInfo target, int attackUnits) throws GameActionException {
 		int value = setBits(0, 15, 15, 1);
 		value = setBits(value, 0, 11, CommsHelper.getBitsFromLocation(target.location));
 		value = setBits(value, 12, 14, priority[target.type.ordinal()]);
 		rc.writeSharedArray(5, value);
 
-		value = setBits(0, 0, 10, rc.getRoundNum());
+		value = rc.readSharedArray(6);
+		value = setBits(value, 0, 5, Math.min(attackUnits, 63));
 		rc.writeSharedArray(6, value);
 	}
 }

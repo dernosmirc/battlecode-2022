@@ -30,6 +30,7 @@ public strictfp class BellmanFordMovement {
     private static int slideDirection = 0;
 
     public static void move() throws GameActionException {
+        TailHelper.updateTarget();
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
         if (defenseLocation != null) {
             circleAround(defenseLocation);
@@ -70,13 +71,17 @@ public strictfp class BellmanFordMovement {
                 }
             }
 
+            if (archonLocation == null) {
+                System.out.println("No friendly archons");
+                return;
+            }
+
             circleAround(archonLocation);
             return;
         }
 
         Direction dir = AttackHelper.shouldMoveBack();
         MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
-        TailHelper.updateTarget();
         if (dir != null) {
             // if (enemyArchonLocation == null && guessedEnemyArchonLocation == null) {
             //     TailHelper.updateTarget();
