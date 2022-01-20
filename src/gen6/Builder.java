@@ -2,6 +2,7 @@ package gen6;
 
 import battlecode.common.*;
 import gen6.builder.BuildingHelper;
+import gen6.builder.FarmingHelper;
 import gen6.common.CommsHelper;
 import gen6.common.MovementHelper;
 import gen6.builder.MutationHelper;
@@ -32,6 +33,7 @@ public strictfp class Builder {
 	private static ConstructionInfo nextBuilding;
 	private static ConstructionInfo constructedBuilding = null;
 	public static BuilderType myBuilderType;
+	private static MapLocation farmCenter = null;
 
 	private static void act() throws GameActionException {
 		Pair<MapLocation, Boolean> mutate = MutationHelper.getLocationToMutate();
@@ -50,6 +52,11 @@ public strictfp class Builder {
 		if (repair != null && rc.canRepair(repair)) {
 			rc.repair(repair);
 			return;
+		}
+
+		MapLocation rn = rc.getLocation();
+		if (myBuilderType == BuilderType.FarmSeed && FarmingHelper.isLocationInFarm(rn) && rc.senseLead(rn) == 0) {
+			rc.disintegrate();
 		}
 
 		if (nextBuilding != null) {
@@ -86,14 +93,32 @@ public strictfp class Builder {
 	}
 
 	private static boolean move() throws GameActionException {
-		Direction direction = BuildingHelper.getAntiArchonDirection(myArchonLocation);
-		if (direction != null) {
-			return MovementHelper.tryMove(direction, false);
+		if (!rc.isMovementReady()) {
+			rc.setIndicatorString("cant move");
+			return false;
+		}
+
+		if (myBuilderType != BuilderType.FarmSeed) {
+			Direction direction = BuildingHelper.getAntiArchonDirection(myArchonLocation);
+			if (direction != null) {
+				rc.setIndicatorString("anti archon");
+				return MovementHelper.tryMove(direction, false);
+			}
 		}
 		MapLocation repair = BuildingHelper.getRepairLocation();
 		if (repair != null) {
-			return MovementHelper.moveBellmanFord(repair);
+			rc.setIndicatorString("repair");
+			return MovementHelper.tryMove(repair, false);
 		}
+		if (myBuilderType == BuilderType.FarmSeed) {
+			if (rc.getLocation().isWithinDistanceSquared(farmCenter, 2)) {
+				rc.setIndicatorString("farm near");
+				return MovementHelper.tryMove(FarmingHelper.getBaldSpot(), false);
+			}
+			rc.setIndicatorString("farm far");
+			return MovementHelper.tryMove(farmCenter, false);
+		}
+		rc.setIndicatorString("defense");
 		SageMovementHelper.defenseRevolution(myArchonLocation);
 		return true;
 	}
@@ -105,7 +130,8 @@ public strictfp class Builder {
 		MapLocation my = rc.getLocation();
 		if (!my.isWithinDistanceSquared(constructedBuilding.location, myType.actionRadiusSquared)) {
 			if (rc.isMovementReady()) {
-				MovementHelper.moveBellmanFord(my);
+				rc.setIndicatorString("construction");
+				MovementHelper.tryMove(my, false);
 			}
 		}
 		if (!my.isWithinDistanceSquared(constructedBuilding.location, myType.actionRadiusSquared)) {
@@ -125,13 +151,15 @@ public strictfp class Builder {
 	}
 
 	public static void run() throws GameActionException {
-		rc.setIndicatorString(myBuilderType.name() + ", constr=" + (constructedBuilding != null) + ", next" + (nextBuilding != null));
-		Logger logger = new Logger("Builder", LogCondition.ExceedsRound);
-		if (rc.getRoundNum() > 1150 && rc.getRoundNum() < 1425){
+		rc.setIndicatorString(myBuilderType.name());
+		Logger logger = new Logger("Builder", LogCondition.Never);
+		if (rc.getRoundNum() > 1150 && rc.getRoundNum() < 1425) {
 			mutateLab();
+			logger.log("mutated");
 		}
 		if (rc.isActionReady()) {
 			act();
+			logger.log("acted");
 		}
 		MapLocation construction = null;
 		if (nextBuilding != null && rc.getTeamLeadAmount(myTeam) > nextBuilding.type.buildCostLead) {
@@ -139,6 +167,7 @@ public strictfp class Builder {
 		}
 		if (rc.isMovementReady() && BuildingHelper.shouldMove(myArchonLocation, construction)) {
 			move();
+			logger.log("moved");
 		}
 
 		logger.flush();
@@ -146,7 +175,6 @@ public strictfp class Builder {
 
 	public static void init() throws GameActionException {
 		maxArchonCount = 0;
-		MovementHelper.prepareBellmanFord(13);
 		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
@@ -159,6 +187,7 @@ public strictfp class Builder {
 					myArchonIndex = i - 32;
 					nextBuilding = BuildingHelper.getNextConstruction();
 				}
+				farmCenter = FarmingHelper.getFarmCenter();
 			} else {
 				break;
 			}

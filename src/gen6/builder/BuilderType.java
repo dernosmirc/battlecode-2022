@@ -1,8 +1,8 @@
 package gen6.builder;
 
 public enum BuilderType {
-    FarmBuilder,
-    RepairBuilder,
+    FarmSeed,
+    Repairer,
     WatchtowerBuilder,
-    LabBuilder;
+    LabBuilder
 }

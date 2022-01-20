@@ -63,6 +63,7 @@ public class BuildingHelper {
     }
 
     public static boolean shouldMove(MapLocation archon, MapLocation construction) {
+        if (Builder.myBuilderType == BuilderType.FarmSeed) return true;
         MapLocation myLocation = rc.getLocation();
         if (archon.isWithinDistanceSquared(myLocation, MIN_DISTANCE_FROM_ARCHON)) {
             return true;
