@@ -28,9 +28,20 @@ public strictfp class BellmanFordMovement {
 
     public static void move() throws GameActionException {
         TailHelper.updateTarget();
+        Direction dir = AttackHelper.shouldMoveBack();
+        if (dir != null) {
+            MovementHelper.greedyTryMove(dir);
+            return;
+        }
+
+        if (tryConcave()) {
+            return;
+        }
+
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
         if (defenseLocation != null) {
-            circleAround(defenseLocation);
+            // circleAround(defenseLocation);
+            moveTowards(defenseLocation);
             return;
         }
 
@@ -77,20 +88,20 @@ public strictfp class BellmanFordMovement {
             return;
         }
 
-        Direction dir = AttackHelper.shouldMoveBack();
+        // Direction dir = AttackHelper.shouldMoveBack();
         MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
-        if (dir != null) {
-            // if (enemyArchonLocation == null && guessedEnemyArchonLocation == null) {
-            //     TailHelper.updateTarget();
-            // }
+        // if (dir != null) {
+        //     // if (enemyArchonLocation == null && guessedEnemyArchonLocation == null) {
+        //     //     TailHelper.updateTarget();
+        //     // }
 
-            MovementHelper.greedyTryMove(dir);
-            return;
-        }
+        //     MovementHelper.greedyTryMove(dir);
+        //     return;
+        // }
 
-        if (tryConcave()) {
-            return;
-        }
+        // if (tryConcave()) {
+        //     return;
+        // }
 
         if (TailHelper.foundTarget() && TailHelper.getTargetPriority() >= 5) {
             MapLocation target = TailHelper.getTargetLocation();
