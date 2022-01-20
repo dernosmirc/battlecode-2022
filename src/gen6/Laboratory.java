@@ -19,7 +19,7 @@ public strictfp class Laboratory {
 		if (rc.isActionReady()) {
 			if (
 					rc.getTeamLeadAmount(myTeam) >= getLeadThreshold() &&
-					rc.getTransmutationRate() <= RATE_THRESHOLD
+					rc.getTransmutationRate() <= RATE_THRESHOLD * rc.getTeamLeadAmount(myTeam) / getLeadThreshold()
 			) {
 				if (rc.canTransmute()) {
 					rc.transmute();

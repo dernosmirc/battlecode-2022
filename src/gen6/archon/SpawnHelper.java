@@ -28,9 +28,10 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getBuilderWeight() throws GameActionException {
+		if (rc.getRoundNum() < 750 && farmSeedsBuilt > 7) return 0.00;
 		if (rc.getRoundNum() < 250) return 0.00;
-		if (rc.getRoundNum() < 500) return 0.3;
-		if (rc.getRoundNum() < 750) return 0.2;
+		if (rc.getRoundNum() < 500) return 0.5;
+		if (rc.getRoundNum() < 750) return 0.25;
 		if (labBuildersBuilt < 1 && rc.getRoundNum() > 1000) return 0.150;
 		if (labBuildersBuilt < 2 && rc.getRoundNum() > 1000) return 0.075;
 		if (getArchonWatchtowerPriority() > 1 || watchtowerBuildersBuilt >= 2) return 0.00;
@@ -39,7 +40,7 @@ public strictfp class SpawnHelper {
 	}
 
 	private static BuilderType geNextBuilderType() throws GameActionException {
-		if (farmSeedsBuilt < 10) {
+		if (farmSeedsBuilt < 7) {
 			farmSeedsBuilt++;
 			return BuilderType.FarmSeed;
 		} else if (!CommsHelper.isLabBuilt(Archon.myIndex) || labBuildersBuilt < 2 ) {
