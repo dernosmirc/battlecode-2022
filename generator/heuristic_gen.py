@@ -73,7 +73,7 @@ def generate_heuristics(radius_squared):
 		my = [
 			translate(a, translate_by)
 			for a in my
-			if -45 <= angle(src, dest, a) <= 45
+			if -44 < angle(src, dest, a) < 46
 		]
 		l_dump.append(my)
 
