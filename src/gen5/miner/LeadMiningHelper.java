@@ -4,6 +4,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 
+import battlecode.common.RobotInfo;
 import gen5.common.CommsHelper;
 import gen5.common.Functions;
 import gen5.common.MovementHelper;
@@ -173,9 +174,25 @@ public class LeadMiningHelper {
         }
     }
 
+    private static boolean shouldUpdateGrid() {
+        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length >= 30) return false;
+        int count = 0;
+        RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
+        for (int i = ris.length; --i >= 0;) {
+            if (ris[i].type.canAttack()) {
+                count++;
+            }
+            if (count >= 3) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static void updateLeadAmountInGridCell() throws GameActionException {
-        if (rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam).length >= 5) return;
-        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length >= 40) return;
+        if (!shouldUpdateGrid()) {
+            return;
+        }
         MetalInfo[] infos = getLeadOnGrid(), adj = getAdjacentLeadInfos();
         MetalInfo bestCandidate = new MetalInfo(0, rc.getLocation());
         for (int i = adj.length; --i >= 0;) {
@@ -223,45 +240,5 @@ public class LeadMiningHelper {
             }
         }
         return location;
-    }
-
-    public static Direction getAntiEdgeDirection(boolean clockwise) {
-        int x = rc.getLocation().x - 2, y = rc.getLocation().y - 2,
-                w = rc.getMapWidth() - 4, h = rc.getMapHeight() - 4;
-
-        Direction anti = null;
-        if (x <= 0 && y >= h) {
-            anti = Direction.SOUTHEAST;
-        }
-        if (y <= 0 && x <= 0) {
-            anti = Direction.NORTHEAST;
-        }
-        if (y >= h && x >= w) {
-            anti = Direction.SOUTHWEST;
-        }
-        if (x >= w && y <= 0) {
-            anti = Direction.NORTHWEST;
-        }
-        if (x <= 0) {
-            anti = Direction.EAST;
-        }
-        if (y <= 0) {
-            anti = Direction.NORTH;
-        }
-        if (y >= h) {
-            anti = Direction.SOUTH;
-        }
-        if (x >= w) {
-            anti = Direction.WEST;
-        }
-
-        if (anti == null) {
-            return null;
-        }
-
-        if (clockwise) {
-            return getPerpendicular(anti).opposite();
-        }
-        return getPerpendicular(anti);
     }
 }

@@ -11,6 +11,7 @@ import gen5.common.util.Pair;
 import gen5.sage.SageMovementHelper;
 
 import static gen5.RobotPlayer.*;
+import static gen5.common.Functions.getAntiEdgeDirection;
 import static gen5.common.Functions.getBits;
 
 public strictfp class Builder {
@@ -53,18 +54,30 @@ public strictfp class Builder {
 		if (nextBuilding != null) {
 			Direction buildDirection = rc.getLocation().directionTo(nextBuilding.location);
 			if (
-					rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 2) &&
-							rc.canBuildRobot(nextBuilding.type, buildDirection)
+					rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 2)
 			) {
-				rc.buildRobot(nextBuilding.type, buildDirection);
-				switch (nextBuilding.type) {
-					case WATCHTOWER:
-						CommsHelper.incrementWatchtowersBuilt(myArchonIndex);
-					case LABORATORY:
-						CommsHelper.updateLabBuilt(myArchonIndex);
+				if (rc.canBuildRobot(nextBuilding.type, buildDirection)) {
+					rc.buildRobot(nextBuilding.type, buildDirection);
+					switch (nextBuilding.type) {
+						case WATCHTOWER:
+							CommsHelper.incrementWatchtowersBuilt(myArchonIndex);
+						case LABORATORY:
+							CommsHelper.updateLabBuilt(myArchonIndex);
+					}
+					constructedBuilding = nextBuilding;
+					nextBuilding = null;
+				} else {
+					MapLocation req = nextBuilding.location;
+					RobotInfo lab = rc.senseRobotAtLocation(req);
+					Direction anti = getAntiEdgeDirection();
+					if (lab != null && lab.type == RobotType.LABORATORY && anti != null) {
+						nextBuilding = new ConstructionInfo(
+								RobotType.LABORATORY, req.add(anti)
+						);
+					} else {
+						nextBuilding = null;
+					}
 				}
-				constructedBuilding = nextBuilding;
-				nextBuilding = null;
 			} else {
 				MovementHelper.tryMove(buildDirection,
 						rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 5));

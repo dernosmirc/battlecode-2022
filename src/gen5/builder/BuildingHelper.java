@@ -71,10 +71,7 @@ public class BuildingHelper {
             return false;
         }
         MapLocation repair = getRepairLocation();
-        if (repair != null && myLocation.isWithinDistanceSquared(repair, myType.actionRadiusSquared)) {
-            return false;
-        }
-        return true;
+        return repair == null || !myLocation.isWithinDistanceSquared(repair, myType.actionRadiusSquared);
     }
 
     private static MapLocation getOptimalLabLocation() throws GameActionException {

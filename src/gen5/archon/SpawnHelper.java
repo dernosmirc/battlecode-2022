@@ -13,7 +13,7 @@ import static gen5.RobotPlayer.*;
 import static gen5.common.Functions.getBits;
 
 public strictfp class SpawnHelper {
-	private static final int WATCHTOWER_WINDOW = 50;
+	private static final int WATCHTOWER_WINDOW = 25;
 	private static final int ARCHON_MUTATE_WINDOW = 50;
 	private static final int LAB_WINDOW = 50;
 
@@ -29,14 +29,11 @@ public strictfp class SpawnHelper {
 
 	private static double getBuilderWeight() throws GameActionException {
 		if (rc.getRoundNum() < 750) return 0.00;
+		if (labBuildersBuilt < 1) return 0.1;
 		if (getArchonWatchtowerPriority() > 1) return 0.00;
 		if (buildersBuilt >= 4) return 0.01;
-		if (buildersBuilt >= 2) return 0.050;
-		return 0.100;
-	}
-
-	private static double getSkipWeight() {
-		return 0.0;
+		if (buildersBuilt >= 2) return 0.05;
+		return 0.10;
 	}
 
 	private static double getLeadThreshold() throws GameActionException {
@@ -57,8 +54,8 @@ public strictfp class SpawnHelper {
 
 	private static double getSageGoldThreshold() throws GameActionException {
 		if (CommsHelper.getCentralArchon() != Archon.myIndex) return 1000;
-		if (rc.getRoundNum() < 1250 && sagesBuilt <= 5) return 20;
-		return 85;
+		if (sagesBuilt <= 5) return 20;
+		return 100;
 	}
 
 	private static int droidsBuilt = 0;
@@ -284,11 +281,10 @@ public strictfp class SpawnHelper {
 		double sol = getSoldierWeight(),
 				min = getMinerWeight(),
 				bui = getBuilderWeight(),
-				ski = getSkipWeight(),
-				total = sol + min + bui + ski,
+				total = sol + min + bui,
 				rand = random.nextDouble();
 
-		if (total - ski == 0) {
+		if (total == 0) {
 			return null;
 		}
 
@@ -302,8 +298,13 @@ public strictfp class SpawnHelper {
 			return RobotType.MINER;
 		}
 		if (rand < sol + min + bui) {
-			CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
-			watchtowerBuildersBuilt++;
+			if (labBuildersBuilt > 0) {
+				CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
+				watchtowerBuildersBuilt++;
+			} else {
+				CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
+				labBuildersBuilt++;
+			}
 			return RobotType.BUILDER;
 		}
 		return null;

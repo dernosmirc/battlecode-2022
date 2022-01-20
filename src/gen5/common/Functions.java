@@ -36,11 +36,14 @@ public strictfp class Functions {
 	}
 
 	public static Direction vectorAddition(Direction ... dirs) {
-		MapLocation yeah = new MapLocation(0,0);
-		for (Direction d : dirs) {
-			yeah = yeah.add(d);
+		int dx = 0, dy = 0;
+		for (int i = dirs.length; --i >= 0;) {
+			if (dirs[i] != null) {
+				dx += dirs[i].dx;
+				dy += dirs[i].dy;
+			}
 		}
-		return (new MapLocation(0,0)).directionTo(yeah);
+		return directionTo(dx, dy);
 	}
 
 	public static MapLocation translate(MapLocation loc, Direction dir, int dist) {
@@ -124,4 +127,57 @@ public strictfp class Functions {
 		}
 		return null;
 	}
+
+	public static Direction getDirectionAlongEdge(boolean clockwise) {
+		Direction anti = getAntiEdgeDirection();
+
+		if (anti == null) {
+			return null;
+		}
+
+		if (clockwise) {
+			return getPerpendicular(anti).opposite();
+		}
+		return getPerpendicular(anti);
+	}
+
+	public static Direction getAntiEdgeDirection() {
+		int x = rc.getLocation().x - 3, y = rc.getLocation().y - 3,
+				w = rc.getMapWidth() - 6, h = rc.getMapHeight() - 6;
+
+		if (x <= 0 && y >= h) {
+			return Direction.SOUTHEAST;
+		}
+		if (y <= 0 && x <= 0) {
+			return Direction.NORTHEAST;
+		}
+		if (y >= h && x >= w) {
+			return Direction.SOUTHWEST;
+		}
+		if (x >= w && y <= 0) {
+			return Direction.NORTHWEST;
+		}
+		if (x <= 0) {
+			return Direction.EAST;
+		}
+		if (y <= 0) {
+			return Direction.NORTH;
+		}
+		if (y >= h) {
+			return Direction.SOUTH;
+		}
+		if (x >= w) {
+			return Direction.WEST;
+		}
+		return null;
+	}
+
+	public Direction getEdgeDirection() {
+		Direction anti = getAntiEdgeDirection();
+		if (anti == null) {
+			return null;
+		}
+		return anti.opposite();
+	}
+
 }
