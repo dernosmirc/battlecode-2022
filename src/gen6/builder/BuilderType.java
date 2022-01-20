@@ -1,7 +1,7 @@
 package gen6.builder;
 
 public enum BuilderType {
-    NoneType,
+    FarmBuilder,
     RepairBuilder,
     WatchtowerBuilder,
     LabBuilder;

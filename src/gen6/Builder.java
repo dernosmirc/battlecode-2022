@@ -6,6 +6,7 @@ import gen6.common.CommsHelper;
 import gen6.common.MovementHelper;
 import gen6.builder.MutationHelper;
 import gen6.builder.BuilderType;
+import gen6.common.util.LogCondition;
 import gen6.common.util.Logger;
 import gen6.common.util.Pair;
 import gen6.sage.SageMovementHelper;
@@ -125,7 +126,7 @@ public strictfp class Builder {
 
 	public static void run() throws GameActionException {
 		rc.setIndicatorString(myBuilderType.name() + ", constr=" + (constructedBuilding != null) + ", next" + (nextBuilding != null));
-		Logger logger = new Logger("Builder", true);
+		Logger logger = new Logger("Builder", LogCondition.ExceedsRound);
 		if (rc.getRoundNum() > 1150 && rc.getRoundNum() < 1425){
 			mutateLab();
 		}

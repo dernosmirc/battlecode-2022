@@ -137,13 +137,11 @@ public class LeadMiningHelper {
         MapLocation loc = info.location;
         Vector<MetalInfo> arr = new Vector<>(4);
         arr.add(info);
-        SymmetryType[] syms = SymmetryType.values();
-        if (amount >= LEAD_SYMMETRY_THRESHOLD && rc.getRoundNum() <= ROUND_SYMMETRY_THRESHOLD) {
-            for (int i = 2; --i >= 0;) {
-                MapLocation l = SymmetryType.getSymmetricalLocation(loc, syms[i]);
-                if (!CommsHelper.isLocationInEnemyZone(l)) {
-                    arr.add(new MetalInfo(amount, l));
-                }
+        SymmetryType sym = SymmetryType.getMapSymmetry();
+        if (sym != SymmetryType.NONE) {
+            MapLocation l = SymmetryType.getSymmetricalLocation(loc, sym);
+            if (!CommsHelper.isLocationInEnemyZone(l)) {
+                arr.add(new MetalInfo(amount, l));
             }
         }
         for (int j = arr.length; --j >= 0;) {
