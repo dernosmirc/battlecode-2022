@@ -1,11 +1,10 @@
 package gen5.sage;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotType;
+import battlecode.common.*;
+import gen5.builder.BuildingHelper;
 import gen5.common.CommsHelper;
 import gen5.common.MovementHelper;
+import gen5.common.util.Vector;
 import gen5.soldier.AttackHelper;
 import gen5.soldier.DefenseHelper;
 
@@ -17,39 +16,41 @@ public class SageMovementHelper {
     private static final int HP_THRESHOLD = 40;
     private static final int TURNS_THRESHOLD = 25;
 
-    private static int INNER_DEFENSE_RADIUS = 4;
-    private static int OUTER_DEFENSE_RADIUS = 20;
+    private static final int INNER_DEFENSE_RADIUS = 4;
+    private static final int OUTER_DEFENSE_RADIUS = 20;
 
     public static void defenseRevolution(MapLocation defenseLocation) throws GameActionException {
         int distance = rc.getLocation().distanceSquaredTo(defenseLocation);
         if (distance < INNER_DEFENSE_RADIUS) {
             Direction dir = rc.getLocation().directionTo(defenseLocation).opposite();
             MovementHelper.greedyTryMove(dir);
-        } else if (INNER_DEFENSE_RADIUS <= distance && distance <= OUTER_DEFENSE_RADIUS) {
+        } else if (distance <= OUTER_DEFENSE_RADIUS) {
             DefenseHelper.tryMoveRight(defenseLocation);
         } else if (distance <= RobotType.ARCHON.visionRadiusSquared) {
             Direction dir = rc.getLocation().directionTo(defenseLocation);
-            if (MovementHelper.greedyTryMove(dir)) {
-                return;
-            } else {
+            if (!MovementHelper.greedyTryMove(dir)) {
                 DefenseHelper.tryMoveRightAndBack(dir);
             }
         } else {
-            Direction dir = rc.getLocation().directionTo(defenseLocation);
-            MovementHelper.greedyTryMove(dir);
+            MovementHelper.moveBellmanFord(defenseLocation);
         }
-
     }
 
     public static void move() throws GameActionException {
+        MapLocation antiCharge = getAntiChargeLocation();
+        if (antiCharge != null) {
+            MovementHelper.moveBellmanFord(antiCharge);
+            return;
+        }
+
         if (rc.getHealth() < HP_THRESHOLD || rc.getActionCooldownTurns()/10 >= TURNS_THRESHOLD) {
             defenseRevolution(myArchonLocation);
             return;
         }
 
-        Direction attack = SageAttackHelper.getArchonAttackDirection();
+        MapLocation attack = SageAttackHelper.getArchonAttackLocation();
         if (attack != null) {
-            MovementHelper.tryMove(attack, false);
+            MovementHelper.moveBellmanFord(attack);
             return;
         }
 
@@ -78,11 +79,33 @@ public class SageMovementHelper {
 
         MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (enemyArchonLocation != null) {
-            dir = rc.getLocation().directionTo(enemyArchonLocation);
-            MovementHelper.greedyTryMove(dir);
+            MovementHelper.moveBellmanFord(enemyArchonLocation);
             return;
         }
 
         defenseRevolution(myArchonLocation);
+    }
+
+    private static Vector<Integer> chargeRounds;
+    public static void checkForCharge() {
+        AnomalyScheduleEntry[] entries = rc.getAnomalySchedule();
+        chargeRounds = new Vector<>(entries.length);
+        for (int i = entries.length; --i >= 0;) {
+            if (entries[i].anomalyType == AnomalyType.CHARGE) {
+                chargeRounds.add(entries[i].roundNumber);
+            }
+        }
+    }
+
+    private static MapLocation getAntiChargeLocation() throws GameActionException {
+        if (!chargeRounds.isEmpty()) {
+            int dif = chargeRounds.last() - rc.getRoundNum();
+            if (dif <= 0) {
+                chargeRounds.popLast();
+            } if (dif < 75) {
+                return BuildingHelper.getOptimalLabLocation();
+            }
+        }
+        return null;
     }
 }

@@ -1,8 +1,8 @@
 package gen5.archon;
 
 import battlecode.common.*;
+
 import gen5.Archon;
-import gen5.builder.BuildingHelper;
 import gen5.common.CommsHelper;
 import gen5.builder.BuilderType;
 import gen5.common.Functions;
@@ -14,8 +14,8 @@ import static gen5.common.Functions.getBits;
 
 public strictfp class SpawnHelper {
 	private static final int WATCHTOWER_WINDOW = 25;
-	private static final int ARCHON_MUTATE_WINDOW = 50;
-	private static final int LAB_WINDOW = 50;
+	private static final int ARCHON_MUTATE_WINDOW = 75;
+	private static final int LAB_WINDOW = 75;
 
 	private static final Random random = new Random(rc.getID());
 
@@ -29,10 +29,10 @@ public strictfp class SpawnHelper {
 
 	private static double getBuilderWeight() throws GameActionException {
 		if (rc.getRoundNum() < 750) return 0.00;
-		if (labBuildersBuilt < 1) return 0.1;
+		if (!CommsHelper.isLabBuilt(Archon.myIndex) && rc.getRoundNum() > 1000) return 0.15;
 		if (getArchonWatchtowerPriority() > 1) return 0.00;
-		if (buildersBuilt >= 4) return 0.01;
-		if (buildersBuilt >= 2) return 0.05;
+		if (watchtowerBuildersBuilt >= 2) return 0.01;
+		if (watchtowerBuildersBuilt >= 1) return 0.05;
 		return 0.10;
 	}
 
@@ -158,12 +158,27 @@ public strictfp class SpawnHelper {
 		return null;
 	}
 
-	private static Direction getOptimalSoldierSpawnDirection() {
-		MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
-		return rc.getLocation().directionTo(center);
+	private static Direction getOptimalSoldierSpawnDirection() throws GameActionException{
+		int minRubble = 1000;
+		Direction d = null;
+		Direction cur = Direction.NORTH;
+		MapLocation curLoc = rc.getLocation();
+		for (int i = 8; --i >= 0; ){
+			MapLocation loc = curLoc.add(cur);
+			if (rc.canSenseLocation(loc) && !rc.isLocationOccupied(loc) && rc.senseRubble(loc) < minRubble){
+				minRubble = rc.senseRubble(loc);
+				d = cur;
+			}
+			cur = cur.rotateRight();
+		}
+		if (d == null)	return Direction.NORTH;
+		else	return d;
 	}
 
 	private static Direction getOptimalMinerSpawnDirection() throws GameActionException {
+		if (rc.getRoundNum() > 500){
+			return getOptimalSoldierSpawnDirection();
+		}
 		int[] minersInDirection = new int[8];
 		for (RobotInfo robot : rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam)) {
 			if (robot.type == RobotType.MINER) {
@@ -261,7 +276,7 @@ public strictfp class SpawnHelper {
 		}
 
 		if (
-				labBuildersBuilt < 1 && BuildingHelper.isCornerMine(rc.getLocation()) &&
+				labBuildersBuilt < 1 &&
 						1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + LAB_WINDOW
 		) {
 			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
@@ -298,7 +313,7 @@ public strictfp class SpawnHelper {
 			return RobotType.MINER;
 		}
 		if (rand < sol + min + bui) {
-			if (labBuildersBuilt > 0) {
+			if (CommsHelper.isLabBuilt(Archon.myIndex)) {
 				CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
 				watchtowerBuildersBuilt++;
 			} else {

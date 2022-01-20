@@ -16,6 +16,8 @@ public class SageAttackHelper {
     // SAGE
     private static final int[] priority = {6, -1, 5, -1, -1, 3, 4};
 
+    private static final int SAGE_ATTACK_THRESHOLD = 35;
+
     public static void attack() throws GameActionException {
         if (!rc.isActionReady()) {
             return;
@@ -23,15 +25,15 @@ public class SageAttackHelper {
 
         int maxHp = 0;
         int maxPriority = -1;
+        int furyDamage = 0, chargeDamage = 0;
         RobotInfo robotToAttack = null;
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.actionRadiusSquared, enemyTeam);
         for (int i = enemyRobots.length; --i >= 0; ) {
             RobotInfo robot = enemyRobots[i];
-            if (robot.type == RobotType.ARCHON) {
-                if (rc.canEnvision(AnomalyType.FURY)) {
-                    rc.envision(AnomalyType.FURY);
-                    return;
-                }
+            if (robot.mode == RobotMode.TURRET) {
+                furyDamage += Math.min(robot.health, robot.type.getMaxHealth(robot.level)/10);
+            } else if (robot.mode == RobotMode.DROID) {
+                chargeDamage += Math.min(robot.health, (robot.type.getMaxHealth(robot.level) * 22)/100);
             }
             int typeIndex = robot.type.ordinal();
             int p = priority[typeIndex];
@@ -45,16 +47,30 @@ public class SageAttackHelper {
             }
         }
 
-        if (maxPriority == -1 || maxHp < 35) {
+        if (furyDamage >= maxHp && furyDamage >= chargeDamage && furyDamage > 0) {
+            if (rc.canEnvision(AnomalyType.FURY)) {
+                rc.envision(AnomalyType.FURY);
+                return;
+            }
+        }
+
+        if (chargeDamage >= maxHp && chargeDamage >= furyDamage && chargeDamage >= SAGE_ATTACK_THRESHOLD) {
+            if (rc.canEnvision(AnomalyType.CHARGE)) {
+                rc.envision(AnomalyType.CHARGE);
+                return;
+            }
+        }
+
+        if (maxPriority == -1 || maxHp < SAGE_ATTACK_THRESHOLD) {
             return;
         }
 
-        if (robotToAttack != null && rc.canAttack(robotToAttack.location)) {
+        if (rc.canAttack(robotToAttack.location)) {
             rc.attack(robotToAttack.location);
         }
     }
 
-    public static Direction getArchonAttackDirection() {
+    public static MapLocation getArchonAttackLocation() {
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
         for (int i = enemyRobots.length; --i >= 0; ) {
 
@@ -62,7 +78,7 @@ public class SageAttackHelper {
                     enemyRobots[i].type == RobotType.ARCHON &&
                     !enemyRobots[i].location.isWithinDistanceSquared(rc.getLocation(), myType.actionRadiusSquared))
             {
-                return rc.getLocation().directionTo(enemyRobots[i].location);
+                return enemyRobots[i].location;
             }
         }
         return null;

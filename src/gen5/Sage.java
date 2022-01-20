@@ -1,7 +1,11 @@
 package gen5;
 
+import battlecode.common.AnomalyScheduleEntry;
+import battlecode.common.AnomalyType;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import gen5.common.MovementHelper;
+import gen5.common.util.Vector;
 import gen5.sage.SageAttackHelper;
 import gen5.sage.SageMovementHelper;
 
@@ -36,8 +40,8 @@ public strictfp class Sage {
 				break;
 			}
 		}
+		SageMovementHelper.checkForCharge();
+		MovementHelper.prepareBellmanFord(34);
 		Soldier.init();
 	}
-
-
 }
