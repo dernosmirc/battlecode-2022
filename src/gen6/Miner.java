@@ -29,6 +29,9 @@ public strictfp class Miner {
 
 	private static int stillCount = 0;
 	public static void run() throws GameActionException {
+		// Update the miner count
+		rc.writeSharedArray(8, rc.readSharedArray(8) + 1);
+
 		Logger logger = new Logger("Miner", LogCondition.Never);
 		int round = rc.getRoundNum();
 
