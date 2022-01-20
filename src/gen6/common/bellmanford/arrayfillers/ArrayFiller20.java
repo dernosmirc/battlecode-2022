@@ -1,5 +1,7 @@
-package gen6.common.bellmanford;
+package gen6.common.bellmanford.arrayfillers;
 
+
+import gen6.common.bellmanford.ArrayFiller;
 
 public class ArrayFiller20 implements ArrayFiller {
 

@@ -1,4 +1,4 @@
-package gen5.common.bellmanford;
+package gen6.common.bellmanford;
 
 
 public class ArrayFiller13 implements ArrayFiller {

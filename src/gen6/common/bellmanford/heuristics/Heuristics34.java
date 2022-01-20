@@ -1,5 +1,7 @@
-package gen6.common.bellmanford;
+package gen6.common.bellmanford.heuristics;
 
+
+import gen6.common.bellmanford.HeuristicsProvider;
 
 public class Heuristics34 implements HeuristicsProvider {
 
