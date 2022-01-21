@@ -88,7 +88,7 @@ public strictfp class Soldier {
 		// Update lead and gold sources nearby to help miners
 		GoldMiningHelper.updateGoldAmountInGridCell();
 
-		if (logger.getTotal() < 6000) {
+		if (logger.getTotal() < 5500) {
 			logger.log("Updating Lead and gold");
 			LeadMiningHelper.updateLeadAmountInGridCell();
 			logger.log("Updated Lead and gold");

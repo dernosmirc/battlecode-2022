@@ -12,11 +12,18 @@ import static gen6.RobotPlayer.*;
 
 public class MutationHelper {
 
-    private static final int THRESHOLD_WATCHTOWER_LEAD = 300;
-    private static final int THRESHOLD_ARCHON_LEAD = 300;
+    private static final int THRESHOLD_LEAD = 300;
 
-    private static final int THRESHOLD_WATCHTOWER_GOLD = 80;
-    private static final int THRESHOLD_ARCHON_GOLD = 80;
+    private static final int THRESHOLD_GOLD = 80;
+
+    // ARCHON
+    // LABORATORY
+    // WATCHTOWER
+    // MINER
+    // BUILDER
+    // SOLDIER
+    // SAGE
+    public static final int[] priority = {3, 2, 1, 0, 0, 0, 0};
 
     public static Pair<MapLocation, Boolean> getLocationToMutate() throws GameActionException {
         if (CommsHelper.getArchonHpPriority(Builder.myArchonIndex) > 1) {
@@ -24,32 +31,28 @@ public class MutationHelper {
         }
 
         RobotInfo[] infos = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam);
-        for (RobotInfo ri: infos) {
+        MapLocation toMutate = null;
+        int maxPriority = -1;
+        for (int i = infos.length; --i >= 0; ) {
+            RobotInfo ri = infos[i];
             if (
-                    ri.type == RobotType.ARCHON && (
-                            ri.level == 1 && rc.getTeamLeadAmount(myTeam) >= THRESHOLD_ARCHON_LEAD ||
-                            ri.level == 2 && rc.getTeamGoldAmount(myTeam) >= THRESHOLD_ARCHON_GOLD
-                    )
+                    ri.level == 1 && rc.getTeamLeadAmount(myTeam) >= THRESHOLD_LEAD ||
+                    ri.level == 2 && rc.getTeamGoldAmount(myTeam) >= THRESHOLD_GOLD
             ) {
-                return new Pair<>(
-                        ri.location,
-                        rc.getLocation().isWithinDistanceSquared(ri.location, myType.actionRadiusSquared)
-                );
+                if (priority[ri.type.ordinal()] > maxPriority) {
+                    maxPriority = priority[ri.type.ordinal()];
+                    toMutate = ri.location;
+                }
             }
         }
-        for (RobotInfo ri: infos) {
-            if (
-                    ri.type == RobotType.ARCHON && (
-                            ri.level == 1 && rc.getTeamLeadAmount(myTeam) >= THRESHOLD_WATCHTOWER_LEAD ||
-                                    ri.level == 2 && rc.getTeamGoldAmount(myTeam) >= THRESHOLD_WATCHTOWER_GOLD
-                    )
-            ) {
-                return new Pair<>(
-                        ri.location,
-                        rc.getLocation().isWithinDistanceSquared(ri.location, myType.actionRadiusSquared)
-                );
-            }
+
+        if (toMutate == null) {
+            return null;
         }
-        return null;
+
+        return new Pair<>(
+                toMutate,
+                rc.getLocation().isWithinDistanceSquared(toMutate, myType.actionRadiusSquared)
+        );
     }
 }

@@ -36,6 +36,12 @@ public strictfp class Builder {
 	private static MapLocation farmCenter = null;
 
 	private static void act() throws GameActionException {
+		MapLocation rn = rc.getLocation();
+		if (myBuilderType == BuilderType.FarmSeed && FarmingHelper.isLocationInFarm(rn) && rc.senseLead(rn) == 0) {
+			rc.disintegrate();
+			return;
+		}
+
 		Pair<MapLocation, Boolean> mutate = MutationHelper.getLocationToMutate();
 		if (mutate != null) {
 			if (mutate.b) {
@@ -52,11 +58,6 @@ public strictfp class Builder {
 		if (repair != null && rc.canRepair(repair)) {
 			rc.repair(repair);
 			return;
-		}
-
-		MapLocation rn = rc.getLocation();
-		if (myBuilderType == BuilderType.FarmSeed && FarmingHelper.isLocationInFarm(rn) && rc.senseLead(rn) == 0) {
-			rc.disintegrate();
 		}
 
 		if (nextBuilding != null) {
@@ -98,26 +99,25 @@ public strictfp class Builder {
 			return false;
 		}
 
-		if (myBuilderType != BuilderType.FarmSeed) {
+		if (myBuilderType == BuilderType.FarmSeed) {
+			MapLocation ml = FarmingHelper.getBaldSpot();
+			if (ml != null) {
+				rc.setIndicatorString("farm near");
+				return MovementHelper.tryMove(ml, false);
+			}
+		} else {
 			Direction direction = BuildingHelper.getAntiArchonDirection(myArchonLocation);
 			if (direction != null) {
 				rc.setIndicatorString("anti archon");
 				return MovementHelper.tryMove(direction, false);
 			}
-		}
-		MapLocation repair = BuildingHelper.getRepairLocation();
-		if (repair != null) {
-			rc.setIndicatorString("repair");
-			return MovementHelper.tryMove(repair, false);
-		}
-		if (myBuilderType == BuilderType.FarmSeed) {
-			if (rc.getLocation().isWithinDistanceSquared(farmCenter, 65)) {
-				rc.setIndicatorString("farm near");
-				return MovementHelper.tryMove(FarmingHelper.getBaldSpot(), false);
+			MapLocation repair = BuildingHelper.getRepairLocation();
+			if (repair != null) {
+				rc.setIndicatorString("repair");
+				return MovementHelper.tryMove(repair, false);
 			}
-			rc.setIndicatorString("farm far");
-			return MovementHelper.tryMove(farmCenter, false);
 		}
+
 		rc.setIndicatorString("defense");
 		SageMovementHelper.defenseRevolution(myArchonLocation);
 		return true;
@@ -153,7 +153,7 @@ public strictfp class Builder {
 	public static void run() throws GameActionException {
 		rc.setIndicatorString(myBuilderType.name());
 		Logger logger = new Logger("Builder", LogCondition.Never);
-		if (rc.getRoundNum() > 1150 && rc.getRoundNum() < 1425) {
+		if (rc.getRoundNum() > 1150 && rc.getRoundNum() < 1425 && myBuilderType != BuilderType.FarmSeed) {
 			mutateLab();
 			logger.log("mutated");
 		}
@@ -175,6 +175,7 @@ public strictfp class Builder {
 
 	public static void init() throws GameActionException {
 		maxArchonCount = 0;
+		MovementHelper.prepareBellmanFord(20);
 		for (int i = 32; i < 36; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {

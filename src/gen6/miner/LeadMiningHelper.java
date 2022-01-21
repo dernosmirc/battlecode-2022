@@ -20,7 +20,7 @@ public class LeadMiningHelper {
     private static final double DISTANCE_FACTOR = -1.5;
 
     private static final int MAX_7BITS = 127;
-    private static final double COMPRESSION = 0.001;
+    private static final double COMPRESSION = 0.005;
 
     private static final int LEAD_SYMMETRY_THRESHOLD = 25;
 

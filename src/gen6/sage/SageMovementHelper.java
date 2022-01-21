@@ -16,7 +16,7 @@ public class SageMovementHelper {
     private static final int HP_THRESHOLD = 40;
     private static final int TURNS_THRESHOLD = 25;
 
-    private static final int INNER_DEFENSE_RADIUS = 4;
+    private static final int INNER_DEFENSE_RADIUS = 5;
     private static final int OUTER_DEFENSE_RADIUS = 20;
 
     public static void defenseRevolution(MapLocation defenseLocation) throws GameActionException {
