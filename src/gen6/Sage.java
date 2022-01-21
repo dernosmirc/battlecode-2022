@@ -16,6 +16,10 @@ public strictfp class Sage {
 
 
 	public static void run() throws GameActionException {
+		// Update Sage count
+		if (rc.getRoundNum()%2 == 1){
+			rc.writeSharedArray(9, rc.readSharedArray(9) + 1);
+		}
 		SageMovementHelper.move();
 		SageAttackHelper.attack();
 	}

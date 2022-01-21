@@ -17,6 +17,7 @@ public strictfp class CommsHelper {
 	private static final double ENEMY_ZONE_FACTOR = 8;
 	private static int SOLDIER_COUNT = 0;
 	private static int MINER_COUNT = 0;
+	private static int SAGE_COUNT = 0;
 	public static MapLocation getLocationFrom12Bits(int bits) {
 		return new MapLocation(getBits(bits, 6, 11), getBits(bits, 0, 5));
 	}
@@ -296,9 +297,6 @@ public strictfp class CommsHelper {
 
 	public static int getAliveSoldierCount() throws GameActionException{
 		int roundNumber = rc.getRoundNum();
-		if (roundNumber == 1){
-			return 0;
-		}
 		if (roundNumber%2 == 1){
 			return SOLDIER_COUNT;
 		}
@@ -310,15 +308,23 @@ public strictfp class CommsHelper {
 
 	public static int getAliveMinerCount() throws GameActionException{
 		int roundNumber = rc.getRoundNum();
-		if (roundNumber == 1){
-			return 0;
-		}
 		if (roundNumber%2 == 1){
 			return MINER_COUNT;
 		}
 		else{
 			MINER_COUNT = rc.readSharedArray(8);
 			return MINER_COUNT;
+		}
+	}
+
+	public static int getAliveSageCount() throws GameActionException{
+		int roundNumber = rc.getRoundNum();
+		if (roundNumber%2 == 1){
+			return SAGE_COUNT;
+		}
+		else{
+			SAGE_COUNT = rc.readSharedArray(9);
+			return SAGE_COUNT;
 		}
 	}
 

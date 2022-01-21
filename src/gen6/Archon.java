@@ -75,6 +75,7 @@ public strictfp class Archon {
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(7, 0);
 			rc.writeSharedArray(8, 0);
+			rc.writeSharedArray(9, 0);
 		}
 
 		// DON'T SPAWN SOLDIER ON FIRST ROUND
