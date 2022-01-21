@@ -31,7 +31,7 @@ public strictfp class BellmanFordMovement {
 
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
         if (defenseLocation != null) {
-            if (rc.getLocation().isWithinDistanceSquared(defenseLocation, 13)) {
+            if (rc.getLocation().isWithinDistanceSquared(defenseLocation, myType.visionRadiusSquared)) {
                 if (tryConcave()) {
                     return;
                 }
@@ -47,11 +47,6 @@ public strictfp class BellmanFordMovement {
             MapLocation archonLocation = null;
             for (int i = maxArchonCount; --i >= 0; ) {
                 if (archons[i] != null) {
-                    // if (i == myArchonIndex) {
-                    //     archonLocation = archons[i];
-                    //     break;
-                    // }
-
                     int distance = getDistance(archons[i], rc.getLocation());
                     if (distance < minDistance) {
                         minDistance = distance;
@@ -65,7 +60,7 @@ public strictfp class BellmanFordMovement {
                 return;
             }
 
-            if (rc.getLocation().isWithinDistanceSquared(archonLocation, 13)) {
+            if (rc.getLocation().isWithinDistanceSquared(archonLocation, myType.visionRadiusSquared)) {
                 if (tryConcave()) {
                     return;
                 }
@@ -85,14 +80,7 @@ public strictfp class BellmanFordMovement {
             return;
         }
 
-        // MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
-        // if (defenseLocation != null) {
-        //     // circleAround(defenseLocation);
-        //     moveTowards(defenseLocation); // possible spawn blocking
-        //     return;
-        // }
-
-        RobotInfo[] robots = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam); // try vision radius?
+        RobotInfo[] robots = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam); // try vision radius?
         RobotInfo archon = null;
         for (int i = robots.length; --i >= 0; ) {
             RobotInfo robot = robots[i];
@@ -107,92 +95,22 @@ public strictfp class BellmanFordMovement {
             return;
         }
 
-        // if (rc.getHealth() <= HEAL_THRESHOLD) {
-        //     MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
-        //     int minDistance = rc.getMapWidth() * rc.getMapHeight();
-        //     MapLocation archonLocation = null;
-        //     for (int i = maxArchonCount; --i >= 0; ) {
-        //         if (archons[i] != null) {
-        //             // if (i == myArchonIndex) {
-        //             //     archonLocation = archons[i];
-        //             //     break;
-        //             // }
-
-        //             int distance = getDistance(archons[i], rc.getLocation());
-        //             if (distance < minDistance) {
-        //                 minDistance = distance;
-        //                 archonLocation = archons[i];
-        //             }
-        //         }
-        //     }
-
-        //     if (archonLocation == null) {
-        //         System.out.println("No friendly archons");
-        //         return;
-        //     }
-
-        //     circleAround(archonLocation);
-        //     return;
-        // }
-
-        // Direction dir = AttackHelper.shouldMoveBack();
-        MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
-        // if (dir != null) {
-        //     // if (enemyArchonLocation == null && guessedEnemyArchonLocation == null) {
-        //     //     TailHelper.updateTarget();
-        //     // }
-
-        //     MovementHelper.greedyTryMove(dir);
-        //     return;
-        // }
-
-        // if (tryConcave()) {
-        //     return;
-        // }
-
+        // TODO: try 0 priority
         if (TailHelper.foundTarget() && TailHelper.getTargetPriority() >= 5) {
             MapLocation target = TailHelper.getTargetLocation();
-            // dir = rc.getLocation().directionTo(target);
-            // MovementHelper.greedyTryMove(dir);
-            // MovementHelper.moveBellmanFord(target);
             moveTowards(target);
             return;
         }
 
+        MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (enemyArchonLocation != null) {
-            if (sensedEnemyAttackRobot) {
-                int distance = rc.getLocation().distanceSquaredTo(enemyArchonLocation);
-                dir = rc.getLocation().directionTo(enemyArchonLocation);
-                // if (distance < INNER_ATTACK_RADIUS) keep spawn blocking?
-                if (distance <= OUTER_ATTACK_RADIUS) {
-                    // stay here
-                } else {
-                    // MovementHelper.moveBellmanFord(enemyArchonLocation);
-                    moveTowards(enemyArchonLocation);
-                }
-
-                // else if (MovementHelper.greedyTryMove(dir)) {
-                //     return;
-                // } else {
-                //     DefenseHelper.tryMoveRightAndBack(dir);
-                // }
-            } else {
-                // dir = rc.getLocation().directionTo(enemyArchonLocation);
-                // MovementHelper.greedyTryMove(dir);
-                // MovementHelper.moveBellmanFord(enemyArchonLocation);
-                moveTowards(enemyArchonLocation);
-            }
-
+            moveTowards(enemyArchonLocation);
             return;
         }
 
         if (guessedEnemyArchonLocation == null) {
-            // TailHelper.updateTarget();
             if (TailHelper.foundTarget()) {
                 MapLocation target = TailHelper.getTargetLocation();
-                // dir = rc.getLocation().directionTo(target);
-                // MovementHelper.greedyTryMove(dir);
-                // MovementHelper.moveBellmanFord(target);
                 moveTowards(target);
             } else {
                 dir = directions[rng.nextInt(directions.length)];
@@ -202,14 +120,10 @@ public strictfp class BellmanFordMovement {
             return;
         }
 
-        // dir = rc.getLocation().directionTo(guessedEnemyArchonLocation);
-        // MovementHelper.greedyTryMove(dir);
-        // MovementHelper.moveBellmanFord(guessedEnemyArchonLocation);
         moveTowards(guessedEnemyArchonLocation);
     }
 
     private static boolean tryConcave() throws GameActionException {
-        String s = "here ";
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
         RobotInfo nearestRobot = null;
         int minDistance = 100000;
@@ -242,7 +156,24 @@ public strictfp class BellmanFordMovement {
                 MapLocation tentativeMoveLocation = rc.getLocation().add(dir);
                 int rubbleHere = rc.senseRubble(rc.getLocation());
                 int rubbleThere = rc.senseRubble(tentativeMoveLocation);
-                if (rubbleThere < rubbleHere) {
+                if (rubbleThere <= rubbleHere) {
+                    MovementHelper.tryMove(dir, true);
+                }
+            }
+
+            return true;
+        }
+
+        if (minDistance == INNER_CONCAVE_RADIUS) {
+            Direction dir = getBestLateralDirection(rc.getLocation().directionTo(nearestRobot.location), nearestRobot);
+            if (dir != Direction.CENTER) {
+                MovementHelper.tryMove(dir, true);
+            } else {
+                dir = rc.getLocation().directionTo(nearestRobot.location);
+                Direction leftBack = dir.rotateLeft().rotateLeft().rotateLeft();
+                Direction rightBack = dir.rotateRight().rotateRight().rotateRight();
+                dir = getBestDirection(leftBack, rightBack);
+                if (dir != null && rc.senseRubble(rc.getLocation().add(dir)) < rc.senseRubble(rc.getLocation())) {
                     MovementHelper.tryMove(dir, true);
                 }
             }
@@ -252,7 +183,6 @@ public strictfp class BellmanFordMovement {
 
         if (minDistance <= OUTER_CONCAVE_RADIUS) {
             Direction dir = getBestLateralDirection(rc.getLocation().directionTo(nearestRobot.location), nearestRobot);
-            rc.setIndicatorString(s + dir.ordinal());
             if (dir != Direction.CENTER) {
                 MovementHelper.tryMove(dir, true);
             }
@@ -307,13 +237,39 @@ public strictfp class BellmanFordMovement {
         return best;
     }
 
+    private static Direction getBestDirection(Direction dir1, Direction dir2) throws GameActionException {
+        MapLocation location1 = rc.getLocation().add(dir1);
+        MapLocation location2 = rc.getLocation().add(dir2);
+        Direction best = null;
+        int minRubble = 1000;
+        if (rc.canMove(dir1)) {
+            int rubble = rc.senseRubble(location1);
+            if (rubble < minRubble) {
+                minRubble = rubble;
+                best = dir1;
+            }
+        }
+        if (rc.canMove(dir2)) {
+            int rubble = rc.senseRubble(location2);
+            if (rubble < minRubble) {
+                minRubble = rubble;
+                best = dir2;
+            }
+        }
+
+        return best;
+    }
+
     private static void circleAround(MapLocation location) throws GameActionException {
         int distance = rc.getLocation().distanceSquaredTo(location);
         if (distance < INNER_DEFENSE_RADIUS) {
             Direction dir = rc.getLocation().directionTo(location).opposite();
             MovementHelper.greedyTryMove(dir);
         } else if (INNER_DEFENSE_RADIUS <= distance && distance <= OUTER_DEFENSE_RADIUS) {
-            DefenseHelper.tryMoveRight(location);
+            if (!DefenseHelper.tryMoveRight(location)) {
+                Direction dir = rc.getLocation().directionTo(location).rotateRight();
+                MovementHelper.tryMove(dir, true);
+            }
         } else if (distance <= RobotType.ARCHON.visionRadiusSquared) {
             Direction dir = rc.getLocation().directionTo(location);
             if (MovementHelper.greedyTryMove(dir)) {
@@ -322,9 +278,6 @@ public strictfp class BellmanFordMovement {
                 DefenseHelper.tryMoveRightAndBack(dir);
             }
         } else {
-            // Direction dir = rc.getLocation().directionTo(location);
-            // MovementHelper.greedyTryMove(dir);
-            // MovementHelper.moveBellmanFord(location);
             moveTowards(location);
         }
     }
