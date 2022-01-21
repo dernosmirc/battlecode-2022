@@ -1,18 +1,17 @@
 package gen6;
 
 import battlecode.common.*;
+import gen6.archon.SpawnHelper;
 
 import static gen6.RobotPlayer.myTeam;
 import static gen6.RobotPlayer.rc;
 
 public strictfp class Laboratory {
 
-	private static final int RATE_THRESHOLD = 7;
+	private static final int RATE_THRESHOLD = 10;
 
-	private static double getLeadThreshold() {
-		if (rc.getRoundNum() < 1000) return 125;
-		if (rc.getRoundNum() < 1500) return 250;
-		return 375;
+	private static double getLeadThreshold() throws GameActionException {
+		return SpawnHelper.getLeadThreshold();
 	}
 
 	public static void run() throws GameActionException {

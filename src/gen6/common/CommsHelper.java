@@ -113,6 +113,17 @@ public strictfp class CommsHelper {
 		}
 	}
 
+	public static int getAliveArchonCount() throws GameActionException {
+		int count = 0;
+		boolean[] dead = getDeadArchons();
+		for (int i = dead.length; --i >= 0;) {
+			if (!dead[i]) {
+				count++;
+			}
+		}
+		return count;
+	}
+
 	public static boolean[] getDeadArchons() throws GameActionException {
 		boolean[] isDead = new boolean[maxArchonCount];
 		int latestCount = rc.getArchonCount();
@@ -257,6 +268,16 @@ public strictfp class CommsHelper {
 			}
 		}
 		return true;
+	}
+
+	public static int getNumberOfLabs() throws GameActionException {
+		int count = 0;
+		for (int i = maxArchonCount; --i >= 0;) {
+			if (isLabBuilt(i)) {
+				count++;
+			}
+		}
+		return count;
 	}
 
 	public static boolean allLArchonsMutated(int level) throws GameActionException {

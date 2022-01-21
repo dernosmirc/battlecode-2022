@@ -32,8 +32,7 @@ public strictfp class SpawnHelper {
 		if (rc.getRoundNum() < 250) return 0.00;
 		if (rc.getRoundNum() < 500) return 0.5;
 		if (rc.getRoundNum() < 750) return 0.25;
-		if (labBuildersBuilt < 1 && rc.getRoundNum() > 1000) return 0.200;
-		if (labBuildersBuilt < 2 && rc.getRoundNum() > 1000) return 0.075;
+		if (labBuildersBuilt < 2 && rc.getRoundNum() > 1000) return 0.100;
 		if (getArchonWatchtowerPriority() > 1 || watchtowerBuildersBuilt >= 2) return 0.00;
 		if (watchtowerBuildersBuilt >= 1) return 0.05;
 		return 0.10;
@@ -53,13 +52,15 @@ public strictfp class SpawnHelper {
 		return null;
 	}
 
-	private static double getLeadThreshold() throws GameActionException {
+	public static double getLeadThreshold() throws GameActionException {
+		if (200 <= rc.getRoundNum() && rc.getRoundNum() < 200 + LAB_WINDOW && CommsHelper.getNumberOfLabs() < 1
+		) return 260;
 		if (1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + ARCHON_MUTATE_WINDOW &&
 				!CommsHelper.allLArchonsMutated(2)
 		) return 375;
 		if (1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + LAB_WINDOW &&
 				!CommsHelper.allLabsBuilt()
-		) return 250;
+		) return 260;
 		if (1250 <= rc.getRoundNum() && rc.getRoundNum() < 1250 + WATCHTOWER_WINDOW &&
 				!CommsHelper.minWatchtowersBuilt(1)
 		) return 225;
@@ -70,9 +71,8 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getSageGoldThreshold() throws GameActionException {
-		if (CommsHelper.getCentralArchon() != Archon.myIndex) return 1000;
-		if (sagesBuilt <= 5) return 20;
-		return 100;
+		if (CommsHelper.getCentralArchon() != Archon.myIndex) return 100;
+		return 20;
 	}
 
 	private static int droidsBuilt = 0;
@@ -195,7 +195,7 @@ public strictfp class SpawnHelper {
 	}
 
 	private static Direction getOptimalMinerSpawnDirection() throws GameActionException {
-		if (rc.getRoundNum() > 100){
+		if (rc.getRoundNum() > 100) {
 			return getOptimalSoldierSpawnDirection();
 		}
 		int[] minersInDirection = new int[8];
@@ -273,22 +273,24 @@ public strictfp class SpawnHelper {
 			return RobotType.SAGE;
 		}
 
-		switch (mapSizeType) {
-			case 0:
-				/*if (minersBuilt < 1) return RobotType.MINER;
-				if (soldiersBuilt < 3) return RobotType.SOLDIER;
-				if (minersBuilt < 2) return RobotType.MINER;
-				if (soldiersBuilt < 6) return RobotType.SOLDIER;
-				if (minersBuilt < 3) return RobotType.MINER;
-				if (soldiersBuilt < 9) return RobotType.SOLDIER;
-				break;*/
-			case 1:
-			case 2:
-				if (minersBuilt < 3) return RobotType.MINER;
-				if (soldiersBuilt < 6) return RobotType.SOLDIER;
-				if (minersBuilt < 5) return RobotType.MINER;
-				if (soldiersBuilt < 9) return RobotType.SOLDIER;
+		/*if (CommsHelper.getAliveArchonCount() > 1) {
+			if (CommsHelper.getCentralArchon() == Archon.myIndex) {
+			} else {
+			}
+		}*/
+		if (CommsHelper.getCentralArchon() == Archon.myIndex &&
+				labBuildersBuilt < 1 && CommsHelper.getNumberOfLabs() < 1 &&
+						150 <= rc.getRoundNum() && rc.getRoundNum() < 150 + LAB_WINDOW
+		) {
+			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
+			labBuildersBuilt++;
+			return RobotType.BUILDER;
 		}
+
+		if (minersBuilt < 3) return RobotType.MINER;
+		if (soldiersBuilt < 6) return RobotType.SOLDIER;
+		if (minersBuilt < 5) return RobotType.MINER;
+		if (soldiersBuilt < 9) return RobotType.SOLDIER;
 
 		if (!isBuilderAround()) {
 			CommsHelper.setBuilderType(BuilderType.Repairer, Archon.myIndex);
@@ -297,7 +299,7 @@ public strictfp class SpawnHelper {
 		}
 
 		if (
-				labBuildersBuilt < 1 &&
+				labBuildersBuilt < 2 &&
 						1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + LAB_WINDOW
 		) {
 			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
