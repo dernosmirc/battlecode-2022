@@ -11,20 +11,37 @@ import java.util.Random;
 
 import static gen6.RobotPlayer.*;
 import static gen6.common.Functions.getBits;
+import static gen6.common.Functions.sigmoid;
 
 public strictfp class SpawnHelper {
 	private static final int WATCHTOWER_WINDOW = 25;
 	private static final int ARCHON_MUTATE_WINDOW = 75;
 	private static final int LAB_WINDOW = 75;
+	private static final int SOLDIER_SAGE_RATIO = 3;
 
 	private static final Random random = new Random(rc.getID());
 
-	private static double getSoldierWeight() {
-		return 0.70;
+	private static double getSoldierMinerRatio() {
+		return 2 + sigmoid((rc.getRoundNum() - 1000.0)/200);
 	}
 
-	private static double getMinerWeight() {
-		return 0.35;
+	private static boolean shouldBuildMiner() throws GameActionException {
+		return CommsHelper.getAliveSoldierCount() + SOLDIER_SAGE_RATIO * CommsHelper.getAliveSageCount() >
+				getSoldierMinerRatio()*CommsHelper.getAliveMinerCount();
+	}
+
+	private static double getSoldierWeight() throws GameActionException {
+		if (!shouldBuildMiner()) {
+			return 1;
+		}
+		return 0;
+	}
+
+	private static double getMinerWeight() throws GameActionException {
+		if (shouldBuildMiner()) {
+			return 1;
+		}
+		return 0;
 	}
 
 	private static double getBuilderWeight() throws GameActionException {
@@ -159,6 +176,16 @@ public strictfp class SpawnHelper {
 		return false;
 	}
 
+	private static boolean isEnemyAround() {
+		RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
+		for (int i = ris.length; --i >= 0;) {
+			if (ris[i].type.canAttack()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private static final boolean[] builderSpawned = new boolean[8];
 	private static Direction getOptimalBuilderSpawnDirection() throws GameActionException {
 		MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
@@ -278,7 +305,8 @@ public strictfp class SpawnHelper {
 			} else {
 			}
 		}*/
-		if (CommsHelper.getCentralArchon() == Archon.myIndex &&
+
+		if (CommsHelper.getCentralArchon() != Archon.myIndex &&
 				labBuildersBuilt < 1 && CommsHelper.getNumberOfLabs() < 1 &&
 						150 <= rc.getRoundNum() && rc.getRoundNum() < 150 + LAB_WINDOW
 		) {
@@ -292,7 +320,7 @@ public strictfp class SpawnHelper {
 		if (minersBuilt < 5) return RobotType.MINER;
 		if (soldiersBuilt < 9) return RobotType.SOLDIER;
 
-		if (!isBuilderAround()) {
+		if (!isBuilderAround() && !isEnemyAround()) {
 			CommsHelper.setBuilderType(BuilderType.Repairer, Archon.myIndex);
 			repairersBuilt++;
 			return RobotType.BUILDER;
