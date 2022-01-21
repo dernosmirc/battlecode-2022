@@ -70,7 +70,7 @@ public strictfp class SpawnHelper {
 	}
 
 	public static double getLeadThreshold() throws GameActionException {
-		if (200 <= rc.getRoundNum() && rc.getRoundNum() < 200 + LAB_WINDOW && CommsHelper.getNumberOfLabs() < 1
+		if (250 <= rc.getRoundNum() && rc.getRoundNum() < 250 + LAB_WINDOW && CommsHelper.getNumberOfLabs() < 1
 		) return 260;
 		if (1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + ARCHON_MUTATE_WINDOW &&
 				!CommsHelper.allLArchonsMutated(2)
@@ -142,7 +142,7 @@ public strictfp class SpawnHelper {
 		updateDeadArchons();
 		int p = 1;
 		for (int i = 0; i < maxArchonCount; ++i) {
-			if (Archon.myIndex != i && !archonDead[i] &&
+			if (Archon.myIndex != i && !archonDead[i] && !CommsHelper.isArchonPortable(i) &&
 					getBits(rc.readSharedArray(10 + i), 0, 11) < droidsBuilt
 			) {
 				p++;
@@ -290,14 +290,13 @@ public strictfp class SpawnHelper {
 	public static int mapSizeType = 0;
 
 	public static RobotType getNextDroid() throws GameActionException {
-		rc.setIndicatorString(watchtowerBuildersBuilt + "");
+		if (getSageGoldThreshold() <= rc.getTeamGoldAmount(myTeam)) {
+			return RobotType.SAGE;
+		}
+
 		double threshold = getLeadThreshold();
 		if (rc.getTeamLeadAmount(myTeam) < threshold * getArchonDroidPriority()) {
 			return null;
-		}
-
-		if (getSageGoldThreshold() <= rc.getTeamGoldAmount(myTeam)) {
-			return RobotType.SAGE;
 		}
 
 		/*if (CommsHelper.getAliveArchonCount() > 1) {
@@ -306,9 +305,9 @@ public strictfp class SpawnHelper {
 			}
 		}*/
 
-		if (CommsHelper.getCentralArchon() != Archon.myIndex &&
+		if (CommsHelper.getFarthestArchon() == Archon.myIndex &&
 				labBuildersBuilt < 1 && CommsHelper.getNumberOfLabs() < 1 &&
-						150 <= rc.getRoundNum() && rc.getRoundNum() < 150 + LAB_WINDOW
+						200 <= rc.getRoundNum() && rc.getRoundNum() < 200 + LAB_WINDOW
 		) {
 			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
 			labBuildersBuilt++;

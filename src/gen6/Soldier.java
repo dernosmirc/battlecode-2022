@@ -11,6 +11,7 @@ import gen6.common.CommsHelper;
 import gen6.common.MovementHelper;
 import gen6.common.util.Logger;
 import gen6.common.SymmetryType;
+import gen6.soldier.SoldierDensity;
 
 import static gen6.RobotPlayer.myTeam;
 import static gen6.RobotPlayer.*;
@@ -53,6 +54,7 @@ public strictfp class Soldier {
 		Logger logger = new Logger("Soldier", LogCondition.ExceedsBytecode);
 		sensedEnemyAttackRobot = false;
 		updateEnemyArchonLocations();
+		SoldierDensity.update();
 		AttackHelper.attack();
 
 		for (RobotInfo robot : rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {

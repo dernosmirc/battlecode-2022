@@ -191,6 +191,24 @@ public strictfp class CommsHelper {
 		return archonIndex;
 	}
 
+	public static int getFarthestArchon() throws GameActionException {
+		MapLocation[] archons = getFriendlyArchonLocations();
+		MapLocation centre = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
+		int maxDistance = 0;
+		int archonIndex = 0;
+		for (int i = maxArchonCount; --i >= 0; ) {
+			if (archons[i] != null) {
+				int distance = getDistance(archons[i], centre);
+				if (maxDistance < distance) {
+					maxDistance = distance;
+					archonIndex = i;
+				}
+			}
+		}
+
+		return archonIndex;
+	}
+
 	public static void updateLabBuilt(int archonIndex) throws GameActionException {
 		rc.writeSharedArray(
 				14 + archonIndex,
@@ -293,4 +311,24 @@ public strictfp class CommsHelper {
 		}
 	}
 
+    public static void setArchonPortable(int archonIndex, boolean portable) throws GameActionException {
+        rc.writeSharedArray(
+                archonIndex + 32,
+                Functions.setBits(rc.readSharedArray(archonIndex+32), 12, 12, portable ? 1 : 0)
+        );
+    }
+
+	public static boolean isArchonPortable(int archonIndex) throws GameActionException {
+        return Functions.getBits(rc.readSharedArray(archonIndex+32), 12, 12) == 1;
+    }
+
+	public static boolean anyArchonMoving() throws GameActionException {
+		boolean[] dead = getDeadArchons();
+		for (int i = maxArchonCount; --i >= 0; ) {
+			if (!dead[i] && isArchonPortable(i)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
