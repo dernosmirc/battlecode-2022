@@ -2,8 +2,6 @@ package gen6.builder;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotMode;
 
 import gen6.Builder;
 

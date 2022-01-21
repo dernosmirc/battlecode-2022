@@ -83,6 +83,10 @@ public class BuildingHelper {
                 new MapLocation(0, h),
                 new MapLocation(w, 0),
                 new MapLocation(w, h),
+                new MapLocation(0, h/2),
+                new MapLocation(w/2, 0),
+                new MapLocation(w/2, h),
+                new MapLocation(w, h/2),
         };
         MapLocation optimal = null, rn = rc.getLocation();
         for (int i = possible.length; --i >= 0;) {

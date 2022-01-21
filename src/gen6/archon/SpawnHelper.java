@@ -33,6 +33,7 @@ public strictfp class SpawnHelper {
 		if (rc.getRoundNum() < 500) return 0.5;
 		if (rc.getRoundNum() < 750) return 0.25;
 		if (labBuildersBuilt < 1 && rc.getRoundNum() > 1000) return 0.200;
+		if (labBuildersBuilt < 2 && rc.getRoundNum() > 1000) return 0.075;
 		if (getArchonWatchtowerPriority() > 1 || watchtowerBuildersBuilt >= 2) return 0.00;
 		if (watchtowerBuildersBuilt >= 1) return 0.05;
 		return 0.10;
@@ -42,7 +43,7 @@ public strictfp class SpawnHelper {
 		if (rc.getRoundNum() < 750) {
 			farmSeedsBuilt++;
 			return BuilderType.FarmSeed;
-		} else if (!CommsHelper.isLabBuilt(Archon.myIndex) || labBuildersBuilt < 1) {
+		} else if (!CommsHelper.isLabBuilt(Archon.myIndex) || labBuildersBuilt < 2 ) {
 			labBuildersBuilt++;
 			return BuilderType.LabBuilder;
 		} else if (watchtowerBuildersBuilt < 2) {
