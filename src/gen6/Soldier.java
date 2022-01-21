@@ -2,7 +2,7 @@ package gen6;
 
 import battlecode.common.*;
 import gen6.common.util.LogCondition;
-import gen6.soldier.BellmanFordMovement;
+import gen6.soldier.SoldierMovementHelper;
 import gen6.soldier.BugPathingMovement;
 import gen6.miner.GoldMiningHelper;
 import gen6.miner.LeadMiningHelper;
@@ -70,21 +70,9 @@ public strictfp class Soldier {
 		}
 
 		updateGuessedEnemyArchonSymmetries();
+
 		logger.log("Before movement");
-
-		String movement = System.getProperty(
-				"bc.testing.team-" + myTeam.name() + ".movement",
-				"bellmanford"
-		);
-		switch (movement) {
-			case "bugpathing":
-				BugPathingMovement.move();
-				break;
-			case "bellmanford":
-				BellmanFordMovement.move();
-				break;
-		}
-
+		SoldierMovementHelper.move();
 		logger.log("After movement");
 
 		// Update lead and gold sources nearby to help miners
