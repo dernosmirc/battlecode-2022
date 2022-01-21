@@ -96,7 +96,7 @@ public strictfp class Archon {
 	}
 
 	public static void run() throws GameActionException {
-		SoldierDensity.reset();
+		if (rc.getRoundNum() % 10 == 0) SoldierDensity.reset();
 		updateSharedArray();
 
 		// DON'T SPAWN SOLDIER ON FIRST ROUND
