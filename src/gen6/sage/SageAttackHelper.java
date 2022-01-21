@@ -23,9 +23,8 @@ public class SageAttackHelper {
             return;
         }
 
-        int maxHp = 0;
         int maxPriority = -1;
-        int furyDamage = 0, chargeDamage = 0;
+        int furyDamage = 0, chargeDamage = 0, attackDamage = 0;
         RobotInfo robotToAttack = null;
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.actionRadiusSquared, enemyTeam);
         for (int i = enemyRobots.length; --i >= 0; ) {
@@ -36,32 +35,32 @@ public class SageAttackHelper {
                 chargeDamage += Math.min(robot.health, (robot.type.getMaxHealth(robot.level) * 22)/100);
             }
             int typeIndex = robot.type.ordinal();
-            int p = priority[typeIndex];
+            int p = priority[typeIndex], damage = Math.min(robot.health, RobotType.SAGE.damage);
             if (p > maxPriority) {
                 maxPriority = p;
-                maxHp = robot.health;
+                attackDamage = damage;
                 robotToAttack = robot;
-            } else if (p == maxPriority && robot.health > maxHp) {
-                maxHp = robot.health;
+            } else if (p == maxPriority && damage > attackDamage) {
+                attackDamage = damage;
                 robotToAttack = robot;
             }
         }
 
-        if (furyDamage >= maxHp && furyDamage >= chargeDamage && furyDamage > 0) {
+        if (furyDamage >= attackDamage && furyDamage >= chargeDamage && furyDamage > 0) {
             if (rc.canEnvision(AnomalyType.FURY)) {
                 rc.envision(AnomalyType.FURY);
                 return;
             }
         }
 
-        if (chargeDamage >= maxHp && chargeDamage >= furyDamage && chargeDamage >= SAGE_ATTACK_THRESHOLD) {
+        if (chargeDamage >= attackDamage && chargeDamage >= furyDamage && chargeDamage >= SAGE_ATTACK_THRESHOLD) {
             if (rc.canEnvision(AnomalyType.CHARGE)) {
                 rc.envision(AnomalyType.CHARGE);
                 return;
             }
         }
 
-        if (maxPriority == -1 || maxHp < SAGE_ATTACK_THRESHOLD) {
+        if (maxPriority == -1 || attackDamage < SAGE_ATTACK_THRESHOLD) {
             return;
         }
 
