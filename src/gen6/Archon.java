@@ -7,6 +7,7 @@ import gen6.common.CommsHelper;
 import gen6.archon.SpawnHelper;
 import gen6.common.Functions;
 import gen6.common.MovementHelper;
+import gen6.soldier.SoldierDensity;
 
 
 import static gen6.RobotPlayer.*;
@@ -95,7 +96,7 @@ public strictfp class Archon {
 	}
 
 	public static void run() throws GameActionException {
-
+		SoldierDensity.reset();
 		updateSharedArray();
 
 		// DON'T SPAWN SOLDIER ON FIRST ROUND

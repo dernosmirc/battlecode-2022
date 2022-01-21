@@ -68,6 +68,12 @@ public class SoldierDensity {
         return infos;
     }
 
+    public static void reset() throws GameActionException {
+        for (int i = SA_COUNT; --i >= 0;) {
+            rc.writeSharedArray(SA_START + i, 0);
+        }
+    }
+
     public static void update() throws GameActionException {
         int count = getNearbySoldierCount();
         if (count < SOLDIER_CLUSTER_THRESHOLD) return;
