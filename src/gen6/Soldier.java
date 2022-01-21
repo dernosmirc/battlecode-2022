@@ -46,7 +46,9 @@ public strictfp class Soldier {
 
 	public static void run() throws GameActionException {
 		// Update the soldier count
-		rc.writeSharedArray(7, rc.readSharedArray(7) + 1);
+		if (rc.getRoundNum()%2 == 1){
+			rc.writeSharedArray(7, rc.readSharedArray(7) + 1);
+		}
 
 		Logger logger = new Logger("Soldier", LogCondition.ExceedsBytecode);
 		sensedEnemyAttackRobot = false;
