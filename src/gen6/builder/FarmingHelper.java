@@ -27,19 +27,26 @@ public class FarmingHelper {
     }
 
     public static MapLocation getBaldSpot() throws GameActionException {
-        if (!rc.getLocation().isWithinDistanceSquared(getFarmCenter(), FARM_RADIUS_UPPER)) {
+        MapLocation my = rc.getLocation();
+        if (!my.isWithinDistanceSquared(getFarmCenter(), FARM_RADIUS_UPPER)) {
             return null;
         }
-        MapLocation[] mls = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), myType.visionRadiusSquared);
+        MapLocation[] mls = rc.getAllLocationsWithinRadiusSquared(my, myType.visionRadiusSquared);
+        MapLocation best = null;
+        int minDist = 10000;
         for (int i = mls.length; --i >= 0; ) {
             MapLocation ml = mls[i];
             if (rc.onTheMap(ml) && isLocationInFarm(ml) && rc.senseLead(ml) == 0) {
                 RobotInfo ri = rc.senseRobotAtLocation(ml);
                 if (ri != null && (ri.mode == RobotMode.DROID || ri.mode == RobotMode.PORTABLE)) {
-                    return ml;
+                    int dist = my.distanceSquaredTo(ml);
+                    if (dist < minDist) {
+                        best = ml;
+                        minDist = dist;
+                    }
                 }
             }
         }
-        return null;
+        return best;
     }
 }
