@@ -6,6 +6,7 @@ import battlecode.common.Direction;
 
 import static gen6.RobotPlayer.*;
 import static gen6.soldier.BellmanFordMovement.HEAL_THRESHOLD;
+import static gen6.sage.SageMovementHelper.HP_THRESHOLD;
 
 public strictfp class AttackHelper {
 	// ARCHON
@@ -47,33 +48,81 @@ public strictfp class AttackHelper {
 
 	public static Direction shouldMoveBack() throws GameActionException {
 		RobotInfo[] robots = rc.senseNearbyRobots(myType.visionRadiusSquared);
-		double enemyRobots = 0;
-		double ourRobots = 1;
-		double[] robotsInDirection = new double[8];
+		int enemyRobots = 0;
+		int ourRobots = 0;
+		switch (myType) {
+			case SOLDIER:
+				ourRobots = 1;
+				break;
 
-		// TODO: take mutation level into consideration
-		// TODO: take sage into consideration
+			case SAGE:
+				ourRobots = 4;
+				break;
+		}
+
+		int[] robotsInDirection = new int[8];
 		for (int i = robots.length; --i >= 0; ) {
 			RobotInfo robot = robots[i];
 			if (robot.team == enemyTeam) {
+				int ordinal = rc.getLocation().directionTo(robot.location).ordinal();
 				switch (robot.type) {
 					case SOLDIER:
 						++enemyRobots;
-						++robotsInDirection[rc.getLocation().directionTo(robot.location).ordinal()];
+						++robotsInDirection[ordinal];
 						break;
+
 					case WATCHTOWER:
-						enemyRobots += 1.5;
-						robotsInDirection[rc.getLocation().directionTo(robot.location).ordinal()] += 1.5;
+						switch (robot.mode) {
+							case PROTOTYPE:
+								++enemyRobots;
+								++robotsInDirection[ordinal];
+								break;
+
+							case PORTABLE:
+								enemyRobots += robot.level;
+								robotsInDirection[ordinal] += robot.level;
+								break;
+
+							case TURRET:
+								enemyRobots += 2 * robot.level;
+								robotsInDirection[ordinal] += 2 * robot.level;
+								break;
+						}
+						break;
+
+					case SAGE:
+						enemyRobots += 4;
+						robotsInDirection[ordinal] += 4;
 						break;
 				}
-			} else if (rc.getLocation().distanceSquaredTo(robot.location) <= myType.actionRadiusSquared
-						&& robot.health > HEAL_THRESHOLD) {
+			} else if (rc.getLocation().distanceSquaredTo(robot.location) <= myType.actionRadiusSquared) {
 				switch (robot.type) {
 					case SOLDIER:
-						++ourRobots;
+						if (robot.health > HEAL_THRESHOLD) {
+							++ourRobots;
+						}
 						break;
+
 					case WATCHTOWER:
-						ourRobots += 1.5;
+						switch (robot.mode) {
+							case PROTOTYPE:
+								++ourRobots;
+								break;
+
+							case PORTABLE:
+								ourRobots += robot.level;
+								break;
+
+							case TURRET:
+								ourRobots += 2 * robot.level;
+								break;
+						}
+						break;
+
+					case SAGE:
+						if (robot.health >= HP_THRESHOLD) {
+							ourRobots += 4;
+						}
 						break;
 				}
 			}
@@ -83,10 +132,10 @@ public strictfp class AttackHelper {
 			return null;
 		}
 
-		double maxRobots = 0;
+		int maxRobots = 0;
 		Direction dir = Direction.NORTH;
 		for (int i = 8; --i >= 0; ) {
-			double robotsCount = robotsInDirection[i];
+			int robotsCount = robotsInDirection[i];
 			if (robotsCount > maxRobots) {
 				maxRobots = robotsCount;
 				dir = directions[i];
