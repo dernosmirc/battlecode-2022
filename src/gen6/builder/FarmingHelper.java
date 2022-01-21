@@ -36,14 +36,11 @@ public class FarmingHelper {
         int minDist = 10000;
         for (int i = mls.length; --i >= 0; ) {
             MapLocation ml = mls[i];
-            if (rc.onTheMap(ml) && isLocationInFarm(ml) && rc.senseLead(ml) == 0) {
-                RobotInfo ri = rc.senseRobotAtLocation(ml);
-                if (ri != null && (ri.mode == RobotMode.DROID || ri.mode == RobotMode.PORTABLE)) {
-                    int dist = my.distanceSquaredTo(ml);
-                    if (dist < minDist) {
-                        best = ml;
-                        minDist = dist;
-                    }
+            if (rc.onTheMap(ml) && isLocationInFarm(ml) && rc.senseLead(ml) == 0 && !rc.isLocationOccupied(ml)) {
+                int dist = my.distanceSquaredTo(ml);
+                if (dist < minDist) {
+                    best = ml;
+                    minDist = dist;
                 }
             }
         }
