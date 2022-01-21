@@ -28,35 +28,16 @@ public strictfp class BellmanFordMovement {
 
     public static void move() throws GameActionException {
         TailHelper.updateTarget();
-        Direction dir = AttackHelper.shouldMoveBack();
-        if (dir != null) {
-            MovementHelper.greedyTryMove(dir);
-            return;
-        }
-
-        if (tryConcave()) {
-            return;
-        }
 
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
         if (defenseLocation != null) {
-            // circleAround(defenseLocation);
-            moveTowards(defenseLocation);
-            return;
-        }
-
-        RobotInfo[] robots = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam); // try vision radius?
-        RobotInfo archon = null;
-        for (int i = robots.length; --i >= 0; ) {
-            RobotInfo robot = robots[i];
-            if (robot.type == RobotType.ARCHON) {
-                archon = robot;
-                break;
+            if (rc.getLocation().isWithinDistanceSquared(defenseLocation, 13)) {
+                if (tryConcave()) {
+                    return;
+                }
             }
-        }
 
-        if (archon != null && rc.getHealth() < FULL_HEAL_THRESHOLD) {
-            circleAround(archon.location);
+            circleAround(defenseLocation);
             return;
         }
 
@@ -84,9 +65,75 @@ public strictfp class BellmanFordMovement {
                 return;
             }
 
+            if (rc.getLocation().isWithinDistanceSquared(archonLocation, 13)) {
+                if (tryConcave()) {
+                    return;
+                }
+            }
+
             circleAround(archonLocation);
             return;
         }
+
+        Direction dir = AttackHelper.shouldMoveBack();
+        if (dir != null) {
+            MovementHelper.greedyTryMove(dir);
+            return;
+        }
+
+        if (tryConcave()) {
+            return;
+        }
+
+        // MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
+        // if (defenseLocation != null) {
+        //     // circleAround(defenseLocation);
+        //     moveTowards(defenseLocation); // possible spawn blocking
+        //     return;
+        // }
+
+        RobotInfo[] robots = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam); // try vision radius?
+        RobotInfo archon = null;
+        for (int i = robots.length; --i >= 0; ) {
+            RobotInfo robot = robots[i];
+            if (robot.type == RobotType.ARCHON) {
+                archon = robot;
+                break;
+            }
+        }
+
+        if (archon != null && rc.getHealth() < FULL_HEAL_THRESHOLD) {
+            circleAround(archon.location);
+            return;
+        }
+
+        // if (rc.getHealth() <= HEAL_THRESHOLD) {
+        //     MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
+        //     int minDistance = rc.getMapWidth() * rc.getMapHeight();
+        //     MapLocation archonLocation = null;
+        //     for (int i = maxArchonCount; --i >= 0; ) {
+        //         if (archons[i] != null) {
+        //             // if (i == myArchonIndex) {
+        //             //     archonLocation = archons[i];
+        //             //     break;
+        //             // }
+
+        //             int distance = getDistance(archons[i], rc.getLocation());
+        //             if (distance < minDistance) {
+        //                 minDistance = distance;
+        //                 archonLocation = archons[i];
+        //             }
+        //         }
+        //     }
+
+        //     if (archonLocation == null) {
+        //         System.out.println("No friendly archons");
+        //         return;
+        //     }
+
+        //     circleAround(archonLocation);
+        //     return;
+        // }
 
         // Direction dir = AttackHelper.shouldMoveBack();
         MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
