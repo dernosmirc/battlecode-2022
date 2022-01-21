@@ -13,7 +13,7 @@ import static gen6.Sage.*;
 
 public class SageMovementHelper {
 
-    private static final int HP_THRESHOLD = 40;
+    public static final int HP_THRESHOLD = 40;
     private static final int TURNS_THRESHOLD = 25;
 
     private static final int INNER_DEFENSE_RADIUS = 5;
