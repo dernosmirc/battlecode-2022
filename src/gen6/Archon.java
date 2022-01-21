@@ -70,13 +70,31 @@ public strictfp class Archon {
 		}
 	}
 
-	public static void run() throws GameActionException {
+	public static void updateSharedArray() throws GameActionException{
 		// Set count 0 before each round start
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(7, 0);
 			rc.writeSharedArray(8, 0);
 			rc.writeSharedArray(9, 0);
 		}
+		int v = rc.readSharedArray(32 + myIndex);
+		if (getBits(v, 13, 13) == 1){
+			return;
+		}
+		int v1 = rc.readSharedArray(6);
+		int cur = (getBits(v1, 2 * myIndex + 6, 2 * myIndex + 7) + 1)%3;
+		for (int i = 0; i < maxArchonCount; i++){
+			if (i == myIndex)	continue;
+			if ((cur - getBits(v1, 6 + 2 * i, 7 + 2 * i) + 3)%3 > 1){
+				rc.writeSharedArray(32 + i, setBits(rc.readSharedArray(32 + i), 13, 13, 1));
+			}
+		}
+		rc.writeSharedArray(6, setBits(v1, 2 * myIndex + 6, 2 * myIndex + 7, cur));
+	}
+
+	public static void run() throws GameActionException {
+
+		updateSharedArray();
 
 		// DON'T SPAWN SOLDIER ON FIRST ROUND
 		if (rc.getRoundNum() == 2) {

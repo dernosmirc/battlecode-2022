@@ -129,44 +129,9 @@ public strictfp class CommsHelper {
 
 	public static boolean[] getDeadArchons() throws GameActionException {
 		boolean[] isDead = new boolean[maxArchonCount];
-		int latestCount = rc.getArchonCount();
-		if (latestCount == maxArchonCount) {
-			return isDead;
+		for (int i = maxArchonCount; --i >= 0; ){
+			isDead[i] = (getBits(rc.readSharedArray(32 + i), 13, 13) == 1);
 		}
-
-		int min0 = 2000, min1 = 2000, min2 = 2000;
-		int i0 = -1, i1 = -1, i2 = -1;
-		for (int i = 0; i < maxArchonCount; ++i) {
-			int hp = Functions.getBits(rc.readSharedArray(14 + i), 0, 10);
-			if (hp < min2) {
-				if (hp < min1) {
-					i2 = i1;
-					min2 = min1;
-					if (hp < min0) {
-						i1 = i0;
-						min1 = min0;
-						i0 = i;
-						min0 = hp;
-					} else {
-						i1 = i;
-						min1 = hp;
-					}
-				} else {
-					i2 = i;
-					min2 = hp;
-				}
-			}
-		}
-
-		switch (maxArchonCount - latestCount) {
-			case 3:
-				isDead[i2] = true;
-			case 2:
-				isDead[i1] = true;
-			case 1:
-				isDead[i0] = true;
-		}
-
 		return isDead;
 	}
 
