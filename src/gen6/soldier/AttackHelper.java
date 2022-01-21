@@ -5,7 +5,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.Direction;
 
 import static gen6.RobotPlayer.*;
-import static gen6.soldier.BellmanFordMovement.HEAL_THRESHOLD;
+import static gen6.soldier.SoldierMovementHelper.HEAL_THRESHOLD;
 import static gen6.sage.SageMovementHelper.HP_THRESHOLD;
 
 public strictfp class AttackHelper {

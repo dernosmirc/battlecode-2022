@@ -12,7 +12,7 @@ import static gen6.RobotPlayer.*;
 import static gen6.Soldier.*;
 import static gen6.common.Functions.getDistance;
 
-public strictfp class BellmanFordMovement {
+public strictfp class SoldierMovementHelper {
     private static final int INNER_DEFENSE_RADIUS = 4;
     private static final int OUTER_DEFENSE_RADIUS = 8;
     private static final int INNER_ATTACK_RADIUS = 8;
