@@ -3,6 +3,7 @@ package gen6.soldier;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
 import gen6.common.Functions;
 import gen6.common.GridInfo;
 
@@ -47,7 +48,7 @@ public class SoldierDensity {
     }
 
     private static int getNearbySoldierCount() {
-        int count = 1;
+        int count = myType == RobotType.SAGE ? 3 : 1;
         RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam);
         for (int i = ris.length; --i >= 0;) {
             switch (ris[i].type) {

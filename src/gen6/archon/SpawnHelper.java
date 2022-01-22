@@ -64,7 +64,8 @@ public strictfp class SpawnHelper {
 	}
 
 	public static double getLeadThreshold() throws GameActionException {
-		if (250 <= rc.getRoundNum() && rc.getRoundNum() < 250 + LAB_WINDOW && CommsHelper.getNumberOfLabs() < 1
+		if (175 <= rc.getRoundNum() && rc.getRoundNum() < 175 + LAB_WINDOW &&
+				CommsHelper.getNumberOfLabs() < 1
 		) return 260;
 		if (1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + ARCHON_MUTATE_WINDOW &&
 				!CommsHelper.allLArchonsMutated(2)
@@ -273,18 +274,17 @@ public strictfp class SpawnHelper {
 			return RobotType.SAGE;
 		}
 
-		double threshold = getLeadThreshold();
-		if (rc.getTeamLeadAmount(myTeam) < threshold * getArchonDroidPriority()) {
-			return null;
-		}
-
 		if (CommsHelper.getFarthestArchon() == Archon.myIndex &&
-				labBuildersBuilt < 1 && CommsHelper.getNumberOfLabs() < 1 &&
-						200 <= rc.getRoundNum() && rc.getRoundNum() < 200 + LAB_WINDOW
+				labBuildersBuilt < 1 && 100 <= rc.getRoundNum()
 		) {
 			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
 			labBuildersBuilt++;
 			return RobotType.BUILDER;
+		}
+
+		double threshold = getLeadThreshold();
+		if (rc.getTeamLeadAmount(myTeam) < threshold * getArchonDroidPriority()) {
+			return null;
 		}
 
 		if (isVeryCloseToCenter()) {

@@ -5,6 +5,7 @@ import battlecode.common.MapLocation;
 import gen6.common.MovementHelper;
 import gen6.sage.SageAttackHelper;
 import gen6.sage.SageMovementHelper;
+import gen6.soldier.SoldierDensity;
 
 import static gen6.RobotPlayer.maxArchonCount;
 import static gen6.RobotPlayer.rc;
@@ -20,6 +21,7 @@ public strictfp class Sage {
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(9, rc.readSharedArray(9) + 1);
 		}
+		SoldierDensity.update();
 		SageAttackHelper.attack();
 		SageMovementHelper.move();
 	}

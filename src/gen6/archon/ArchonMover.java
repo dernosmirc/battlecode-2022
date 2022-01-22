@@ -67,7 +67,6 @@ public class ArchonMover {
 
     public static boolean shouldRelocate(MapLocation relocate) throws GameActionException {
         if (!rc.canTransform()) return false;
-        if (rc.getRoundNum() < 25) return false;
         if (relocate == null) return false;
         if (rc.senseNearbyRobots(myType.visionRadiusSquared).length > 15) return false;
         if (isEnemyAround()) return false;
@@ -78,7 +77,8 @@ public class ArchonMover {
 
     public static boolean shouldRelocateNearby(MapLocation betterSpot) throws GameActionException {
         if (!rc.canTransform()) return false;
-        if (rc.getRoundNum() < 25) return false;
+        if (rc.getRoundNum() < 50) return false;
+        if (maxArchonCount == 1) return false;
         if (betterSpot == null) return false;
         if (rc.senseNearbyRobots(myType.visionRadiusSquared).length > 30) return false;
         if (isEnemyAround()) return false;
