@@ -104,15 +104,8 @@ public class ArchonMover {
                     best = ml;
                 }
             }
-        }/*
-        if (best == null) {
-            MapLocation rn = rc.getLocation();
-            Direction anti = getAntiEdge(rn);
-            if (anti == null) {
-                return null;
-            }
-            best = rn;
-        }*/
+        }
+
         if (best == null) {
             return null;
         }
@@ -198,7 +191,7 @@ public class ArchonMover {
 
     public static MapLocation getBetterSpotToSettle() throws GameActionException {
         MapLocation rn = rc.getLocation();
-        MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 13);
+        MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 20);
         Vector<GridInfo> spots = new Vector<>(locs.length);
         MapLocation[] mls = CommsHelper.getFriendlyArchonLocations();
         Vector<MapLocation> friends = new Vector<>(maxArchonCount);
@@ -209,7 +202,7 @@ public class ArchonMover {
         }
         for (int i = locs.length; --i >= 0; ) {
             MapLocation ml = locs[i];
-            if (rn.isWithinDistanceSquared(ml, 2)) continue;
+            if (rn.isWithinDistanceSquared(ml, 13)) continue;
             boolean tooClose = false;
             for (int j = friends.length; --j >= 0; ) {
                 if (ml.isWithinDistanceSquared(friends.get(j), MIN_DISTANCE_BETWEEN_ARCHONS)) {

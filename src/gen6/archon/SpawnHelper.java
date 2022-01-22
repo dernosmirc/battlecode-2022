@@ -14,7 +14,6 @@ import static gen6.common.Functions.getBits;
 import static gen6.common.Functions.sigmoid;
 
 public strictfp class SpawnHelper {
-	private static final int WATCHTOWER_WINDOW = 25;
 	private static final int ARCHON_MUTATE_WINDOW = 75;
 	private static final int LAB_WINDOW = 75;
 	private static final int SOLDIER_SAGE_RATIO = 3;
@@ -50,8 +49,6 @@ public strictfp class SpawnHelper {
 		if (rc.getRoundNum() < 500) return 0.5;
 		if (rc.getRoundNum() < 750) return 0.25;
 		if (labBuildersBuilt < 2 && rc.getRoundNum() > 1000) return 0.100;
-	/*	if (getArchonWatchtowerPriority() > 1 || watchtowerBuildersBuilt >= 2) return 0.00;
-		if (watchtowerBuildersBuilt >= 1) return 0.05;*/
 		return 0;
 	}
 
@@ -62,9 +59,6 @@ public strictfp class SpawnHelper {
 		} else if (!CommsHelper.isLabBuilt(Archon.myIndex) || labBuildersBuilt < 2 ) {
 			labBuildersBuilt++;
 			return BuilderType.LabBuilder;
-		} else if (watchtowerBuildersBuilt < 0) {
-			watchtowerBuildersBuilt++;
-			return BuilderType.WatchtowerBuilder;
 		}
 		return null;
 	}
@@ -78,12 +72,6 @@ public strictfp class SpawnHelper {
 		if (1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + LAB_WINDOW &&
 				!CommsHelper.allLabsBuilt()
 		) return 260;
-		/*if (1250 <= rc.getRoundNum() && rc.getRoundNum() < 1250 + WATCHTOWER_WINDOW &&
-				!CommsHelper.minWatchtowersBuilt(1)
-		) return 225;
-		if (1375 <= rc.getRoundNum() && rc.getRoundNum() < 1375 + WATCHTOWER_WINDOW &&
-				!CommsHelper.minWatchtowersBuilt(2)
-		) return 225;*/
 		return 75;
 	}
 
@@ -98,7 +86,6 @@ public strictfp class SpawnHelper {
 	private static int sagesBuilt = 0;
 	private static int buildersBuilt = 0;
 	private static int labBuildersBuilt = 0;
-	private static int watchtowerBuildersBuilt = 0;
 	private static int repairersBuilt = 0;
 	private static int farmSeedsBuilt = 0;
 
@@ -146,21 +133,6 @@ public strictfp class SpawnHelper {
 					getBits(rc.readSharedArray(10 + i), 0, 11) < droidsBuilt
 			) {
 				p++;
-			}
-		}
-		return p;
-	}
-
-	private static int getArchonWatchtowerPriority() throws GameActionException {
-		updateDeadArchons();
-		int p = 1, myHp = rc.getHealth();
-		for (int i = 0; i < maxArchonCount; ++i) {
-			if (Archon.myIndex != i && !archonDead[i]) {
-				int theirHp = getBits(rc.readSharedArray(14 + i), 0, 10);
-				int theirBuilders = getBits(rc.readSharedArray(10 + i), 12, 15);
-				if (theirBuilders < buildersBuilt || theirBuilders == buildersBuilt && theirHp < myHp) {
-					p++;
-				}
 			}
 		}
 		return p;
@@ -340,15 +312,6 @@ public strictfp class SpawnHelper {
 			labBuildersBuilt++;
 			return RobotType.BUILDER;
 		}
-/*
-		if (
-				1250 <= rc.getRoundNum() && rc.getRoundNum() < 1250 + WATCHTOWER_WINDOW && watchtowerBuildersBuilt < 1 ||
-				1375 <= rc.getRoundNum() && rc.getRoundNum() < 1375 + WATCHTOWER_WINDOW && watchtowerBuildersBuilt < 2
-		) {
-			CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
-			watchtowerBuildersBuilt++;
-			return RobotType.BUILDER;
-		}*/
 
 		double sol = getSoldierWeight(),
 				min = getMinerWeight(),
