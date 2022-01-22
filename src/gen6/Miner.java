@@ -42,6 +42,9 @@ public strictfp class Miner {
 		Logger logger = new Logger("Miner", LogCondition.Never);
 		int round = rc.getRoundNum();
 
+		if (myDirection == null) {
+			myDirection = getRandomDirection();
+		}
 		if (isExplorer) {
 			updateDirectionsExplored();
 		}
@@ -134,7 +137,9 @@ public strictfp class Miner {
 	private static int directionsExploredCount = 0;
 
 	private static void updateDirectionsExplored() throws GameActionException {
-		if (directionsExploredCount == 9) return;
+		if (directionsExploredCount == 9) {
+			return;
+		}
 		if (myTargetLocation != null) {
 			if (rc.getLocation().isWithinDistanceSquared(myTargetLocation, 5)) {
 				myTargetLocation = null;
@@ -149,18 +154,21 @@ public strictfp class Miner {
 		double yea = random.nextDouble(), cumulative = 0, step = 1.0/(9-directionsExploredCount);
 		Direction direction = Direction.CENTER;
 		for (int i = 9; --i >= 0; ) {
-			cumulative += step;
-			if (yea <= cumulative) {
-				direction = Direction.values()[i];
-				directionsExplored[i] = true;
-				directionsExploredCount++;
-				break;
+			if (!directionsExplored[i]) {
+				cumulative += step;
+				if (yea <= cumulative) {
+					direction = Direction.values()[i];
+					directionsExplored[i] = true;
+					directionsExploredCount++;
+					break;
+				}
 			}
 		}
 		int wb2 = rc.getMapWidth()/2, hb2 = rc.getMapHeight()/2;
 		myTargetLocation = new MapLocation(wb2 + direction.dx*(wb2-2), hb2 + direction.dy*(hb2-2));
 		if (CommsHelper.isLocationInEnemyZone(myTargetLocation)) {
 			myTargetLocation = null;
+			myDirection = getRandomDirection();
 		} else {
 			myDirection = rc.getLocation().directionTo(myTargetLocation);
 		}

@@ -7,6 +7,8 @@ import gen6.common.CommsHelper;
 import gen6.archon.SpawnHelper;
 import gen6.common.Functions;
 import gen6.common.MovementHelper;
+import gen6.common.util.LogCondition;
+import gen6.common.util.Logger;
 import gen6.soldier.SoldierDensity;
 
 import static gen6.RobotPlayer.*;
@@ -95,6 +97,7 @@ public strictfp class Archon {
 	}
 
 	public static void run() throws GameActionException {
+		Logger logger = new Logger("Archon", LogCondition.ExceedsRound);
 		if (rc.getRoundNum() % 10 == 0) {
 			SoldierDensity.reset();
 		}
@@ -130,6 +133,7 @@ public strictfp class Archon {
 				updateLocation();
 				break;
 		}
+		logger.flush();
 	}
 
 	private static void updateLocation() throws GameActionException {
@@ -143,6 +147,10 @@ public strictfp class Archon {
 	private static MapLocation goodSpot = null;
 	private static boolean transforming = false;
 	private static void move() throws GameActionException {
+		if (rc.getID() == 4) {
+			int a = 0;
+		}
+
 		MapLocation rn = rc.getLocation();
 		if (rn.equals(goodSpot)) {
 			if (rc.isTransformReady() && rc.canTransform()) {

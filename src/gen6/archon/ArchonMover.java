@@ -21,7 +21,7 @@ import static gen6.RobotPlayer.rc;
 public class ArchonMover {
 
     public static final int RUBBLE_THRESHOLD = 20;
-    public static final int MIN_DISTANCE_BETWEEN_ARCHONS = 20;
+    public static final int MIN_DISTANCE_BETWEEN_ARCHONS = 13;
 
     private static double getWeightedAverageRubble(MapLocation center) throws GameActionException {
         int centerRubble = rc.senseRubble(center);
@@ -88,13 +88,17 @@ public class ArchonMover {
         }
         Direction anti = getAntiEdge(best);
         if (anti != null) {
-            best = Functions.translate(best, anti, 7-distanceFromEdge(best));
+            best = Functions.translate(best, anti, 8-distanceFromEdge(best));
         }
         return best;
     }
 
     private static int distanceFromEdge(MapLocation ml) {
-        return Math.min(ml.x, ml.y);
+        int w = rc.getMapWidth(), h = rc.getMapHeight();
+        return Math.min(
+                Math.min(w-ml.x, ml.x + 1),
+                Math.min(h-ml.y, ml.y + 1)
+        );
     }
 
     private static final HeuristicsProvider heuristicsProvider = new Heuristics34();
@@ -128,10 +132,10 @@ public class ArchonMover {
         }
         spots.sort(Comparator.comparingInt(GridInfo::getCount));
         double bestAvg = Double.MAX_VALUE;
-        MapLocation theSpot = null;
+        MapLocation theSpot = rn;
         for (int i = spots.length; --i >= 0; ) {
             MapLocation ml = spots.get(i).location;
-            if (distanceFromEdge(ml) >= 5) {
+            if (distanceFromEdge(ml) > 5) {
                 double avg = getWeightedAverageRubble(ml);
                 if (bestAvg > avg) {
                     bestAvg = avg;
