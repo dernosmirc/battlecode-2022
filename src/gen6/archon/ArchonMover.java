@@ -3,26 +3,27 @@ package gen6.archon;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.RobotInfo;
 import gen5.common.bellmanford.HeuristicsProvider;
 import gen5.common.bellmanford.heuristics.Heuristics34;
-import gen6.common.Functions;
-import gen6.common.MovementHelper;
-import gen6.common.util.Vector;
 import gen6.Archon;
 import gen6.RobotPlayer;
 import gen6.common.CommsHelper;
+import gen6.common.Functions;
 import gen6.common.GridInfo;
+import gen6.common.MovementHelper;
+import gen6.common.util.Vector;
 import gen6.soldier.SoldierDensity;
 
 import java.util.Comparator;
 
-import static gen6.RobotPlayer.myType;
-import static gen6.RobotPlayer.rc;
+import static gen6.RobotPlayer.*;
 
 public class ArchonMover {
 
     public static final int RUBBLE_THRESHOLD = 20;
     public static final int MIN_DISTANCE_BETWEEN_ARCHONS = 13;
+    public static final int TOO_CLOSE_RANGE = 13;
 
     private static double getWeightedAverageRubble(MapLocation center) throws GameActionException {
         int centerRubble = rc.senseRubble(center);
@@ -49,17 +50,38 @@ public class ArchonMover {
         return totalRuble / (double) totalLocations;
     }
 
+    public static boolean isEnemyAround() {
+        RobotInfo[] infos = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
+        for (int i = infos.length; --i >= 0; ) {
+            if (infos[i].type.canAttack()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static Direction getAntiEdge(MapLocation ml) {
         return Functions.getAntiEdgeDirection(ml, 5);
     }
 
     public static boolean shouldRelocate(MapLocation relocate) throws GameActionException {
         if (!rc.canTransform()) return false;
+        if (rc.getRoundNum() < 25) return false;
         if (relocate == null) return false;
         if (rc.senseNearbyRobots(myType.visionRadiusSquared).length > 15) return false;
+        if (isEnemyAround()) return false;
         MapLocation rn = rc.getLocation();
-        if (rn.isWithinDistanceSquared(relocate, 13)) return false;
+        if (rn.isWithinDistanceSquared(relocate, TOO_CLOSE_RANGE)) return false;
         return CommsHelper.getFarthestArchon() == Archon.myIndex && !CommsHelper.anyArchonMoving();
+    }
+
+    public static boolean shouldRelocateNearby(MapLocation betterSpot) throws GameActionException {
+        if (!rc.canTransform()) return false;
+        if (rc.getRoundNum() < 25) return false;
+        if (betterSpot == null) return false;
+        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length > 15) return false;
+        if (isEnemyAround()) return false;
+        return !CommsHelper.anyArchonMoving();
     }
 
     public static MapLocation getRelocateLocation() throws GameActionException {
@@ -81,7 +103,7 @@ public class ArchonMover {
                     best = ml;
                 }
             }
-        }
+        }/*
         if (best == null) {
             MapLocation rn = rc.getLocation();
             Direction anti = getAntiEdge(rn);
@@ -89,6 +111,9 @@ public class ArchonMover {
                 return null;
             }
             best = rn;
+        }*/
+        if (best == null) {
+            return null;
         }
         Direction anti = getAntiEdge(best);
         if (anti != null) {
@@ -138,6 +163,47 @@ public class ArchonMover {
         double bestAvg = Double.MAX_VALUE;
         MapLocation theSpot = rn;
         for (int i = spots.length; --i >= 0; ) {
+            MapLocation ml = spots.get(i).location;
+            if (distanceFromEdge(ml) > 5) {
+                double avg = getWeightedAverageRubble(ml);
+                if (bestAvg > avg) {
+                    bestAvg = avg;
+                    theSpot = ml;
+                }
+            }
+        }
+        return theSpot;
+    }
+
+    public static MapLocation getBetterSpotToSettle() throws GameActionException {
+        MapLocation rn = rc.getLocation();
+        MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 20);
+        Vector<GridInfo> spots = new Vector<>(locs.length);
+        MapLocation[] mls = CommsHelper.getFriendlyArchonLocations();
+        Vector<MapLocation> friends = new Vector<>(maxArchonCount);
+        for (int j = mls.length; --j >= 0; ) {
+            if (mls[j] != null && Archon.myIndex != j) {
+                friends.add(mls[j]);
+            }
+        }
+        for (int i = locs.length; --i >= 0; ) {
+            MapLocation ml = locs[i];
+            if (ml.isWithinDistanceSquared(rn, 8)) continue;
+            boolean tooClose = false;
+            for (int j = friends.length; --j >= 0; ) {
+                if (ml.isWithinDistanceSquared(friends.get(j), MIN_DISTANCE_BETWEEN_ARCHONS)) {
+                    tooClose = true;
+                    break;
+                }
+            }
+            if (!tooClose && rc.canSenseLocation(ml)) {
+                spots.add(new GridInfo(rc.senseRubble(ml), ml));
+            }
+        }
+        spots.sort(Comparator.comparingInt(GridInfo::getCount));
+        double bestAvg = getWeightedAverageRubble(rn);
+        MapLocation theSpot = null;
+        for (int i = Math.min(8, spots.length); --i >= 0; ) {
             MapLocation ml = spots.get(i).location;
             if (distanceFromEdge(ml) > 5) {
                 double avg = getWeightedAverageRubble(ml);

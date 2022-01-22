@@ -114,24 +114,35 @@ public strictfp class Archon {
 		if (rc.isMovementReady() || rc.isActionReady()) {
 			transforming = false;
 		}
-		if (transforming) {
-			goodSpot = relocate = null;
-		} else switch (rc.getMode()) {
-			case TURRET:
-				relocate = ArchonMover.getRelocateLocation();
-				if (ArchonMover.shouldRelocate(relocate)) {
-					rc.transform();
-					transforming = true;
-					CommsHelper.setArchonPortable(myIndex, true);
+		if (!transforming) {
+			switch (rc.getMode()) {
+				case TURRET:
+					relocate = ArchonMover.getRelocateLocation();
+					if (ArchonMover.shouldRelocate(relocate)) {
+						rc.transform();
+						transforming = true;
+						CommsHelper.setArchonPortable(myIndex, true);
+						break;
+					} else {
+						relocate = null;
+						goodSpot = ArchonMover.getBetterSpotToSettle();
+						if (ArchonMover.shouldRelocateNearby(goodSpot)) {
+							rc.transform();
+							transforming = true;
+							CommsHelper.setArchonPortable(myIndex, true);
+							break;
+						} else {
+							goodSpot = null;
+						}
+					}
+					act();
+					CommsHelper.setArchonPortable(myIndex, false);
 					break;
-				}
-				act();
-				CommsHelper.setArchonPortable(myIndex, false);
-				break;
-			case PORTABLE:
-				move();
-				updateLocation();
-				break;
+				case PORTABLE:
+					move();
+					updateLocation();
+					break;
+			}
 		}
 		logger.flush();
 	}
@@ -149,7 +160,7 @@ public strictfp class Archon {
 	private static int staleLocation = 0;
 	private static void move() throws GameActionException {
 		MapLocation rn = rc.getLocation();
-		if (rn.equals(goodSpot) || staleLocation > 20) {
+		if (rn.equals(goodSpot) || staleLocation > 27 || ArchonMover.isEnemyAround()) {
 			if (rc.isTransformReady() && rc.canTransform()) {
 				rc.transform();
 				transforming = true;
@@ -174,7 +185,7 @@ public strictfp class Archon {
 				relocate = rn;
 			}
 		}
-		if (rn.isWithinDistanceSquared(relocate, 13)) {
+		if (rn.isWithinDistanceSquared(relocate, ArchonMover.TOO_CLOSE_RANGE)) {
 			goodSpot = ArchonMover.getSpotToSettle(rn.directionTo(relocate));
 			if (goodSpot == null) {
 				relocate = ArchonMover.getRelocateLocation();

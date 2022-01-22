@@ -35,14 +35,14 @@ public class SoldierDensity {
 
     private static GridInfo getInfoFromInt16(int bits) {
         return new GridInfo(
-                Functions.getBits(bits, 9, 15),
+                Functions.getBits(bits, 9, 15)*4,
                 getLocationFrom9Bits(Functions.getBits(bits, 0, 8))
         );
     }
 
     private static int getInt16FromInfo(GridInfo info) {
         int v = Functions.setBits(0, 0, 8, get9BitsFromLocation(info.location));
-        v = Functions.setBits(v, 9, 15, info.count);
+        v = Functions.setBits(v, 9, 15, info.count/4);
         return v;
     }
 
@@ -50,8 +50,11 @@ public class SoldierDensity {
         int count = 1;
         RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam);
         for (int i = ris.length; --i >= 0;) {
-            if (ris[i].type.canAttack()) {
-                count++;
+            switch (ris[i].type) {
+                case SAGE:
+                    count += 2;
+                case SOLDIER:
+                    count++;
             }
         }
         return count;
