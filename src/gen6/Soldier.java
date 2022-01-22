@@ -28,6 +28,7 @@ public strictfp class Soldier {
 	public static MapLocation guessedEnemyArchonLocation;
 	private static MapLocation centralArchon;
 	public static boolean sensedEnemyAttackRobot;
+	public static RobotInfo[] allRobots;
 
 	private static void updateEnemyArchonLocations() throws GameActionException {
 		for (int i = 0; i < maxArchonCount; ++i) {
@@ -47,20 +48,27 @@ public strictfp class Soldier {
 
 	public static void run() throws GameActionException {
 		// update location each round
-		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
+		// myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
 
+		Logger logger = new Logger("Soldier", LogCondition.Never);
 		// Update the soldier count
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(7, rc.readSharedArray(7) + 1);
 		}
 
-		Logger logger = new Logger("Soldier", LogCondition.Never);
+		allRobots = rc.senseNearbyRobots();
 		sensedEnemyAttackRobot = false;
 		updateEnemyArchonLocations();
 		SoldierDensity.update();
 		AttackHelper.attack();
 
-		for (RobotInfo robot : rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
+		RobotInfo[] robots = allRobots;
+		for (int i = robots.length; --i >= 0; ) {
+			RobotInfo robot = robots[i];
+			if (robot.team != enemyTeam) {
+				continue;
+			}
+
 			if (robot.type == RobotType.ARCHON) {
 				calculateEnemyArchonLocations(robot);
 			}

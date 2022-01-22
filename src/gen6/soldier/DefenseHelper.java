@@ -17,7 +17,7 @@ public strictfp class DefenseHelper {
 		int minDistance = rc.getMapWidth() * rc.getMapHeight();
 		for (int i = 50; i < 50 + maxArchonCount; ++i) {
 			int value = rc.readSharedArray(i);
-			if (getBits(value, 14, 14) == 1 && !archonDead[i - 50]) {
+			if (getBits(rc.readSharedArray(32 + (i - 50)), 14, 14) == 1 && !archonDead[i - 50]) {
 				MapLocation location = CommsHelper.getLocationFrom12Bits(value);
 				int distance = getDistance(rc.getLocation(), location);
 				if (distance < minDistance) {

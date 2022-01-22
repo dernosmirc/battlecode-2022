@@ -48,12 +48,29 @@ public strictfp class TailHelper {
 				currentTarget = robot;
 			}
 
-			// TODO: Different weights to each type
 			switch (robot.type) {
-				case SAGE:
 				case SOLDIER:
-				case WATCHTOWER:
 					++attackUnitsHere;
+					break;
+
+				case WATCHTOWER:
+					switch (robot.mode) {
+						case PROTOTYPE:
+							++attackUnitsHere;
+							break;
+
+						case PORTABLE:
+							attackUnitsHere += robot.level;
+							break;
+
+						case TURRET:
+							attackUnitsHere += 2 * robot.level;
+							break;
+					}
+					break;
+
+				case SAGE:
+					attackUnitsHere += 4;
 					break;
 			}
 		}

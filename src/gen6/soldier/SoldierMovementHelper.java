@@ -37,7 +37,6 @@ public strictfp class SoldierMovementHelper {
                 }
             }
 
-            rc.setIndicatorString("" + defenseLocation.x + ", " + defenseLocation.y);
             circleAround(defenseLocation);
             return;
         }
@@ -81,11 +80,13 @@ public strictfp class SoldierMovementHelper {
             return;
         }
 
-        RobotInfo[] robots = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam); // try vision radius?
+        // RobotInfo[] robots = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam); // try vision radius?
+        RobotInfo[] robots = allRobots;
         RobotInfo archon = null;
         for (int i = robots.length; --i >= 0; ) {
             RobotInfo robot = robots[i];
-            if (robot.type == RobotType.ARCHON) {
+            if (robot.type == RobotType.ARCHON && robot.team == myTeam
+                && rc.getLocation().isWithinDistanceSquared(robot.location, myType.actionRadiusSquared)) {
                 archon = robot;
                 break;
             }

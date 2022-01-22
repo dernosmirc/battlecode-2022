@@ -5,6 +5,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.Direction;
 
 import static gen6.RobotPlayer.*;
+import static gen6.Soldier.allRobots;
 import static gen6.soldier.SoldierMovementHelper.HEAL_THRESHOLD;
 import static gen6.sage.SageMovementHelper.HP_THRESHOLD;
 
@@ -26,9 +27,15 @@ public strictfp class AttackHelper {
 		int minHp = 2000;
 		int maxPriority = -1;
 		RobotInfo robotToAttack = null;
-		RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.actionRadiusSquared, enemyTeam);
+		// RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.actionRadiusSquared, enemyTeam);
+		RobotInfo[] enemyRobots = allRobots;
 		for (int i = enemyRobots.length; --i >= 0; ) {
 			RobotInfo robot = enemyRobots[i];
+			if (robot.team != enemyTeam || !rc.getLocation().isWithinDistanceSquared(
+				robot.location, myType.actionRadiusSquared)) {
+				continue;
+			}
+
 			int typeIndex = robot.type.ordinal();
 			int p = priority[typeIndex];
 			if (p > maxPriority) {
@@ -128,6 +135,7 @@ public strictfp class AttackHelper {
 			}
 		}
 
+		rc.setIndicatorString("" + ourRobots + " " + enemyRobots);
 		if (ourRobots >= enemyRobots + 1) {
 			return null;
 		}
@@ -142,6 +150,7 @@ public strictfp class AttackHelper {
 			}
 		}
 
+		// rc.setIndicatorString("" + dir.opposite().ordinal());
 		return dir.opposite();
 	}
 }
