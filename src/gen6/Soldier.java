@@ -3,7 +3,6 @@ package gen6;
 import battlecode.common.*;
 import gen6.common.util.LogCondition;
 import gen6.soldier.SoldierMovementHelper;
-import gen6.soldier.BugPathingMovement;
 import gen6.miner.GoldMiningHelper;
 import gen6.miner.LeadMiningHelper;
 import gen6.soldier.AttackHelper;
@@ -13,7 +12,6 @@ import gen6.common.util.Logger;
 import gen6.common.SymmetryType;
 import gen6.soldier.SoldierDensity;
 
-import static gen6.RobotPlayer.myTeam;
 import static gen6.RobotPlayer.*;
 import static gen6.common.Functions.getBits;
 import static gen6.common.Functions.setBits;

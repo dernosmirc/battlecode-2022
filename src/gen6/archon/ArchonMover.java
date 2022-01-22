@@ -10,8 +10,6 @@ import gen6.RobotPlayer;
 import gen6.common.*;
 import gen6.common.bellmanford.HeuristicsProvider;
 import gen6.common.bellmanford.heuristics.Heuristics20;
-import gen6.common.util.LogCondition;
-import gen6.common.util.Logger;
 import gen6.common.util.Vector;
 import gen6.soldier.SoldierDensity;
 
@@ -211,12 +209,10 @@ public class ArchonMover {
     }
 
     public static MapLocation getBetterSpotToSettle() throws GameActionException {
-        Logger logger = new Logger("Get Better Spot", LogCondition.Never);
         MapLocation rn = rc.getLocation();
         MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 20);
         Vector<GridInfo> spots = new Vector<>(locs.length);
         RubbleGrid grid = rubbleGrid;
-        logger.log("init");
         for (int i = locs.length; --i >= 0; ) {
             MapLocation ml = locs[i];
             if (!rn.isWithinDistanceSquared(ml, 5)) {
@@ -226,10 +222,9 @@ public class ArchonMover {
                 }
             }
         }
-        logger.log("best spots");
         double bestAvg = getWeightedAverageRubble(rn, grid);
         MapLocation theSpot = null;
-        for (int i = spots.length; --i >= 0; ) {
+        for (int i = Math.min(25, spots.length); --i >= 0; ) {
             MapLocation ml = spots.get(i).location;
             double avg = getWeightedAverageRubble(ml, grid);
             if (bestAvg > avg) {
@@ -237,8 +232,6 @@ public class ArchonMover {
                 theSpot = ml;
             }
         }
-        logger.log("size = " + spots.length);
-        logger.flush();
         return theSpot;
     }
 }

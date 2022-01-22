@@ -25,6 +25,7 @@ public class LeadMiningHelper {
     private static final double COMPRESSION = 0.005;
 
     private static final int LEAD_SYMMETRY_THRESHOLD = 25;
+    private static final int ROUND_SYMMETRY_THRESHOLD = 500;
 
     private static int scaleLeadTo7Bits(int lead) {
         return (int) Math.floor(127 * (1 - Math.exp(-COMPRESSION * lead)));
@@ -139,7 +140,10 @@ public class LeadMiningHelper {
         Vector<GridInfo> arr = new Vector<>(4);
         arr.add(info);
         SymmetryType sym = SymmetryType.getMapSymmetry();
-        if (sym != SymmetryType.NONE && LEAD_SYMMETRY_THRESHOLD <= info.count) {
+        if (sym != SymmetryType.NONE &&
+                LEAD_SYMMETRY_THRESHOLD <= info.count
+                && rc.getRoundNum() < ROUND_SYMMETRY_THRESHOLD
+        ) {
             MapLocation l = SymmetryType.getSymmetricalLocation(loc, sym);
             if (!CommsHelper.isLocationInEnemyZone(l)) {
                 arr.add(new GridInfo(amount, l));

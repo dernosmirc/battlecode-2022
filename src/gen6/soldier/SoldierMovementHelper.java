@@ -1,10 +1,6 @@
 package gen6.soldier;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotType;
-import battlecode.common.RobotInfo;
+import battlecode.common.*;
 import battlecode.common.RobotMode;
 import gen6.common.CommsHelper;
 import gen6.common.MovementHelper;
@@ -96,7 +92,7 @@ public strictfp class SoldierMovementHelper {
         RobotInfo archon = null;
         for (int i = robots.length; --i >= 0; ) {
             RobotInfo robot = robots[i];
-            if (robot.type == RobotType.ARCHON && robot.team == myTeam && Robot.mode == RobotMode.TURRET
+            if (robot.type == RobotType.ARCHON && robot.team == myTeam && robot.mode == RobotMode.TURRET
                 && rc.getLocation().isWithinDistanceSquared(robot.location, myType.actionRadiusSquared)) {
                 archon = robot;
                 break;

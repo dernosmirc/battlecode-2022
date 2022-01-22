@@ -26,7 +26,7 @@ public class MutationHelper {
     public static final int[] priority = {3, 2, 1, 0, 0, 0, 0};
 
     public static Pair<MapLocation, Boolean> getLocationToMutate() throws GameActionException {
-        if (CommsHelper.getArchonHpPriority(Builder.myArchonIndex) > 1) {
+        if (CommsHelper.getArchonHpPriority(Builder.myArchonIndex) > 1 || rc.getRoundNum() < 750) {
             return null;
         }
 

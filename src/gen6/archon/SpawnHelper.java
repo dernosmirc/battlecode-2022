@@ -14,7 +14,7 @@ import static gen6.common.Functions.getBits;
 import static gen6.common.Functions.sigmoid;
 
 public strictfp class SpawnHelper {
-	private static final int ARCHON_MUTATE_WINDOW = 75;
+	private static final int ARCHON_MUTATE_WINDOW = 50;
 	private static final int LAB_WINDOW = 75;
 	private static final int SOLDIER_SAGE_RATIO = 3;
 
@@ -25,8 +25,8 @@ public strictfp class SpawnHelper {
 	}
 
 	private static boolean shouldBuildMiner() throws GameActionException {
-		return CommsHelper.getAliveSoldierCount() + SOLDIER_SAGE_RATIO * CommsHelper.getAliveSageCount() >
-				getSoldierMinerRatio()*CommsHelper.getAliveMinerCount();
+		int attackWeight = CommsHelper.getAliveSoldierCount() + SOLDIER_SAGE_RATIO * CommsHelper.getAliveSageCount();
+		return attackWeight > getSoldierMinerRatio()*CommsHelper.getAliveMinerCount();
 	}
 
 	private static double getSoldierWeight() throws GameActionException {
@@ -43,31 +43,30 @@ public strictfp class SpawnHelper {
 		return 0;
 	}
 
-	private static double getBuilderWeight() throws GameActionException {
-		if (rc.getRoundNum() < 750 && farmSeedsBuilt > 15) return 0.00;
+	private static double getBuilderWeight() {
+		if (rc.getRoundNum() < 1000 && farmSeedsBuilt > 15) return 0.00;
 		if (rc.getRoundNum() < 250) return 0.00;
 		if (rc.getRoundNum() < 500) return 0.5;
-		if (rc.getRoundNum() < 750) return 0.25;
+		if (rc.getRoundNum() < 1000) return 0.25;
 		if (labBuildersBuilt < 2 && rc.getRoundNum() > 1000) return 0.100;
-		return 0;
+		return 0.005;
 	}
 
-	private static BuilderType geNextBuilderType() throws GameActionException {
-		if (rc.getRoundNum() < 750) {
+	private static BuilderType geNextBuilderType() {
+		if (rc.getRoundNum() < 1000) {
 			farmSeedsBuilt++;
 			return BuilderType.FarmSeed;
-		} else if (!CommsHelper.isLabBuilt(Archon.myIndex) || labBuildersBuilt < 2 ) {
+		} else {
 			labBuildersBuilt++;
 			return BuilderType.LabBuilder;
 		}
-		return null;
 	}
 
 	public static double getLeadThreshold() throws GameActionException {
 		if (175 <= rc.getRoundNum() && rc.getRoundNum() < 175 + LAB_WINDOW &&
 				CommsHelper.getNumberOfLabs() < 1
 		) return 260;
-		if (1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + ARCHON_MUTATE_WINDOW &&
+		if (1250 <= rc.getRoundNum() && rc.getRoundNum() < 1250 + ARCHON_MUTATE_WINDOW &&
 				!CommsHelper.allLArchonsMutated(2)
 		) return 375;
 		if (1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + LAB_WINDOW &&
@@ -192,8 +191,8 @@ public strictfp class SpawnHelper {
 			}
 			cur = cur.rotateRight();
 		}
-		if (d == null)	return Direction.NORTH;
-		else	return d;
+		if (d == null) return Direction.NORTH;
+		else return d;
 	}
 
 	private static Direction getOptimalMinerSpawnDirection() throws GameActionException {
@@ -298,9 +297,9 @@ public strictfp class SpawnHelper {
 			if (minersBuilt < 3/centerFactor) return RobotType.MINER;
 			if (soldiersBuilt < 6*centerFactor) return RobotType.SOLDIER;
 		} else {
-			if (minersBuilt < 3) return RobotType.MINER;
+			if (minersBuilt < 4) return RobotType.MINER;
 			if (soldiersBuilt < 6) return RobotType.SOLDIER;
-			if (minersBuilt < 5) return RobotType.MINER;
+			if (minersBuilt < 6) return RobotType.MINER;
 			if (soldiersBuilt < 9) return RobotType.SOLDIER;
 		}
 

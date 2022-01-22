@@ -19,7 +19,7 @@ public strictfp class Miner {
 	private static final double GOLD_MINER_RATIO = 0.25;
 
 	private static double getExplorerRatio() {
-		return sigmoid((150-rc.getRoundNum())/100.0);
+		return sigmoid((250-rc.getRoundNum())/100.0);
 	}
 
 	private static MapLocation myArchonLocation, myTargetLocation;

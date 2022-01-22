@@ -1,7 +1,6 @@
 package gen6.sage;
 
 import battlecode.common.*;
-import gen6.Soldier;
 import gen6.builder.BuildingHelper;
 import gen6.common.CommsHelper;
 import gen6.common.MovementHelper;
@@ -12,8 +11,8 @@ import gen6.soldier.SoldierMovementHelper;
 import gen6.soldier.TailHelper;
 
 import static gen6.RobotPlayer.*;
-import static gen6.Sage.*;
 import static gen6.common.Functions.getDistance;
+import static gen6.soldier.SoldierMovementHelper.tryConcave;
 
 public class SageMovementHelper {
 
@@ -45,7 +44,7 @@ public class SageMovementHelper {
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
         if (defenseLocation != null) {
             if (rc.getLocation().isWithinDistanceSquared(defenseLocation, RobotType.SOLDIER.visionRadiusSquared)) {
-                if (SoldierMovementHelper.tryConcave()) {
+                if (tryConcave()) {
                     return;
                 }
             }
@@ -107,7 +106,7 @@ public class SageMovementHelper {
         RobotInfo archon = null;
         for (int i = robots.length; --i >= 0; ) {
             RobotInfo robot = robots[i];
-            if (robot.type == RobotType.ARCHON && Robot.mode == RobotMode.TURRET) {
+            if (robot.type == RobotType.ARCHON && robot.mode == RobotMode.TURRET) {
                 archon = robot;
                 break;
             }
