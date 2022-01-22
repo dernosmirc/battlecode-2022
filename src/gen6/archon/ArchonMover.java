@@ -4,11 +4,12 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotInfo;
-import gen6.common.*;
-import gen6.common.bellmanford.HeuristicsProvider;
-import gen6.common.bellmanford.heuristics.Heuristics34;
+
 import gen6.Archon;
 import gen6.RobotPlayer;
+import gen6.common.*;
+import gen6.common.bellmanford.HeuristicsProvider;
+import gen6.common.bellmanford.heuristics.Heuristics20;
 import gen6.common.util.LogCondition;
 import gen6.common.util.Logger;
 import gen6.common.util.Vector;
@@ -141,8 +142,8 @@ public class ArchonMover {
         );
     }
 
-    private static final HeuristicsProvider heuristicsProvider = new Heuristics34();
-    private static final int r = (int) Math.sqrt(34) + 1;
+    private static final HeuristicsProvider heuristicsProvider = new Heuristics20();
+    private static final int r = (int) Math.sqrt(20) + 1;
     public static MapLocation getSpotToSettle(Direction direction) throws GameActionException {
         RubbleGrid grid = rubbleGrid;
         grid.populate();
@@ -170,7 +171,7 @@ public class ArchonMover {
             }
             if (!tooClose) {
                 int rubble = grid.get(ml);
-                if (rubble < RUBBLE_THRESHOLD) {
+                if (rubble < RUBBLE_THRESHOLD && distanceFromEdge(ml) > 5) {
                     spots.add(new GridInfo(rubble, ml));
                 }
             }
@@ -180,12 +181,10 @@ public class ArchonMover {
         MapLocation theSpot = rn;
         for (int i = spots.length; --i >= 0; ) {
             MapLocation ml = spots.get(i).location;
-            if (distanceFromEdge(ml) > 5) {
-                double avg = getWeightedAverageRubble(ml, grid);
-                if (bestAvg > avg) {
-                    bestAvg = avg;
-                    theSpot = ml;
-                }
+            double avg = getWeightedAverageRubble(ml, grid);
+            if (bestAvg > avg) {
+                bestAvg = avg;
+                theSpot = ml;
             }
         }
         return theSpot;
@@ -212,31 +211,34 @@ public class ArchonMover {
     }
 
     public static MapLocation getBetterSpotToSettle() throws GameActionException {
+        Logger logger = new Logger("Get Better Spot", LogCondition.Never);
         MapLocation rn = rc.getLocation();
         MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 20);
         Vector<GridInfo> spots = new Vector<>(locs.length);
         RubbleGrid grid = rubbleGrid;
+        logger.log("init");
         for (int i = locs.length; --i >= 0; ) {
             MapLocation ml = locs[i];
             if (!rn.isWithinDistanceSquared(ml, 5)) {
                 int r = grid.get(ml);
-                if (r < RUBBLE_THRESHOLD) {
+                if (r < RUBBLE_THRESHOLD && distanceFromEdge(ml) > 5) {
                     spots.add(new GridInfo(r, ml));
                 }
             }
         }
+        logger.log("best spots");
         double bestAvg = getWeightedAverageRubble(rn, grid);
         MapLocation theSpot = null;
-        for (int i = Math.min(40, spots.length); --i >= 0; ) {
+        for (int i = spots.length; --i >= 0; ) {
             MapLocation ml = spots.get(i).location;
-            if (distanceFromEdge(ml) > 5) {
-                double avg = getWeightedAverageRubble(ml, grid);
-                if (bestAvg > avg) {
-                    bestAvg = avg;
-                    theSpot = ml;
-                }
+            double avg = getWeightedAverageRubble(ml, grid);
+            if (bestAvg > avg) {
+                bestAvg = avg;
+                theSpot = ml;
             }
         }
+        logger.log("size = " + spots.length);
+        logger.flush();
         return theSpot;
     }
 }

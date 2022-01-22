@@ -114,13 +114,21 @@ public strictfp class Archon {
 		checkIfDefenseNeeded();
 		updateArchonHp();
 
+		int roundNumber = rc.getRoundNum();
+
+		if (roundNumber % 2 == 1) {
+			logger.log("populating");
+			ArchonMover.rubbleGrid.populate();
+			logger.log("populated");
+		}
+
 		if (rc.isMovementReady() || rc.isActionReady()) {
 			transforming = false;
 		}
 		if (!transforming) {
 			switch (rc.getMode()) {
 				case TURRET:
-					if ((rc.getRoundNum() % 2) == 1) {
+					if (roundNumber % 2 == 1) {
 						logger.log("getting relocation");
 						relocate = ArchonMover.getRelocateLocation();
 						logger.log("got relocation");
@@ -134,14 +142,11 @@ public strictfp class Archon {
 						break;
 					} else {
 						relocate = null;
-						if ((rc.getRoundNum() % 2) == 0) {
+						if (roundNumber % 2 == 0) {
 							logger.log("getting better spot");
 							goodSpot = ArchonMover.getBetterSpotToSettle();
 							logger.log("got better spot");
 						} else {
-							logger.log("populating");
-							ArchonMover.rubbleGrid.populate();
-							logger.log("populated");
 							goodSpot = null;
 						}
 						if (ArchonMover.shouldRelocateNearby(goodSpot)) {
