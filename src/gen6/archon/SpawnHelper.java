@@ -287,6 +287,11 @@ public strictfp class SpawnHelper {
 		return null;
 	}
 
+	private static boolean isVeryCloseToCenter() {
+		MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+		return rc.getLocation().isWithinDistanceSquared(center, 34);
+	}
+
 	public static int mapSizeType = 0;
 
 	public static RobotType getNextDroid() throws GameActionException {
@@ -299,12 +304,6 @@ public strictfp class SpawnHelper {
 			return null;
 		}
 
-		/*if (CommsHelper.getAliveArchonCount() > 1) {
-			if (CommsHelper.getCentralArchon() == Archon.myIndex) {
-			} else {
-			}
-		}*/
-
 		if (CommsHelper.getFarthestArchon() == Archon.myIndex &&
 				labBuildersBuilt < 1 && CommsHelper.getNumberOfLabs() < 1 &&
 						200 <= rc.getRoundNum() && rc.getRoundNum() < 200 + LAB_WINDOW
@@ -314,8 +313,13 @@ public strictfp class SpawnHelper {
 			return RobotType.BUILDER;
 		}
 
-		if (minersBuilt < 3) return RobotType.MINER;
-		if (soldiersBuilt < 6) return RobotType.SOLDIER;
+		int centerFactor = 1;
+		if (isVeryCloseToCenter()) {
+			centerFactor = maxArchonCount;
+		}
+
+		if (minersBuilt < 3/centerFactor) return RobotType.MINER;
+		if (soldiersBuilt < 6*centerFactor) return RobotType.SOLDIER;
 		if (minersBuilt < 5) return RobotType.MINER;
 		if (soldiersBuilt < 9) return RobotType.SOLDIER;
 

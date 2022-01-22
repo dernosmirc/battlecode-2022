@@ -13,8 +13,7 @@ import gen6.common.util.Pair;
 import gen6.sage.SageMovementHelper;
 
 import static gen6.RobotPlayer.*;
-import static gen6.common.Functions.getAntiEdgeDirection;
-import static gen6.common.Functions.getBits;
+import static gen6.common.Functions.*;
 
 public strictfp class Builder {
 
@@ -79,11 +78,32 @@ public strictfp class Builder {
 				} else if (nextBuilding.type == RobotType.LABORATORY) {
 					MapLocation req = nextBuilding.location;
 					RobotInfo lab = rc.senseRobotAtLocation(req);
-					Direction anti = getAntiEdgeDirection();
-					if (lab != null && lab.type == RobotType.LABORATORY && anti != null) {
-						nextBuilding = new ConstructionInfo(
-								RobotType.LABORATORY, req.add(anti)
-						);
+					Direction antiRight = getDirectionAlongEdge(true, 5),
+							antiLeft = getDirectionAlongEdge(false, 5);
+					if (lab != null && lab.mode == RobotMode.TURRET) {
+						MapLocation left = req.add(antiLeft), right = req.add(antiRight);
+						for (int d = 1; d < 4; d++) {
+							if (rc.canSenseLocation(left)) {
+								lab = rc.senseRobotAtLocation(left);
+								if (lab == null || lab.mode != RobotMode.TURRET) {
+									nextBuilding = new ConstructionInfo(
+											RobotType.LABORATORY, left
+									);
+									break;
+								}
+							}
+							if (rc.canSenseLocation(right)) {
+								lab = rc.senseRobotAtLocation(right);
+								if (lab == null || lab.mode != RobotMode.TURRET) {
+									nextBuilding = new ConstructionInfo(
+											RobotType.LABORATORY, right
+									);
+									break;
+								}
+							}
+							left = left.add(antiLeft);
+							right = right.add(antiRight);
+						}
 					}
 				}
 			} else {

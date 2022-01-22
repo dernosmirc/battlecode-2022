@@ -20,6 +20,7 @@ import static gen6.RobotPlayer.rc;
 public class ArchonMover {
 
     public static final int RUBBLE_THRESHOLD = 20;
+    public static final int MIN_DISTANCE_BETWEEN_ARCHONS = 20;
 
     private static double getWeightedAverageRubble(MapLocation center) throws GameActionException {
         int centerRubble = rc.senseRubble(center);
@@ -46,9 +47,13 @@ public class ArchonMover {
         return totalRuble / (double) totalLocations;
     }
 
+    private static Direction getAntiEdge(MapLocation ml) {
+        return Functions.getAntiEdgeDirection(ml, 5);
+    }
+
     public static boolean shouldRelocate(MapLocation relocate) throws GameActionException {
         if (!rc.canTransform()) return false;
-        if (relocate == null || rc.getLocation().isWithinDistanceSquared(relocate, 54)) return false;
+        if (relocate == null || rc.getLocation().isWithinDistanceSquared(relocate, 20)) return false;
         return CommsHelper.getFarthestArchon() == Archon.myIndex && !CommsHelper.anyArchonMoving();
     }
 
@@ -60,9 +65,9 @@ public class ArchonMover {
         for (int i = infos.length; --i >= 0;) {
             if (infos[i] != null) {
                 MapLocation ml = infos[i].location;
-                int dist = Math.min(ml.x*ml.x, ml.y*ml.y);
+                int dist = 0;
                 for (int j = mls.length; --j >= 0; ) {
-                    if (j != Archon.myIndex && mls[j] != null) {
+                    if (mls[j] != null) {
                         dist += ml.distanceSquaredTo(mls[j]);
                     }
                 }
@@ -71,6 +76,18 @@ public class ArchonMover {
                     best = ml;
                 }
             }
+        }
+        if (best == null) {
+            MapLocation rn = rc.getLocation();
+            Direction anti = getAntiEdge(rn);
+            if (anti == null) {
+                return null;
+            }
+            best = rn;
+        }
+        Direction anti = getAntiEdge(best);
+        if (anti != null) {
+            best = Functions.translate(best, anti, 5);
         }
         return best;
     }
@@ -87,16 +104,24 @@ public class ArchonMover {
         int[] locsX = heuristicsProvider.getLocationsX(direction.ordinal());
         int[] locsY = heuristicsProvider.getLocationsY(direction.ordinal());
         Vector<GridInfo> spots = new Vector<>(locsX.length);
+        MapLocation[] mls = CommsHelper.getFriendlyArchonLocations();
         for (int i = locsX.length; --i >= 0; ) {
             MapLocation ml = new MapLocation(locsX[i] + rnX_r, locsY[i] + rnY_r);
-            if (rc.canSenseLocation(ml)) {
+            boolean tooClose = false;
+            for (int j = mls.length; --j >= 0; ) {
+                if (mls[j] != null && ml.isWithinDistanceSquared(mls[j], MIN_DISTANCE_BETWEEN_ARCHONS)) {
+                    tooClose = true;
+                    break;
+                }
+            }
+            if (!tooClose && rc.canSenseLocation(ml)) {
                 spots.add(new GridInfo(rc.senseRubble(ml), ml));
             }
         }
         spots.sort(Comparator.comparingInt(GridInfo::getCount));
         double bestAvg = Double.MAX_VALUE;
         MapLocation theSpot = null;
-        for (int i = 10; --i >= 0; ) {
+        for (int i = Math.min(10, spots.length); --i >= 0; ) {
             MapLocation ml = spots.get(i).location;
             double avg = getWeightedAverageRubble(ml);
             if (bestAvg > avg) {

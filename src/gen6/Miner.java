@@ -103,7 +103,7 @@ public strictfp class Miner {
 
 		rc.setIndicatorString("chilling");
 		boolean gotFromAntiCorner = false;
-		Direction antiCorner = Functions.getDirectionAlongEdge(clockwise);
+		Direction antiCorner = Functions.getDirectionAlongEdge(clockwise, 3);
 		if (antiCorner != null) {
 			myDirection = antiCorner;
 			gotFromAntiCorner = true;
@@ -165,7 +165,7 @@ public strictfp class Miner {
 		}
 		if (count < 1) {
 			if (momentum > 0) {
-				antiSoldier = Functions.vectorAddition(antiSoldier, getAntiEdgeDirection());
+				antiSoldier = Functions.vectorAddition(antiSoldier, getAntiEdgeDirection(rc.getLocation(), 3));
 				if (antiSoldier == Direction.CENTER) {
 					momentum = 0;
 					return null;
