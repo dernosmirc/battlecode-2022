@@ -154,7 +154,7 @@ public strictfp class Functions {
 
 	public static Direction getAntiEdgeDirection(MapLocation ml, int distance) {
 		int x = ml.x - distance, y = ml.y - distance,
-				w = rc.getMapWidth() + distance*2, h = rc.getMapHeight() - distance*2;
+				w = rc.getMapWidth() - distance*2, h = rc.getMapHeight() - distance*2;
 
 		if (x <= 0 && y >= h) {
 			return Direction.SOUTHEAST;

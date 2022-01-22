@@ -211,7 +211,7 @@ public strictfp class SpawnHelper {
 		Direction d = null;
 		Direction cur = Direction.NORTH;
 		MapLocation curLoc = rc.getLocation();
-		for (int i = 8; --i >= 0; ){
+		for (int i = 8; --i >= 0;) {
 			MapLocation loc = curLoc.add(cur);
 			if (rc.canSenseLocation(loc) && !rc.isLocationOccupied(loc) && rc.senseRubble(loc) < minRubble){
 				minRubble = rc.senseRubble(loc);

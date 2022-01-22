@@ -103,6 +103,9 @@ public strictfp class Miner {
 
 		rc.setIndicatorString("chilling");
 		boolean gotFromAntiCorner = false;
+		if (rc.getID() == 12296 && rc.getRoundNum() > 815) {
+			int a = 0;
+		}
 		Direction antiCorner = Functions.getDirectionAlongEdge(clockwise, 3);
 		if (antiCorner != null) {
 			myDirection = antiCorner;
