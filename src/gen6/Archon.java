@@ -7,6 +7,7 @@ import gen6.common.CommsHelper;
 import gen6.archon.SpawnHelper;
 import gen6.common.Functions;
 import gen6.common.MovementHelper;
+import gen6.common.SymmetryType;
 import gen6.common.util.LogCondition;
 import gen6.common.util.Logger;
 import gen6.soldier.SoldierDensity;
@@ -162,7 +163,7 @@ public strictfp class Archon {
 	private static int staleLocation = 0;
 	private static void move() throws GameActionException {
 		MapLocation rn = rc.getLocation();
-		if (rn.equals(goodSpot) || staleLocation > 27 || ArchonMover.isEnemyAround()) {
+		if (rn.equals(goodSpot) || staleLocation > 27 || ArchonMover.shouldStopMoving()) {
 			if (rc.isTransformReady() && rc.canTransform()) {
 				rc.transform();
 				transforming = true;
@@ -293,20 +294,25 @@ public strictfp class Archon {
 			isPossibleEnemyArchonSymmetry[2] = false;
 		}
 
-		for (int i = 0; i < 3; ++i) {
-			if (symmetryIndex == 3) {
-				symmetryIndex = 0;
+		if (isPossibleEnemyArchonSymmetry[SymmetryType.ROTATIONAL.ordinal()]) {
+			CommsHelper.updateSymmetry(myIndex, SymmetryType.ROTATIONAL.ordinal());
+		} else if (rc.getMapWidth() > rc.getMapHeight()) {
+			if (isPossibleEnemyArchonSymmetry[SymmetryType.VERTICAL.ordinal()]) {
+				CommsHelper.updateSymmetry(myIndex, SymmetryType.VERTICAL.ordinal());
+			} else if (isPossibleEnemyArchonSymmetry[SymmetryType.HORIZONTAL.ordinal()]) {
+				CommsHelper.updateSymmetry(myIndex, SymmetryType.HORIZONTAL.ordinal());
+			} else {
+				CommsHelper.updateSymmetry(myIndex, SymmetryType.NONE.ordinal());
 			}
-			if (isPossibleEnemyArchonSymmetry[symmetryIndex]) {
-				CommsHelper.updateSymmetry(myIndex, symmetryIndex);
-				++symmetryIndex;
-				return;
+		} else {
+			if (isPossibleEnemyArchonSymmetry[SymmetryType.HORIZONTAL.ordinal()]) {
+				CommsHelper.updateSymmetry(myIndex, SymmetryType.HORIZONTAL.ordinal());
+			} else if (isPossibleEnemyArchonSymmetry[SymmetryType.VERTICAL.ordinal()]) {
+				CommsHelper.updateSymmetry(myIndex, SymmetryType.VERTICAL.ordinal());
+			} else {
+				CommsHelper.updateSymmetry(myIndex, SymmetryType.NONE.ordinal());
 			}
-
-			++symmetryIndex;
 		}
-
-		CommsHelper.updateSymmetry(myIndex, 3);
 	}
 
 	public static void init() throws GameActionException {

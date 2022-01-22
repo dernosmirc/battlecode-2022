@@ -22,6 +22,7 @@ import static gen6.RobotPlayer.*;
 public class ArchonMover {
 
     public static final int RUBBLE_THRESHOLD = 20;
+    public static final int RUBBLE_THRESHOLD_STOP = 30;
     public static final int MIN_DISTANCE_BETWEEN_ARCHONS = 13;
     public static final int TOO_CLOSE_RANGE = 13;
 
@@ -173,6 +174,10 @@ public class ArchonMover {
             }
         }
         return theSpot;
+    }
+
+    public static boolean shouldStopMoving() throws GameActionException {
+        return isEnemyAround() && rc.senseRubble(rc.getLocation()) <= RUBBLE_THRESHOLD_STOP;
     }
 
     public static MapLocation getBetterSpotToSettle() throws GameActionException {
