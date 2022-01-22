@@ -112,14 +112,24 @@ public strictfp class CommsHelper {
 	public static SymmetryType getPossibleSymmetry() throws GameActionException {
 		int value = getBits(rc.readSharedArray(4), 8, 10);
 		// TODO: store values array inside SymmetryType
-		if ((value & 0b1) == 0) {
-			return SymmetryType.values()[0];
-		} else if ((value & 0b10) == 0) {
-			return SymmetryType.values()[1];
-		} else if ((value & 0b100) == 0) {
+		if ((value & 0b100) == 0) {
 			return SymmetryType.values()[2];
+		} else if (rc.getMapWidth() > rc.getMapHeight()) {
+			if ((value & 0b10) == 0) {
+				return SymmetryType.values()[1];
+			} else if ((value & 0b1) == 0) {
+				return SymmetryType.values()[0];
+			} else {
+				return SymmetryType.NONE;
+			}
 		} else {
-			return SymmetryType.NONE;
+			if ((value & 0b1) == 0) {
+				return SymmetryType.values()[0];
+			} else if ((value & 0b10) == 0) {
+				return SymmetryType.values()[1];
+			} else {
+				return SymmetryType.NONE;
+			}
 		}
 	}
 

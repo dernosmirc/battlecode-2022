@@ -20,8 +20,8 @@ public strictfp class Sage {
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(9, rc.readSharedArray(9) + 1);
 		}
-		SageMovementHelper.move();
 		SageAttackHelper.attack();
+		SageMovementHelper.move();
 	}
 
 	public static void init() throws GameActionException {
@@ -44,6 +44,5 @@ public strictfp class Sage {
 		}
 		SageMovementHelper.checkForCharge();
 		MovementHelper.prepareBellmanFord(34);
-		Soldier.init();
 	}
 }

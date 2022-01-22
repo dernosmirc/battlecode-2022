@@ -10,6 +10,7 @@ import gen6.common.MovementHelper;
 import gen6.common.util.LogCondition;
 import gen6.common.util.Logger;
 import gen6.soldier.SoldierDensity;
+import gen6.soldier.TailHelper;
 
 import static gen6.RobotPlayer.*;
 import static gen6.common.Functions.getBits;
@@ -102,6 +103,7 @@ public strictfp class Archon {
 			SoldierDensity.reset();
 		}
 		updateSharedArray();
+		TailHelper.updateTarget();
 
 		// DON'T SPAWN SOLDIER ON FIRST ROUND
 		if (rc.getRoundNum() == 2) {

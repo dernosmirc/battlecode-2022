@@ -50,9 +50,9 @@ public strictfp class SpawnHelper {
 		if (rc.getRoundNum() < 500) return 0.5;
 		if (rc.getRoundNum() < 750) return 0.25;
 		if (labBuildersBuilt < 2 && rc.getRoundNum() > 1000) return 0.100;
-		if (getArchonWatchtowerPriority() > 1 || watchtowerBuildersBuilt >= 2) return 0.00;
-		if (watchtowerBuildersBuilt >= 1) return 0.05;
-		return 0.10;
+	/*	if (getArchonWatchtowerPriority() > 1 || watchtowerBuildersBuilt >= 2) return 0.00;
+		if (watchtowerBuildersBuilt >= 1) return 0.05;*/
+		return 0;
 	}
 
 	private static BuilderType geNextBuilderType() throws GameActionException {
@@ -62,7 +62,7 @@ public strictfp class SpawnHelper {
 		} else if (!CommsHelper.isLabBuilt(Archon.myIndex) || labBuildersBuilt < 2 ) {
 			labBuildersBuilt++;
 			return BuilderType.LabBuilder;
-		} else if (watchtowerBuildersBuilt < 2) {
+		} else if (watchtowerBuildersBuilt < 0) {
 			watchtowerBuildersBuilt++;
 			return BuilderType.WatchtowerBuilder;
 		}
@@ -78,12 +78,12 @@ public strictfp class SpawnHelper {
 		if (1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + LAB_WINDOW &&
 				!CommsHelper.allLabsBuilt()
 		) return 260;
-		if (1250 <= rc.getRoundNum() && rc.getRoundNum() < 1250 + WATCHTOWER_WINDOW &&
+		/*if (1250 <= rc.getRoundNum() && rc.getRoundNum() < 1250 + WATCHTOWER_WINDOW &&
 				!CommsHelper.minWatchtowersBuilt(1)
 		) return 225;
 		if (1375 <= rc.getRoundNum() && rc.getRoundNum() < 1375 + WATCHTOWER_WINDOW &&
 				!CommsHelper.minWatchtowersBuilt(2)
-		) return 225;
+		) return 225;*/
 		return 75;
 	}
 
@@ -339,7 +339,7 @@ public strictfp class SpawnHelper {
 			labBuildersBuilt++;
 			return RobotType.BUILDER;
 		}
-
+/*
 		if (
 				1250 <= rc.getRoundNum() && rc.getRoundNum() < 1250 + WATCHTOWER_WINDOW && watchtowerBuildersBuilt < 1 ||
 				1375 <= rc.getRoundNum() && rc.getRoundNum() < 1375 + WATCHTOWER_WINDOW && watchtowerBuildersBuilt < 2
@@ -347,7 +347,7 @@ public strictfp class SpawnHelper {
 			CommsHelper.setBuilderType(BuilderType.WatchtowerBuilder, Archon.myIndex);
 			watchtowerBuildersBuilt++;
 			return RobotType.BUILDER;
-		}
+		}*/
 
 		double sol = getSoldierWeight(),
 				min = getMinerWeight(),
