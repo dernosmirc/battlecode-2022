@@ -166,13 +166,13 @@ public strictfp class CommsHelper {
 	}
 
 	public static void setBuilderType(BuilderType type, int archonIndex) throws GameActionException {
-		int val = Functions.setBits(rc.readSharedArray(14 + archonIndex), 12, 13, type.ordinal());
+		int val = Functions.setBits(rc.readSharedArray(14 + archonIndex), 11, 12, type.ordinal());
 		rc.writeSharedArray(14 + archonIndex, val);
 	}
 
 	public static BuilderType getBuilderType(int archonIndex) throws GameActionException {
 		return BuilderType.values()[
-				Functions.getBits(rc.readSharedArray(14 + archonIndex), 12, 13)
+				Functions.getBits(rc.readSharedArray(14 + archonIndex), 11, 12)
 				];
 	}
 

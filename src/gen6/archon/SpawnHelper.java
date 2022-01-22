@@ -111,18 +111,18 @@ public strictfp class SpawnHelper {
 		rc.writeSharedArray(10 + Archon.myIndex, val);
 	}
 
+	public static void levelDroidsBuilt() throws GameActionException {
+		updateDeadArchons();
+		for (int i = 0; i < maxArchonCount; ++i) {
+			if (Archon.myIndex != i && !archonDead[i] && !CommsHelper.isArchonPortable(i)) {
+				droidsBuilt = getBits(rc.readSharedArray(10 + i), 0, 11);
+			}
+		}
+	}
+
 	private static boolean[] archonDead = new boolean[4];
 
-	private static int lastArchonCount = -1;
 	private static void updateDeadArchons() throws GameActionException {
-		if (lastArchonCount == -1) {
-			lastArchonCount = maxArchonCount;
-		}
-		int latestCount = rc.getArchonCount();
-		if (lastArchonCount == latestCount) {
-			return;
-		}
-		lastArchonCount = latestCount;
 		archonDead = CommsHelper.getDeadArchons();
 	}
 
@@ -292,9 +292,9 @@ public strictfp class SpawnHelper {
 			if (minersBuilt < 3/centerFactor) return RobotType.MINER;
 			if (soldiersBuilt < 6*centerFactor) return RobotType.SOLDIER;
 		} else {
-			if (minersBuilt < 3) return RobotType.MINER;
+			if (minersBuilt < 4) return RobotType.MINER;
 			if (soldiersBuilt < 6 ) return RobotType.SOLDIER;
-			if (minersBuilt < 5) return RobotType.MINER;
+			if (minersBuilt < 6) return RobotType.MINER;
 			if (soldiersBuilt < 9) return RobotType.SOLDIER;
 		}
 

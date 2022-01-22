@@ -24,7 +24,6 @@ public strictfp class Archon {
 	private static int buildDirectionIndex = 0;
 
 	private static boolean[] isPossibleEnemyArchonSymmetry;
-	private static int symmetryIndex = 0;
 
 	private static int lastDefenseRound = -100;
 
@@ -120,7 +119,11 @@ public strictfp class Archon {
 		if (!transforming) {
 			switch (rc.getMode()) {
 				case TURRET:
-					relocate = ArchonMover.getRelocateLocation();
+					if ((rc.getRoundNum() % 2) == 1) {
+						relocate = ArchonMover.getRelocateLocation();
+					} else {
+						relocate = null;
+					}
 					if (ArchonMover.shouldRelocate(relocate)) {
 						rc.transform();
 						transforming = true;
@@ -128,7 +131,11 @@ public strictfp class Archon {
 						break;
 					} else {
 						relocate = null;
-						goodSpot = ArchonMover.getBetterSpotToSettle();
+						if ((rc.getRoundNum() % 2) == 0) {
+							goodSpot = ArchonMover.getBetterSpotToSettle();
+						} else {
+							goodSpot = null;
+						}
 						if (ArchonMover.shouldRelocateNearby(goodSpot)) {
 							rc.transform();
 							transforming = true;
@@ -171,6 +178,7 @@ public strictfp class Archon {
 				transformNextRound = false;
 				staleLocation = 0;
 				goodSpot = relocate = null;
+				SpawnHelper.levelDroidsBuilt();
 			}
 		}
 
