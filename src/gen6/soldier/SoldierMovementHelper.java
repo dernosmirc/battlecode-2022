@@ -45,10 +45,20 @@ public strictfp class SoldierMovementHelper {
             MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
             int minDistance = rc.getMapWidth() * rc.getMapHeight();
             MapLocation archonLocation = null;
+            boolean foundTurret = false;
             for (int i = maxArchonCount; --i >= 0; ) {
                 if (archons[i] != null) {
                     int distance = getDistance(archons[i], rc.getLocation());
-                    if (distance < minDistance) {
+                    if (!CommsHelper.isArchonPortable(i)) {
+                        if (!foundTurret) {
+                            foundTurret = true;
+                            minDistance = distance;
+                            archonLocation = archons[i];
+                        } else if (distance < minDistance) {
+                            minDistance = distance;
+                            archonLocation = archons[i];
+                        }
+                    } else if (!foundTurret && distance < minDistance) {
                         minDistance = distance;
                         archonLocation = archons[i];
                     }
@@ -85,7 +95,7 @@ public strictfp class SoldierMovementHelper {
         RobotInfo archon = null;
         for (int i = robots.length; --i >= 0; ) {
             RobotInfo robot = robots[i];
-            if (robot.type == RobotType.ARCHON && robot.team == myTeam
+            if (robot.type == RobotType.ARCHON && robot.team == myTeam && Robot.mode == RobotMode.TURRET
                 && rc.getLocation().isWithinDistanceSquared(robot.location, myType.actionRadiusSquared)) {
                 archon = robot;
                 break;
