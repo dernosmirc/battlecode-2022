@@ -2,7 +2,6 @@ package gen6.common;
 
 import battlecode.common.MapLocation;
 import battlecode.common.GameActionException;
-import gen6.Soldier;
 import gen6.builder.BuilderType;
 import gen6.builder.BuildingHelper;
 

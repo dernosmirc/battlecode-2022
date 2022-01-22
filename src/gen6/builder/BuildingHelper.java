@@ -82,6 +82,7 @@ public class BuildingHelper {
     public static MapLocation getOptimalLabLocation() throws GameActionException {
         int minDistance = Integer.MAX_VALUE, w = rc.getMapWidth()-1, h = rc.getMapHeight()-1;
         MapLocation[] enemyArchons = CommsHelper.getEnemyArchonLocations();
+        MapLocation[] friendlyArchons = CommsHelper.getFriendlyArchonLocations();
         MapLocation[] possible = {
                 new MapLocation(0, 0),
                 new MapLocation(0, h),
@@ -99,10 +100,16 @@ public class BuildingHelper {
             if (enemyArchons != null) {
                 for (int j = enemyArchons.length; --j >= 0; ) {
                     if (enemyArchons[j] != null) {
-                        total -= enemyArchons[j].distanceSquaredTo(loc);
+                        total -= 2*enemyArchons[j].distanceSquaredTo(loc);
                     }
                 }
             }
+            for (int j = friendlyArchons.length; --j >= 0; ) {
+                if (friendlyArchons[j] != null) {
+                    total -= friendlyArchons[j].distanceSquaredTo(loc);
+                }
+            }
+
             if (total < minDistance) {
                 minDistance = total;
                 optimal = loc;

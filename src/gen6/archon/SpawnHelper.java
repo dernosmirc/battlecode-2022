@@ -325,7 +325,7 @@ public strictfp class SpawnHelper {
 		if (minersBuilt < 5) return RobotType.MINER;
 		if (soldiersBuilt < 9) return RobotType.SOLDIER;
 
-		if (!isBuilderAround() && !isEnemyAround()) {
+		if (!isBuilderAround() && !isEnemyAround() && repairersBuilt < 3) {
 			CommsHelper.setBuilderType(BuilderType.Repairer, Archon.myIndex);
 			repairersBuilt++;
 			return RobotType.BUILDER;

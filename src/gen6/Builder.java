@@ -126,11 +126,6 @@ public strictfp class Builder {
 				return MovementHelper.tryMove(ml, false);
 			}
 		} else {
-			Direction direction = BuildingHelper.getAntiArchonDirection(myArchonLocation);
-			if (direction != null) {
-				rc.setIndicatorString("anti archon");
-				return MovementHelper.tryMove(direction, false);
-			}
 			MapLocation repair = BuildingHelper.getRepairLocation();
 			if (repair != null) {
 				rc.setIndicatorString("repair");

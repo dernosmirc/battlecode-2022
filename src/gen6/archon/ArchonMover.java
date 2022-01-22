@@ -4,8 +4,8 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotInfo;
-import gen5.common.bellmanford.HeuristicsProvider;
-import gen5.common.bellmanford.heuristics.Heuristics34;
+import gen6.common.bellmanford.HeuristicsProvider;
+import gen6.common.bellmanford.heuristics.Heuristics34;
 import gen6.Archon;
 import gen6.RobotPlayer;
 import gen6.common.CommsHelper;
@@ -79,7 +79,7 @@ public class ArchonMover {
         if (!rc.canTransform()) return false;
         if (rc.getRoundNum() < 25) return false;
         if (betterSpot == null) return false;
-        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length > 15) return false;
+        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length > 30) return false;
         if (isEnemyAround()) return false;
         return !CommsHelper.anyArchonMoving();
     }
@@ -177,7 +177,7 @@ public class ArchonMover {
 
     public static MapLocation getBetterSpotToSettle() throws GameActionException {
         MapLocation rn = rc.getLocation();
-        MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 20);
+        MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 13);
         Vector<GridInfo> spots = new Vector<>(locs.length);
         MapLocation[] mls = CommsHelper.getFriendlyArchonLocations();
         Vector<MapLocation> friends = new Vector<>(maxArchonCount);
@@ -188,7 +188,7 @@ public class ArchonMover {
         }
         for (int i = locs.length; --i >= 0; ) {
             MapLocation ml = locs[i];
-            if (ml.isWithinDistanceSquared(rn, 8)) continue;
+            if (rn.isWithinDistanceSquared(ml, 2)) continue;
             boolean tooClose = false;
             for (int j = friends.length; --j >= 0; ) {
                 if (ml.isWithinDistanceSquared(friends.get(j), MIN_DISTANCE_BETWEEN_ARCHONS)) {

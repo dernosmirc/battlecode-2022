@@ -1,6 +1,7 @@
 package gen6.sage;
 
 import battlecode.common.*;
+import gen6.Soldier;
 import gen6.builder.BuildingHelper;
 import gen6.common.CommsHelper;
 import gen6.common.MovementHelper;
@@ -24,20 +25,7 @@ public class SageMovementHelper {
     private static final int OUTER_DEFENSE_RADIUS = 20;
 
     public static void defenseRevolution(MapLocation defenseLocation) throws GameActionException {
-        int distance = rc.getLocation().distanceSquaredTo(defenseLocation);
-        if (distance < INNER_DEFENSE_RADIUS) {
-            Direction dir = rc.getLocation().directionTo(defenseLocation).opposite();
-            MovementHelper.greedyTryMove(dir);
-        } else if (distance <= OUTER_DEFENSE_RADIUS) {
-            DefenseHelper.tryMoveRight(defenseLocation);
-        } else if (distance <= RobotType.ARCHON.visionRadiusSquared) {
-            Direction dir = rc.getLocation().directionTo(defenseLocation);
-            if (!MovementHelper.greedyTryMove(dir)) {
-                DefenseHelper.tryMoveRightAndBack(dir);
-            }
-        } else {
-            MovementHelper.moveBellmanFord(defenseLocation);
-        }
+        SoldierMovementHelper.circleAround(defenseLocation);
     }
 
     public static void move() throws GameActionException {

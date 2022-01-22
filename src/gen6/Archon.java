@@ -206,9 +206,9 @@ public strictfp class Archon {
 		if (toSpawn != null) {
 			Direction direction = SpawnHelper.getOptimalDirection(directions[buildDirectionIndex], toSpawn);
 			if (direction != null && rc.canBuildRobot(toSpawn, direction)) {
+				rc.buildRobot(toSpawn, direction);
 				buildDirectionIndex = direction.ordinal() + 1;
 				SpawnHelper.incrementDroidsBuilt(toSpawn);
-				rc.buildRobot(toSpawn, direction);
 			}
 		}
 		if (rc.isActionReady()) {
