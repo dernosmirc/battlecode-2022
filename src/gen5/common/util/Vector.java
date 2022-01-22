@@ -10,7 +10,6 @@ import static gen5.RobotPlayer.DEBUG;
 
 @SuppressWarnings("unchecked")
 public class Vector<T> implements Iterable<T> {
-    private final Random random = new Random(rc.getID());
     private final T[] container;
     public final int maxSize;
     public int length = 0;

@@ -18,6 +18,9 @@ public class FarmingHelper {
     }
 
     public static boolean isLocationInFarm(MapLocation loc) {
+        if (getFarmCenter() == null)  {
+            return true;
+        }
         if (loc.isWithinDistanceSquared(getFarmCenter(), FARM_RADIUS_LOWER)) {
             return false;
         }

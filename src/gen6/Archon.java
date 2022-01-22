@@ -2,10 +2,15 @@ package gen6;
 
 import battlecode.common.*;
 import battlecode.common.MapLocation;
+import gen6.archon.ArchonMover;
 import gen6.common.CommsHelper;
 import gen6.archon.SpawnHelper;
 import gen6.common.Functions;
-
+import gen6.common.MovementHelper;
+import gen6.common.util.LogCondition;
+import gen6.common.util.Logger;
+import gen6.soldier.SoldierDensity;
+import gen6.soldier.TailHelper;
 
 import static gen6.RobotPlayer.*;
 import static gen6.common.Functions.getBits;
@@ -93,8 +98,12 @@ public strictfp class Archon {
 	}
 
 	public static void run() throws GameActionException {
-
+		Logger logger = new Logger("Archon", LogCondition.ExceedsRound);
+		if (rc.getRoundNum() % 10 == 0) {
+			SoldierDensity.reset();
+		}
 		updateSharedArray();
+		TailHelper.updateTarget();
 
 		// DON'T SPAWN SOLDIER ON FIRST ROUND
 		if (rc.getRoundNum() == 2) {
@@ -104,24 +113,110 @@ public strictfp class Archon {
 		checkIfDefenseNeeded();
 		updateArchonHp();
 
-		if (rc.isActionReady()) {
-			RobotType toSpawn = SpawnHelper.getNextDroid();
-			if (toSpawn != null) {
-				Direction direction = SpawnHelper.getOptimalDirection(directions[buildDirectionIndex], toSpawn);
-				if (direction != null && rc.canBuildRobot(toSpawn, direction)) {
-					buildDirectionIndex = direction.ordinal() + 1;
-					SpawnHelper.incrementDroidsBuilt(toSpawn);
-					rc.buildRobot(toSpawn, direction);
-				}
-			}
-			if (rc.isActionReady()) {
-				MapLocation toHeal = getHealLocation();
-				if (toHeal != null && rc.canRepair(toHeal)) {
-					rc.repair(toHeal);
-				}
+		if (rc.isMovementReady() || rc.isActionReady()) {
+			transforming = false;
+		}
+		if (!transforming) {
+			switch (rc.getMode()) {
+				case TURRET:
+					relocate = ArchonMover.getRelocateLocation();
+					if (ArchonMover.shouldRelocate(relocate)) {
+						rc.transform();
+						transforming = true;
+						CommsHelper.setArchonPortable(myIndex, true);
+						break;
+					} else {
+						relocate = null;
+						goodSpot = ArchonMover.getBetterSpotToSettle();
+						if (ArchonMover.shouldRelocateNearby(goodSpot)) {
+							rc.transform();
+							transforming = true;
+							CommsHelper.setArchonPortable(myIndex, true);
+							break;
+						} else {
+							goodSpot = null;
+						}
+					}
+					act();
+					CommsHelper.setArchonPortable(myIndex, false);
+					break;
+				case PORTABLE:
+					move();
+					updateLocation();
+					break;
 			}
 		}
+		logger.flush();
+	}
 
+	private static void updateLocation() throws GameActionException {
+		int value = 0;
+		value = setBits(value, 6, 11, rc.getLocation().x);
+		value = setBits(value, 0, 5, rc.getLocation().y);
+		rc.writeSharedArray(myIndex + 50, value);
+	}
+
+	private static MapLocation relocate = null;
+	private static MapLocation goodSpot = null;
+	private static boolean transforming = false;
+	private static int staleLocation = 0;
+	private static void move() throws GameActionException {
+		MapLocation rn = rc.getLocation();
+		if (rn.equals(goodSpot) || staleLocation > 27 || ArchonMover.isEnemyAround()) {
+			if (rc.isTransformReady() && rc.canTransform()) {
+				rc.transform();
+				transforming = true;
+				staleLocation = 0;
+			}
+			return;
+		}
+
+		if (!rc.isMovementReady()) {
+			return;
+		}
+
+		if (goodSpot != null) {
+			if (!MovementHelper.moveBellmanFord(goodSpot)) {
+				staleLocation++;
+			}
+			return;
+		}
+		if (relocate == null) {
+			relocate = ArchonMover.getRelocateLocation();
+			if (relocate == null) {
+				relocate = rn;
+			}
+		}
+		if (rn.isWithinDistanceSquared(relocate, ArchonMover.TOO_CLOSE_RANGE)) {
+			goodSpot = ArchonMover.getSpotToSettle(rn.directionTo(relocate));
+			if (goodSpot == null) {
+				relocate = ArchonMover.getRelocateLocation();
+			}
+		}
+		if (relocate != null) {
+			if (!MovementHelper.moveBellmanFord(relocate)) {
+				staleLocation++;
+			}
+		}
+	}
+
+	private static void act() throws GameActionException {
+		if (!rc.isActionReady()) return;
+		RobotType toSpawn = SpawnHelper.getNextDroid();
+		if (toSpawn != null) {
+			Direction direction = SpawnHelper.getOptimalDirection(directions[buildDirectionIndex], toSpawn);
+			if (direction != null && rc.canBuildRobot(toSpawn, direction)) {
+				buildDirectionIndex = direction.ordinal() + 1;
+				SpawnHelper.incrementDroidsBuilt(toSpawn);
+				rc.buildRobot(toSpawn, direction);
+			}
+		}
+		if (rc.isActionReady()) {
+			MapLocation toHeal = getHealLocation();
+			if (toHeal != null && rc.canRepair(toHeal)) {
+				rc.repair(toHeal);
+			}
+		}
 		if (buildDirectionIndex == 8) {
 			buildDirectionIndex = 0;
 		}
@@ -215,18 +310,21 @@ public strictfp class Archon {
 	}
 
 	public static void init() throws GameActionException {
+		MovementHelper.prepareBellmanFord(34);
 		maxArchonCount = rc.getArchonCount();
-		for (int i = 32; i < 32 + maxArchonCount; ++i) {
-			int value = rc.readSharedArray(i);
+		for (int i = 0; i < maxArchonCount; ++i) {
+			int value = rc.readSharedArray(i + 32);
 			if (getBits(value, 15, 15) == 0) {
-				value = setBits(0, 15, 15, 1);
 				value = setBits(value, 6, 11, rc.getLocation().x);
 				value = setBits(value, 0, 5, rc.getLocation().y);
-				myIndex = i - 32;
-				rc.writeSharedArray(i, value);
+				myIndex = i;
+				rc.writeSharedArray(50 + myIndex, value);
+				value = setBits(0, 15, 15, 1);
+				rc.writeSharedArray(32 + myIndex, value);
 				break;
 			}
 		}
+		updateLocation();
 
 		isPossibleEnemyArchonSymmetry = new boolean[3];
 		isPossibleEnemyArchonSymmetry[0] = isPossibleEnemyArchonSymmetry[1] = isPossibleEnemyArchonSymmetry[2] = true;

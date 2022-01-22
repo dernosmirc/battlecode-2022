@@ -3,8 +3,10 @@ package gen6.miner;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
 import gen6.common.CommsHelper;
 import gen6.common.Functions;
+import gen6.common.GridInfo;
 import gen6.common.SymmetryType;
 import gen6.common.util.Vector;
 
@@ -46,32 +48,32 @@ public class LeadMiningHelper {
         return grid_x * 22 + grid_y;
     }
 
-    private static int getInt16FromInfo(MetalInfo info) {
+    private static int getInt16FromInfo(GridInfo info) {
         int v = Functions.setBits(0, 0, 8, get9BitsFromLocation(info.location));
-        v = Functions.setBits(v, 9, 15, scaleLeadTo7Bits(info.amount));
+        v = Functions.setBits(v, 9, 15, scaleLeadTo7Bits(info.count));
         return v;
     }
 
-    private static MetalInfo getInfoFromInt16(int bits) {
-        return new MetalInfo(
+    private static GridInfo getInfoFromInt16(int bits) {
+        return new GridInfo(
                 scale7BitsToLead(Functions.getBits(bits, 9, 15)),
                 getLocationFrom9Bits(Functions.getBits(bits, 0, 8))
         );
     }
 
-    private static MetalInfo[] getLeadOnGrid() throws GameActionException {
-        MetalInfo[] infos = new MetalInfo[SA_COUNT];
+    private static GridInfo[] getLeadOnGrid() throws GameActionException {
+        GridInfo[] infos = new GridInfo[SA_COUNT];
         for (int i = SA_COUNT; --i >= 0;) {
-            MetalInfo info = getInfoFromInt16(rc.readSharedArray(SA_START + i));
-            if (info.amount != 0) {
+            GridInfo info = getInfoFromInt16(rc.readSharedArray(SA_START + i));
+            if (info.count != 0) {
                 infos[i] = info;
             }
         }
         return infos;
     }
 
-    private static MetalInfo[] getAdjacentLeadInfos() throws GameActionException {
-        MetalInfo[] infos = new MetalInfo[8];
+    private static GridInfo[] getAdjacentLeadInfos() throws GameActionException {
+        GridInfo[] infos = new GridInfo[8];
         MapLocation[] locs = rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared, 2);
         MapLocation rn = rc.getLocation();
         int x0 = 3*(rn.x/3) - 3, y0 = 3*(rn.y/3) - 3;
@@ -83,7 +85,7 @@ public class LeadMiningHelper {
                 case 4:
                 case 5:
                 case 7:
-                infos[i] = new MetalInfo(0, new MapLocation(3 * (i / 3) + x0_1, 3 * (i % 3) + y0_1));
+                infos[i] = new GridInfo(0, new MapLocation(3 * (i / 3) + x0_1, 3 * (i % 3) + y0_1));
             }
         }
         for (int i = locs.length; --i >= 0;) {
@@ -98,7 +100,7 @@ public class LeadMiningHelper {
                     case 4:
                     case 5:
                     case 7:
-                        infos[ind].amount += lead;
+                        infos[ind].count += lead;
                 }
             }
         }
@@ -108,11 +110,11 @@ public class LeadMiningHelper {
     public static MapLocation spotLeadOnGrid() throws GameActionException {
         MapLocation location = rc.getLocation(), leadLoc = null;
         double maxFac = 0;
-        MetalInfo[] infos = getLeadOnGrid();
+        GridInfo[] infos = getLeadOnGrid();
         for (int i = infos.length; --i >= 0;) {
-            MetalInfo o = infos[i];
-            if (o != null && o.amount > 0) {
-                double fac = o.amount * Math.pow(o.location.distanceSquaredTo(location), DISTANCE_FACTOR);
+            GridInfo o = infos[i];
+            if (o != null && o.count > 0) {
+                double fac = o.count * Math.pow(o.location.distanceSquaredTo(location), DISTANCE_FACTOR);
                 if (fac > maxFac) {
                     leadLoc = o.location;
                     maxFac = fac;
@@ -122,7 +124,7 @@ public class LeadMiningHelper {
         return leadLoc;
     }
 
-    private static int getLocationIndex(MetalInfo[] infos, MapLocation location) {
+    private static int getLocationIndex(GridInfo[] infos, MapLocation location) {
         for (int i = SA_COUNT; --i >= 0;) {
             if (infos[i] != null && infos[i].location.equals(location)) {
                 return i;
@@ -131,35 +133,35 @@ public class LeadMiningHelper {
         return -1;
     }
 
-    private static void addPositions(MetalInfo[] infos, MetalInfo info) throws GameActionException {
-        int amount = info.amount;
+    private static void addPositions(GridInfo[] infos, GridInfo info) throws GameActionException {
+        int amount = info.count;
         MapLocation loc = info.location;
-        Vector<MetalInfo> arr = new Vector<>(4);
+        Vector<GridInfo> arr = new Vector<>(4);
         arr.add(info);
         SymmetryType sym = SymmetryType.getMapSymmetry();
-        if (sym != SymmetryType.NONE && LEAD_SYMMETRY_THRESHOLD <= info.amount) {
+        if (sym != SymmetryType.NONE && LEAD_SYMMETRY_THRESHOLD <= info.count) {
             MapLocation l = SymmetryType.getSymmetricalLocation(loc, sym);
             if (!CommsHelper.isLocationInEnemyZone(l)) {
-                arr.add(new MetalInfo(amount, l));
+                arr.add(new GridInfo(amount, l));
             }
         }
         for (int j = arr.length; --j >= 0;) {
-            MetalInfo itj = arr.get(j);
+            GridInfo itj = arr.get(j);
             int index = getLocationIndex(infos, itj.location);
             if (index == -1) {
                 int minAmount = Integer.MAX_VALUE;
                 for (int i = SA_COUNT; --i >= 0;) {
-                    MetalInfo it = infos[i];
+                    GridInfo it = infos[i];
                     if (it == null) {
                         index = i;
                         minAmount = Integer.MAX_VALUE;
                         break;
-                    } else if (it.amount < minAmount) {
+                    } else if (it.count < minAmount) {
                         index = i;
-                        minAmount = it.amount;
+                        minAmount = it.count;
                     }
                 }
-                if (minAmount == Integer.MAX_VALUE || minAmount < itj.amount) {
+                if (minAmount == Integer.MAX_VALUE || minAmount < itj.count) {
                     infos[index] = itj;
                     rc.writeSharedArray(index + SA_START, getInt16FromInfo(itj));
                 }
@@ -168,14 +170,21 @@ public class LeadMiningHelper {
     }
 
     private static boolean shouldUpdateGrid() {
-        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length >= 12) return false;
-        int count = 0;
-        RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
+        int enemyCount = 0, minerCount = 0, friendCount = 0;
+        RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared);
         for (int i = ris.length; --i >= 0;) {
-            if (ris[i].type.canAttack()) {
-                count++;
+            RobotInfo ri = ris[i];
+            if (ri.team == enemyTeam) {
+                if (ri.type.canAttack()) {
+                    enemyCount++;
+                }
+            } else {
+                friendCount++;
+                if (ri.type == RobotType.MINER) {
+                    minerCount++;
+                }
             }
-            if (count >= 2) {
+            if (enemyCount >= 2 || minerCount >= 2 || friendCount >= 15) {
                 return false;
             }
         }
@@ -186,10 +195,10 @@ public class LeadMiningHelper {
         if (!shouldUpdateGrid()) {
             return;
         }
-        MetalInfo[] infos = getLeadOnGrid(), adj = getAdjacentLeadInfos();
-        MetalInfo bestCandidate = new MetalInfo(0, rc.getLocation());
+        GridInfo[] infos = getLeadOnGrid(), adj = getAdjacentLeadInfos();
+        GridInfo bestCandidate = new GridInfo(0, rc.getLocation());
         for (int i = adj.length; --i >= 0;) {
-            MetalInfo mInfo = adj[i];
+            GridInfo mInfo = adj[i];
             if (mInfo == null) {
                 continue;
             }
@@ -198,11 +207,11 @@ public class LeadMiningHelper {
                 infos[index] = mInfo;
                 rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
             }
-            if (mInfo.amount > bestCandidate.amount) {
+            if (mInfo.count > bestCandidate.count) {
                 bestCandidate = mInfo;
             }
         }
-        if (bestCandidate.amount > 0) {
+        if (bestCandidate.count > 0) {
             addPositions(infos, bestCandidate);
         }
     }

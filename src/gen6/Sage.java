@@ -20,22 +20,23 @@ public strictfp class Sage {
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(9, rc.readSharedArray(9) + 1);
 		}
-		SageMovementHelper.move();
 		SageAttackHelper.attack();
+		SageMovementHelper.move();
 	}
 
 	public static void init() throws GameActionException {
 		maxArchonCount = 0;
-		for (int i = 32; i < 36; ++i) {
-			int value = rc.readSharedArray(i);
+		for (int i = 0; i < 4; ++i) {
+			int value = rc.readSharedArray(i + 32);
 			if (getBits(value, 15, 15) == 1) {
 				++maxArchonCount;
+				value = rc.readSharedArray(i + 50);
 				MapLocation archonLocation = new MapLocation(
 						getBits(value, 6, 11), getBits(value, 0, 5)
 				);
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
-					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
-					myArchonIndex = i - 32;
+					myArchonLocation = archonLocation;
+					myArchonIndex = i;
 				}
 			} else {
 				break;
@@ -43,6 +44,5 @@ public strictfp class Sage {
 		}
 		SageMovementHelper.checkForCharge();
 		MovementHelper.prepareBellmanFord(34);
-		Soldier.init();
 	}
 }

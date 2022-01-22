@@ -22,8 +22,8 @@ public strictfp class Miner {
 		return sigmoid((150-rc.getRoundNum())/100.0);
 	}
 
-	private static MapLocation myArchonLocation;
-	public static Direction myDirection;
+	private static MapLocation myArchonLocation, myTargetLocation;
+	private static Direction myDirection;
 	private static int myArchonIndex;
 	private static boolean isGoldMiner = false;
 	private static boolean isExplorer = false;
@@ -31,6 +31,9 @@ public strictfp class Miner {
 
 	private static int stillCount = 0;
 	public static void run() throws GameActionException {
+		// update location each round
+		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
+
 		// Update the miner count
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(8, rc.readSharedArray(8) + 1);
@@ -38,6 +41,13 @@ public strictfp class Miner {
 
 		Logger logger = new Logger("Miner", LogCondition.Never);
 		int round = rc.getRoundNum();
+
+		if (myDirection == null) {
+			myDirection = getRandomDirection();
+		}
+		if (isExplorer) {
+			updateDirectionsExplored();
+		}
 
 		GoldMiningHelper.mineGold();
 		GoldMiningHelper.updateGoldAmountInGridCell();
@@ -90,7 +100,11 @@ public strictfp class Miner {
 			rc.setIndicatorString("lead near");
 			return MovementHelper.moveBellmanFord(lead);
 		}
-		if (!isExplorer) {
+		if (isExplorer) {
+			if (myTargetLocation != null) {
+				return MovementHelper.moveBellmanFord(myTargetLocation);
+			}
+		} else {
 			lead = LeadMiningHelper.spotLeadOnGrid();
 			if (lead != null) {
 				rc.setIndicatorString("lead far");
@@ -100,7 +114,7 @@ public strictfp class Miner {
 
 		rc.setIndicatorString("chilling");
 		boolean gotFromAntiCorner = false;
-		Direction antiCorner = Functions.getDirectionAlongEdge(clockwise);
+		Direction antiCorner = Functions.getDirectionAlongEdge(clockwise, 3);
 		if (antiCorner != null) {
 			myDirection = antiCorner;
 			gotFromAntiCorner = true;
@@ -119,27 +133,63 @@ public strictfp class Miner {
 		return MovementHelper.moveBellmanFord(myDirection);
 	}
 
+	private static boolean[] directionsExplored = new boolean[9];
+	private static int directionsExploredCount = 0;
+
+	private static void updateDirectionsExplored() throws GameActionException {
+		if (directionsExploredCount == 9) {
+			return;
+		}
+		if (myTargetLocation != null) {
+			if (rc.getLocation().isWithinDistanceSquared(myTargetLocation, 5)) {
+				myTargetLocation = null;
+				setRandomLocation();
+			}
+		} else {
+			setRandomLocation();
+		}
+	}
+
+	private static void setRandomLocation() throws GameActionException {
+		double yea = random.nextDouble(), cumulative = 0, step = 1.0/(9-directionsExploredCount);
+		Direction direction = Direction.CENTER;
+		for (int i = 9; --i >= 0; ) {
+			if (!directionsExplored[i]) {
+				cumulative += step;
+				if (yea <= cumulative) {
+					direction = Direction.values()[i];
+					directionsExplored[i] = true;
+					directionsExploredCount++;
+					break;
+				}
+			}
+		}
+		int wb2 = rc.getMapWidth()/2, hb2 = rc.getMapHeight()/2;
+		myTargetLocation = new MapLocation(wb2 + direction.dx*(wb2-2), hb2 + direction.dy*(hb2-2));
+		if (CommsHelper.isLocationInEnemyZone(myTargetLocation)) {
+			myTargetLocation = null;
+			myDirection = getRandomDirection();
+		} else {
+			myDirection = rc.getLocation().directionTo(myTargetLocation);
+		}
+	}
+
 	public static void init() throws GameActionException {
 		isGoldMiner = random.nextDouble() < GOLD_MINER_RATIO;
 		isExplorer = random.nextDouble() < getExplorerRatio();
-		myDirection = Functions.getRandomDirection();
 		maxArchonCount = 0;
 		MovementHelper.prepareBellmanFord(20);
-		for (int i = 32; i < 36; ++i) {
-			int value = rc.readSharedArray(i);
+		for (int i = 0; i < 4; ++i) {
+			int value = rc.readSharedArray(i + 32);
 			if (getBits(value, 15, 15) == 1) {
 				++maxArchonCount;
+				value = rc.readSharedArray(i + 50);
 				MapLocation archonLocation = new MapLocation(
 						getBits(value, 6, 11), getBits(value, 0, 5)
 				);
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
-					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
-					if (rc.getRoundNum() > 100) {
-						myDirection = getRandomDirection();
-					} else {
-						myDirection = myArchonLocation.directionTo(rc.getLocation());
-					}
-					myArchonIndex = i - 32;
+					myArchonLocation = archonLocation;
+					myArchonIndex = i;
 				}
 			} else {
 				break;
@@ -161,7 +211,7 @@ public strictfp class Miner {
 		}
 		if (count < 1) {
 			if (momentum > 0) {
-				antiSoldier = Functions.vectorAddition(antiSoldier, getAntiEdgeDirection());
+				antiSoldier = Functions.vectorAddition(antiSoldier, getAntiEdgeDirection(rc.getLocation(), 3));
 				if (antiSoldier == Direction.CENTER) {
 					momentum = 0;
 					return null;

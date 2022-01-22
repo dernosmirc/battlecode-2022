@@ -3,6 +3,7 @@ package gen6.miner;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import gen6.common.Functions;
+import gen6.common.GridInfo;
 
 import static gen6.RobotPlayer.myType;
 import static gen6.RobotPlayer.rc;
@@ -39,33 +40,33 @@ public class GoldMiningHelper {
         return grid_x * 22 + grid_y;
     }
 
-    private static int getInt16FromInfo(MetalInfo info) {
+    private static int getInt16FromInfo(GridInfo info) {
         int v = Functions.setBits(0, 0, 8, get9BitsFromLocation(info.location));
-        v = Functions.setBits(v, 9, 15, scaleGoldTo7Bits(info.amount));
+        v = Functions.setBits(v, 9, 15, scaleGoldTo7Bits(info.count));
         return v;
     }
-    private static MetalInfo getInfoFromInt16(int bits) {
-        return new MetalInfo(
+    private static GridInfo getInfoFromInt16(int bits) {
+        return new GridInfo(
                 scale7BitsToGold(Functions.getBits(bits, 9, 15)),
                 getLocationFrom9Bits(Functions.getBits(bits, 0, 8))
         );
     }
 
 
-    private static MetalInfo[] getGoldOnGrid() throws GameActionException {
-        MetalInfo[] infos = new MetalInfo[SA_COUNT];
+    private static GridInfo[] getGoldOnGrid() throws GameActionException {
+        GridInfo[] infos = new GridInfo[SA_COUNT];
         for (int i = SA_COUNT - 1; --i >= 0;) {
-            MetalInfo info = getInfoFromInt16(rc.readSharedArray(SA_START + i));
-            if (info.amount != 0) {
+            GridInfo info = getInfoFromInt16(rc.readSharedArray(SA_START + i));
+            if (info.count != 0) {
                 infos[i] = info;
             }
         }
         return infos;
     }
 
-    private static int getLocationIndex(MetalInfo[] infos, MapLocation location) {
+    private static int getLocationIndex(GridInfo[] infos, MapLocation location) {
         for (int i = SA_COUNT-1; --i >= 0;) {
-            MetalInfo info = infos[i];
+            GridInfo info = infos[i];
             if (info != null && info.location.equals(location)) {
                 return i;
             }
@@ -75,17 +76,17 @@ public class GoldMiningHelper {
 
     public static void updateGoldAmountInGridCell() throws GameActionException {
         MapLocation goldLocation = getGoldLocation();
-        MetalInfo mInfo;
+        GridInfo mInfo;
         if (goldLocation == null) {
             MapLocation mloc = rc.getLocation();
-            mInfo = new MetalInfo(0,
+            mInfo = new GridInfo(0,
                     new MapLocation(
                             mloc.x - (mloc.x % GRID_DIM) + GRID_DIM / 2,
                             mloc.y - (mloc.y % GRID_DIM) + GRID_DIM / 2
                     )
             );
         } else {
-            mInfo = new MetalInfo(rc.senseGold(goldLocation),
+            mInfo = new GridInfo(rc.senseGold(goldLocation),
                     new MapLocation(
                             goldLocation.x - (goldLocation.x % GRID_DIM) + GRID_DIM / 2,
                             goldLocation.y - (goldLocation.y % GRID_DIM) + GRID_DIM / 2
@@ -93,24 +94,24 @@ public class GoldMiningHelper {
             );
         }
 
-        MetalInfo[] infos = getGoldOnGrid();
+        GridInfo[] infos = getGoldOnGrid();
         int index = getLocationIndex(infos, mInfo.location);
         if (index != -1) {
             rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
         } else {
             int minAmount = Integer.MAX_VALUE;
             for (int i = SA_COUNT-1; --i >= 0;) {
-                MetalInfo it = infos[i];
+                GridInfo it = infos[i];
                 if (it == null) {
                     index = i;
                     minAmount = Integer.MAX_VALUE;
                     break;
-                } else if (it.amount < minAmount) {
-                    minAmount = it.amount;
+                } else if (it.count < minAmount) {
+                    minAmount = it.count;
                     index = i;
                 }
             }
-            if (minAmount == Integer.MAX_VALUE || minAmount < mInfo.amount) {
+            if (minAmount == Integer.MAX_VALUE || minAmount < mInfo.count) {
                 rc.writeSharedArray(index + SA_START, getInt16FromInfo(mInfo));
             }
         }
@@ -148,11 +149,11 @@ public class GoldMiningHelper {
     public static MapLocation spotGoldOnGrid() throws GameActionException {
         MapLocation location = rc.getLocation(), goldLoc = null;
         double maxFac = 0;
-        MetalInfo[] infos = getGoldOnGrid();
+        GridInfo[] infos = getGoldOnGrid();
         for (int i = 0; i < SA_COUNT; i++) {
-            MetalInfo o = infos[i];
-            if (o != null && o.amount > 0) {
-                double fac = o.amount / Math.pow(o.location.distanceSquaredTo(location), 0.5);
+            GridInfo o = infos[i];
+            if (o != null && o.count > 0) {
+                double fac = o.count / Math.pow(o.location.distanceSquaredTo(location), 0.5);
                 if (fac > maxFac) {
                     goldLoc = o.location;
                     maxFac = fac;

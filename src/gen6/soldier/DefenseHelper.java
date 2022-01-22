@@ -15,14 +15,14 @@ public strictfp class DefenseHelper {
 		boolean[] archonDead = CommsHelper.getDeadArchons();
 		MapLocation nearestLocation = null;
 		int minDistance = rc.getMapWidth() * rc.getMapHeight();
-		for (int i = 32; i < 32 + maxArchonCount; ++i) {
+		for (int i = 50; i < 50 + maxArchonCount; ++i) {
 			int value = rc.readSharedArray(i);
-			if (getBits(value, 14, 14) == 1 && !archonDead[i - 32]) {
+			if (getBits(value, 14, 14) == 1 && !archonDead[i - 50]) {
 				MapLocation location = CommsHelper.getLocationFrom12Bits(value);
 				int distance = getDistance(rc.getLocation(), location);
 				if (distance < minDistance) {
 					minDistance = distance;
-					nearestLocation = new MapLocation(location.x, location.y);
+					nearestLocation = location;
 				}
 			}
 		}

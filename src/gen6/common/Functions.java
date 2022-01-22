@@ -128,11 +128,22 @@ public strictfp class Functions {
 		return null;
 	}
 
-	public static Direction getDirectionAlongEdge(boolean clockwise) {
-		Direction anti = getAntiEdgeDirection();
+	public static Direction getDirectionAlongEdge(boolean clockwise, int distance) {
+		Direction anti = getAntiEdgeDirection(rc.getLocation(), distance);
 
 		if (anti == null) {
 			return null;
+		}
+
+		switch (anti) {
+			case SOUTHWEST:
+				return clockwise ? Direction.SOUTH : Direction.WEST;
+			case SOUTHEAST:
+				return clockwise ? Direction.EAST : Direction.SOUTH;
+			case NORTHEAST:
+				return clockwise ? Direction.NORTH : Direction.EAST;
+			case NORTHWEST:
+				return clockwise ? Direction.WEST : Direction.NORTH;
 		}
 
 		if (clockwise) {
@@ -141,9 +152,9 @@ public strictfp class Functions {
 		return getPerpendicular(anti);
 	}
 
-	public static Direction getAntiEdgeDirection() {
-		int x = rc.getLocation().x - 3, y = rc.getLocation().y - 3,
-				w = rc.getMapWidth() - 6, h = rc.getMapHeight() - 6;
+	public static Direction getAntiEdgeDirection(MapLocation ml, int distance) {
+		int x = ml.x - distance, y = ml.y - distance,
+				w = rc.getMapWidth() - distance*2, h = rc.getMapHeight() - distance*2;
 
 		if (x <= 0 && y >= h) {
 			return Direction.SOUTHEAST;
@@ -172,8 +183,8 @@ public strictfp class Functions {
 		return null;
 	}
 
-	public Direction getEdgeDirection() {
-		Direction anti = getAntiEdgeDirection();
+	public Direction getEdgeDirection(MapLocation ml, int distance) {
+		Direction anti = getAntiEdgeDirection(ml, distance);
 		if (anti == null) {
 			return null;
 		}

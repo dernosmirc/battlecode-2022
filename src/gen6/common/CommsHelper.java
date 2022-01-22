@@ -27,6 +27,13 @@ public strictfp class CommsHelper {
 		return setBits(val, 0, 5, loc.y);
 	}
 
+	public static MapLocation getArchonLocation(int archonIndex) throws GameActionException {
+		if (getDeadArchons()[archonIndex]) {
+			return null;
+		}
+		return getLocationFrom12Bits(rc.readSharedArray(50 + archonIndex));
+	}
+
 	public static MapLocation getEnemyArchonLocation() throws GameActionException {
 		MapLocation archonLocation = null;
 		MapLocation centre = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
@@ -75,7 +82,7 @@ public strictfp class CommsHelper {
 		MapLocation[] archons = new MapLocation[maxArchonCount];
 		for (int i = 0; i < maxArchonCount; ++i) {
 			if (!isDead[i]) {
-				int value = rc.readSharedArray(32 + i);
+				int value = rc.readSharedArray(50 + i);
 				archons[i] = getLocationFrom12Bits(value);
 			}
 		}
@@ -105,14 +112,24 @@ public strictfp class CommsHelper {
 	public static SymmetryType getPossibleSymmetry() throws GameActionException {
 		int value = getBits(rc.readSharedArray(4), 8, 10);
 		// TODO: store values array inside SymmetryType
-		if ((value & 0b1) == 0) {
-			return SymmetryType.values()[0];
-		} else if ((value & 0b10) == 0) {
-			return SymmetryType.values()[1];
-		} else if ((value & 0b100) == 0) {
+		if ((value & 0b100) == 0) {
 			return SymmetryType.values()[2];
+		} else if (rc.getMapWidth() > rc.getMapHeight()) {
+			if ((value & 0b10) == 0) {
+				return SymmetryType.values()[1];
+			} else if ((value & 0b1) == 0) {
+				return SymmetryType.values()[0];
+			} else {
+				return SymmetryType.NONE;
+			}
 		} else {
-			return SymmetryType.NONE;
+			if ((value & 0b1) == 0) {
+				return SymmetryType.values()[0];
+			} else if ((value & 0b10) == 0) {
+				return SymmetryType.values()[1];
+			} else {
+				return SymmetryType.NONE;
+			}
 		}
 	}
 
@@ -183,6 +200,24 @@ public strictfp class CommsHelper {
 				int distance = getDistance(archons[i], centre);
 				if (distance < minDistance) {
 					minDistance = distance;
+					archonIndex = i;
+				}
+			}
+		}
+
+		return archonIndex;
+	}
+
+	public static int getFarthestArchon() throws GameActionException {
+		MapLocation[] archons = getFriendlyArchonLocations();
+		MapLocation centre = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
+		int maxDistance = 0;
+		int archonIndex = 0;
+		for (int i = maxArchonCount; --i >= 0; ) {
+			if (archons[i] != null) {
+				int distance = getDistance(archons[i], centre);
+				if (maxDistance < distance) {
+					maxDistance = distance;
 					archonIndex = i;
 				}
 			}
@@ -293,4 +328,24 @@ public strictfp class CommsHelper {
 		}
 	}
 
+    public static void setArchonPortable(int archonIndex, boolean portable) throws GameActionException {
+        rc.writeSharedArray(
+                archonIndex + 32,
+                Functions.setBits(rc.readSharedArray(archonIndex+32), 12, 12, portable ? 1 : 0)
+        );
+    }
+
+	public static boolean isArchonPortable(int archonIndex) throws GameActionException {
+        return Functions.getBits(rc.readSharedArray(archonIndex+32), 12, 12) == 1;
+    }
+
+	public static boolean anyArchonMoving() throws GameActionException {
+		boolean[] dead = getDeadArchons();
+		for (int i = maxArchonCount; --i >= 0; ) {
+			if (!dead[i] && isArchonPortable(i)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

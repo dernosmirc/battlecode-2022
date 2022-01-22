@@ -11,6 +11,7 @@ import gen6.common.CommsHelper;
 import gen6.common.MovementHelper;
 import gen6.common.util.Logger;
 import gen6.common.SymmetryType;
+import gen6.soldier.SoldierDensity;
 
 import static gen6.RobotPlayer.myTeam;
 import static gen6.RobotPlayer.*;
@@ -45,6 +46,9 @@ public strictfp class Soldier {
 	}
 
 	public static void run() throws GameActionException {
+		// update location each round
+		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
+
 		// Update the soldier count
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(7, rc.readSharedArray(7) + 1);
@@ -53,6 +57,7 @@ public strictfp class Soldier {
 		Logger logger = new Logger("Soldier", LogCondition.ExceedsBytecode);
 		sensedEnemyAttackRobot = false;
 		updateEnemyArchonLocations();
+		SoldierDensity.update();
 		AttackHelper.attack();
 
 		for (RobotInfo robot : rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
@@ -204,14 +209,15 @@ public strictfp class Soldier {
 
 	public static void init() throws GameActionException {
 		maxArchonCount = 0;
-		for (int i = 32; i < 36; ++i) {
-			int value = rc.readSharedArray(i);
+		for (int i = 0; i < 4; ++i) {
+			int value = rc.readSharedArray(i + 32);
 			if (getBits(value, 15, 15) == 1) {
 				++maxArchonCount;
+				value = rc.readSharedArray(i + 50);
 				MapLocation archonLocation = new MapLocation(getBits(value, 6, 11), getBits(value, 0, 5));
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
-					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
-					myArchonIndex = i - 32;
+					myArchonLocation = archonLocation;
+					myArchonIndex = i;
 				}
 			} else {
 				break;
