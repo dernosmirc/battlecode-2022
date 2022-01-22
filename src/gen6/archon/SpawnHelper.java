@@ -298,9 +298,9 @@ public strictfp class SpawnHelper {
 			if (minersBuilt < 3/centerFactor) return RobotType.MINER;
 			if (soldiersBuilt < 6*centerFactor) return RobotType.SOLDIER;
 		} else {
-			if (minersBuilt < 4) return RobotType.MINER;
-			if (soldiersBuilt < 6 ) return RobotType.SOLDIER;
-			if (minersBuilt < 6) return RobotType.MINER;
+			if (minersBuilt < 3) return RobotType.MINER;
+			if (soldiersBuilt < 6) return RobotType.SOLDIER;
+			if (minersBuilt < 5) return RobotType.MINER;
 			if (soldiersBuilt < 9) return RobotType.SOLDIER;
 		}
 
