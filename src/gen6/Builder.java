@@ -64,7 +64,8 @@ public strictfp class Builder {
 			if (
 					rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 2)
 			) {
-				if (rc.canBuildRobot(nextBuilding.type, buildDirection)) {
+				boolean highRubble = rc.senseRubble(nextBuilding.location) > 30;
+				if (rc.canBuildRobot(nextBuilding.type, buildDirection) && !highRubble) {
 					rc.buildRobot(nextBuilding.type, buildDirection);
 					switch (nextBuilding.type) {
 						case WATCHTOWER:
@@ -80,12 +81,15 @@ public strictfp class Builder {
 					RobotInfo lab = rc.senseRobotAtLocation(req);
 					Direction antiRight = getDirectionAlongEdge(true, 5),
 							antiLeft = getDirectionAlongEdge(false, 5);
-					if (lab != null && lab.mode == RobotMode.TURRET && antiRight != null && antiLeft != null) {
+					if (
+							(lab != null && lab.mode == RobotMode.TURRET || highRubble)
+									&& antiRight != null && antiLeft != null
+					) {
 						MapLocation left = req.add(antiLeft), right = req.add(antiRight);
 						for (int d = 1; d < 4; d++) {
 							if (rc.canSenseLocation(left)) {
 								lab = rc.senseRobotAtLocation(left);
-								if (lab == null || lab.mode != RobotMode.TURRET) {
+								if ((lab == null || lab.mode != RobotMode.TURRET) && rc.senseRubble(left) <= 30) {
 									nextBuilding = new ConstructionInfo(
 											RobotType.LABORATORY, left
 									);
@@ -94,7 +98,7 @@ public strictfp class Builder {
 							}
 							if (rc.canSenseLocation(right)) {
 								lab = rc.senseRobotAtLocation(right);
-								if (lab == null || lab.mode != RobotMode.TURRET) {
+								if ((lab == null || lab.mode != RobotMode.TURRET) && rc.senseRubble(right) <= 30) {
 									nextBuilding = new ConstructionInfo(
 											RobotType.LABORATORY, right
 									);
