@@ -19,7 +19,7 @@ public class SageMovementHelper {
 
     public static final int HP_THRESHOLD = 40;
     private static final int FULL_HEAL_THRESHOLD = 80;
-    private static final int TURNS_THRESHOLD = 25;
+    private static final int TURNS_THRESHOLD = 10;
 
     private static final int INNER_DEFENSE_RADIUS = 5;
     private static final int OUTER_DEFENSE_RADIUS = 20;
@@ -58,10 +58,20 @@ public class SageMovementHelper {
             MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
             int minDistance = rc.getMapWidth() * rc.getMapHeight();
             MapLocation archonLocation = null;
+            boolean foundTurret = false;
             for (int i = maxArchonCount; --i >= 0; ) {
                 if (archons[i] != null) {
                     int distance = getDistance(archons[i], rc.getLocation());
-                    if (distance < minDistance) {
+                    if (!CommsHelper.isArchonPortable(i)) {
+                        if (!foundTurret) {
+                            foundTurret = true;
+                            minDistance = distance;
+                            archonLocation = archons[i];
+                        } else if (distance < minDistance) {
+                            minDistance = distance;
+                            archonLocation = archons[i];
+                        }
+                    } else if (!foundTurret && distance < minDistance) {
                         minDistance = distance;
                         archonLocation = archons[i];
                     }
@@ -74,7 +84,7 @@ public class SageMovementHelper {
             }
 
             if (rc.getLocation().isWithinDistanceSquared(archonLocation, RobotType.SOLDIER.visionRadiusSquared)) {
-                if (SoldierMovementHelper.tryConcave()) {
+                if (tryConcave()) {
                     return;
                 }
             }
@@ -89,15 +99,15 @@ public class SageMovementHelper {
             return;
         }
 
-        if (SoldierMovementHelper.tryConcave()) {
-            return;
-        }
+        // if (SoldierMovementHelper.tryConcave()) {
+        //     return;
+        // }
 
-        RobotInfo[] robots = rc.senseNearbyRobots(RobotType.ARCHON.actionRadiusSquared, myTeam); // try vision radius?
+        RobotInfo[] robots = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam); // try vision radius?
         RobotInfo archon = null;
         for (int i = robots.length; --i >= 0; ) {
             RobotInfo robot = robots[i];
-            if (robot.type == RobotType.ARCHON) {
+            if (robot.type == RobotType.ARCHON && Robot.mode == RobotMode.TURRET) {
                 archon = robot;
                 break;
             }
