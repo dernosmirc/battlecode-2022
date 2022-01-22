@@ -80,7 +80,7 @@ public strictfp class Builder {
 					RobotInfo lab = rc.senseRobotAtLocation(req);
 					Direction antiRight = getDirectionAlongEdge(true, 5),
 							antiLeft = getDirectionAlongEdge(false, 5);
-					if (lab != null && lab.mode == RobotMode.TURRET) {
+					if (lab != null && lab.mode == RobotMode.TURRET && antiRight != null && antiLeft != null) {
 						MapLocation left = req.add(antiLeft), right = req.add(antiRight);
 						for (int d = 1; d < 4; d++) {
 							if (rc.canSenseLocation(left)) {

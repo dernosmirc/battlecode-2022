@@ -192,11 +192,13 @@ public strictfp class SpawnHelper {
 		int ideal = rc.getLocation().directionTo(center).ordinal();
 		for (int i = 0; i < 5; i++) {
 			int l = (ideal + i) % 8, r = (ideal - i + 8) % 8;
-			if (!builderSpawned[l] && !rc.isLocationOccupied(rc.getLocation().add(directions[l]))) {
+			MapLocation ml = rc.getLocation().add(directions[l]);
+			if (!builderSpawned[l] && rc.onTheMap(ml) && !rc.isLocationOccupied(ml)) {
 				builderSpawned[l] = true;
 				return directions[l];
 			}
-			if (!builderSpawned[r] && !rc.isLocationOccupied(rc.getLocation().add(directions[r]))) {
+			ml = rc.getLocation().add(directions[r]);
+			if (!builderSpawned[r] && rc.onTheMap(ml) && !rc.isLocationOccupied(ml)) {
 				builderSpawned[r] = true;
 				return directions[r];
 			}
