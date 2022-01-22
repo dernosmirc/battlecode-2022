@@ -16,7 +16,7 @@ public class SoldierDensity {
     private static final int GRID_DIM = 3;
     private static final int CLUSTER_RADIUS = 34;
 
-    private static final int SOLDIER_CLUSTER_THRESHOLD = 15;
+    private static final int SOLDIER_CLUSTER_THRESHOLD = 20;
 
     private static MapLocation getLocationFrom9Bits(int bits) {
         int grid_x = bits / 22;

@@ -6,6 +6,7 @@ import battlecode.common.MapLocation;
 import gen5.common.bellmanford.HeuristicsProvider;
 import gen5.common.bellmanford.heuristics.Heuristics34;
 import gen6.common.Functions;
+import gen6.common.MovementHelper;
 import gen6.common.util.Vector;
 import gen6.Archon;
 import gen6.RobotPlayer;
@@ -53,7 +54,7 @@ public class ArchonMover {
 
     public static boolean shouldRelocate(MapLocation relocate) throws GameActionException {
         if (!rc.canTransform()) return false;
-        if (relocate == null || rc.getLocation().isWithinDistanceSquared(relocate, 20)) return false;
+        if (relocate == null) return false;
         return CommsHelper.getFarthestArchon() == Archon.myIndex && !CommsHelper.anyArchonMoving();
     }
 
@@ -87,9 +88,13 @@ public class ArchonMover {
         }
         Direction anti = getAntiEdge(best);
         if (anti != null) {
-            best = Functions.translate(best, anti, 5);
+            best = Functions.translate(best, anti, 7-distanceFromEdge(best));
         }
         return best;
+    }
+
+    private static int distanceFromEdge(MapLocation ml) {
+        return Math.min(ml.x, ml.y);
     }
 
     private static final HeuristicsProvider heuristicsProvider = new Heuristics34();
@@ -98,6 +103,9 @@ public class ArchonMover {
         MapLocation rn = rc.getLocation();
         int rnX = rn.x, rnY = rn.y,
                 rnX_r = rnX - r, rnY_r = rnY - r;
+        if (direction == Direction.CENTER) {
+            direction = MovementHelper.getInstantaneousDirection();
+        }
         if (direction == Direction.CENTER) {
             direction = Functions.getRandomDirection();
         }
@@ -121,12 +129,14 @@ public class ArchonMover {
         spots.sort(Comparator.comparingInt(GridInfo::getCount));
         double bestAvg = Double.MAX_VALUE;
         MapLocation theSpot = null;
-        for (int i = Math.min(10, spots.length); --i >= 0; ) {
+        for (int i = spots.length; --i >= 0; ) {
             MapLocation ml = spots.get(i).location;
-            double avg = getWeightedAverageRubble(ml);
-            if (bestAvg > avg) {
-                bestAvg = avg;
-                theSpot = ml;
+            if (distanceFromEdge(ml) >= 5) {
+                double avg = getWeightedAverageRubble(ml);
+                if (bestAvg > avg) {
+                    bestAvg = avg;
+                    theSpot = ml;
+                }
             }
         }
         return theSpot;
