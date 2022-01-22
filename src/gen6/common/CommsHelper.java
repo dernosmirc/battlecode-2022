@@ -27,6 +27,13 @@ public strictfp class CommsHelper {
 		return setBits(val, 0, 5, loc.y);
 	}
 
+	public static MapLocation getArchonLocation(int archonIndex) throws GameActionException {
+		if (getDeadArchons()[archonIndex]) {
+			return null;
+		}
+		return getLocationFrom12Bits(rc.readSharedArray(50 + archonIndex));
+	}
+
 	public static MapLocation getEnemyArchonLocation() throws GameActionException {
 		MapLocation archonLocation = null;
 		MapLocation centre = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);

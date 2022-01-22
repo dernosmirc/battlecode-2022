@@ -114,6 +114,7 @@ public strictfp class Archon {
 					relocate = ArchonMover.getRelocateLocation();
 					if (relocate != null) {
 						rc.transform();
+						transforming = true;
 						CommsHelper.setArchonPortable(myIndex, true);
 						break;
 					}
@@ -137,15 +138,27 @@ public strictfp class Archon {
 
 	private static MapLocation relocate = null;
 	private static MapLocation goodSpot = null;
+	private static boolean transforming = false;
 	private static void move() throws GameActionException {
+		if (rc.isMovementReady()) {
+			transforming = false;
+		}
+		if (transforming) {
+			goodSpot = relocate = null;
+		}
 		MapLocation rn = rc.getLocation();
 		if (rn.equals(goodSpot)) {
 			if (rc.isTransformReady() && rc.canTransform()) {
 				rc.transform();
+				transforming = true;
 			}
-			relocate = null;
 			return;
 		}
+
+		if (!rc.isMovementReady()) {
+			return;
+		}
+
 		if (goodSpot != null) {
 			MovementHelper.moveBellmanFord(goodSpot);
 			return;
@@ -166,6 +179,7 @@ public strictfp class Archon {
 
 	private static void act() throws GameActionException {
 		if (!rc.isActionReady()) return;
+		transforming = false;
 		RobotType toSpawn = SpawnHelper.getNextDroid();
 		if (toSpawn != null) {
 			Direction direction = SpawnHelper.getOptimalDirection(directions[buildDirectionIndex], toSpawn);

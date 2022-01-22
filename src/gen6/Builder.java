@@ -151,6 +151,9 @@ public strictfp class Builder {
 	}
 
 	public static void run() throws GameActionException {
+		// update location each round
+		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
+
 		rc.setIndicatorString(myBuilderType.name());
 		Logger logger = new Logger("Builder", LogCondition.Never);
 		if (rc.getRoundNum() > 1150 && rc.getRoundNum() < 1425 && myBuilderType != BuilderType.FarmSeed) {

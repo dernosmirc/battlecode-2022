@@ -46,6 +46,9 @@ public strictfp class Soldier {
 	}
 
 	public static void run() throws GameActionException {
+		// update location each round
+		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
+
 		// Update the soldier count
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(7, rc.readSharedArray(7) + 1);

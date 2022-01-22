@@ -31,6 +31,9 @@ public strictfp class Miner {
 
 	private static int stillCount = 0;
 	public static void run() throws GameActionException {
+		// update location each round
+		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
+
 		// Update the miner count
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(8, rc.readSharedArray(8) + 1);
