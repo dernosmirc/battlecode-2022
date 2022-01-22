@@ -125,10 +125,11 @@ public strictfp class Miner {
 		myDirection = Functions.getRandomDirection();
 		maxArchonCount = 0;
 		MovementHelper.prepareBellmanFord(20);
-		for (int i = 32; i < 36; ++i) {
-			int value = rc.readSharedArray(i);
+		for (int i = 0; i < 4; ++i) {
+			int value = rc.readSharedArray(i + 32);
 			if (getBits(value, 15, 15) == 1) {
 				++maxArchonCount;
+				value = rc.readSharedArray(i + 50);
 				MapLocation archonLocation = new MapLocation(
 						getBits(value, 6, 11), getBits(value, 0, 5)
 				);
@@ -139,7 +140,7 @@ public strictfp class Miner {
 					} else {
 						myDirection = myArchonLocation.directionTo(rc.getLocation());
 					}
-					myArchonIndex = i - 32;
+					myArchonIndex = i;
 				}
 			} else {
 				break;

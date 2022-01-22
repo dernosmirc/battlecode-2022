@@ -9,9 +9,6 @@ import gen6.common.Functions;
 import gen6.common.MovementHelper;
 import gen6.soldier.SoldierDensity;
 
-
-import java.util.Map;
-
 import static gen6.RobotPlayer.*;
 import static gen6.common.Functions.getBits;
 import static gen6.common.Functions.setBits;
@@ -97,21 +94,10 @@ public strictfp class Archon {
 		rc.writeSharedArray(6, setBits(v1, 2 * myIndex + 6, 2 * myIndex + 7, cur));
 	}
 
-//	public static void updateArchonMovement(MapLocation m) throws GameActionException{
-//		for (int i = maxArchonCount; --i >= 0; ){
-//			if (CommsHelper.getLocationFrom12Bits(rc.readSharedArray(50 + i)).equals(m)){
-//				int value = 0;
-//				value = setBits(value, 6, 11, rc.getLocation().x);
-//				value = setBits(value, 0, 5, rc.getLocation().y);
-//				rc.writeSharedArray(i + 50, value);
-//				return;
-//			}
-//		}
-//
-//	}
-
 	public static void run() throws GameActionException {
-		if (rc.getRoundNum() % 10 == 0) SoldierDensity.reset();
+		if (rc.getRoundNum() % 10 == 0) {
+			SoldierDensity.reset();
+		}
 		updateSharedArray();
 
 		// DON'T SPAWN SOLDIER ON FIRST ROUND
@@ -136,20 +122,17 @@ public strictfp class Archon {
 				CommsHelper.setArchonPortable(myIndex, false);
 				break;
 			case PORTABLE:
-				MapLocation myPrevLoc = rc.getLocation();
 				move();
-				if (CommsHelper.getLocationFrom12Bits(rc.readSharedArray(50 + myIndex)).equals(myPrevLoc)){
-					int value = 0;
-					value = setBits(value, 6, 11, rc.getLocation().x);
-					value = setBits(value, 0, 5, rc.getLocation().y);
-					rc.writeSharedArray(myIndex + 50, value);
-				}
-				else{
-					System.err.println("ERROR UPDATING ARCHON LOCATION AFTER MOVEMENT");
-				}
+				updateLocation();
 				break;
 		}
+	}
 
+	private static void updateLocation() throws GameActionException {
+		int value = 0;
+		value = setBits(value, 6, 11, rc.getLocation().x);
+		value = setBits(value, 0, 5, rc.getLocation().y);
+		rc.writeSharedArray(myIndex + 50, value);
 	}
 
 	private static MapLocation relocate = null;
@@ -293,18 +276,19 @@ public strictfp class Archon {
 	public static void init() throws GameActionException {
 		MovementHelper.prepareBellmanFord(34);
 		maxArchonCount = rc.getArchonCount();
-		for (int i = 32; i < 32 + maxArchonCount; ++i) {
-			int value = rc.readSharedArray(i);
+		for (int i = 0; i < maxArchonCount; ++i) {
+			int value = rc.readSharedArray(i + 32);
 			if (getBits(value, 15, 15) == 0) {
 				value = setBits(value, 6, 11, rc.getLocation().x);
 				value = setBits(value, 0, 5, rc.getLocation().y);
-				myIndex = i - 32;
+				myIndex = i;
 				rc.writeSharedArray(50 + myIndex, value);
 				value = setBits(0, 15, 15, 1);
-				rc.writeSharedArray(i, value);
+				rc.writeSharedArray(32 + myIndex, value);
 				break;
 			}
 		}
+		updateLocation();
 
 		isPossibleEnemyArchonSymmetry = new boolean[3];
 		isPossibleEnemyArchonSymmetry[0] = isPossibleEnemyArchonSymmetry[1] = isPossibleEnemyArchonSymmetry[2] = true;
