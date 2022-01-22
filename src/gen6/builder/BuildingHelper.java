@@ -62,7 +62,11 @@ public class BuildingHelper {
         return null;
     }
 
-    public static boolean shouldMove(MapLocation archon, MapLocation construction) {
+    public static boolean shouldMove(MapLocation archon, MapLocation construction) throws GameActionException {
+        if (archon == null) {
+            Builder.myArchonIndex = CommsHelper.getCentralArchon();
+            archon = Builder.myArchonLocation = CommsHelper.getArchonLocation(Builder.myArchonIndex);
+        }
         if (Builder.myBuilderType == BuilderType.FarmSeed) return true;
         MapLocation myLocation = rc.getLocation();
         if (archon.isWithinDistanceSquared(myLocation, MIN_DISTANCE_FROM_ARCHON)) {

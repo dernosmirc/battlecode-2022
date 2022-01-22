@@ -30,19 +30,25 @@ public class ArchonMover {
         Direction[] dirs = RobotPlayer.directions;
         for (int i = dirs.length; --i >= 0; ) {
             MapLocation ml = center.add(dirs[i]);
+            int rubble;
             if (rc.canSenseLocation(ml)) {
-                int rubble = rc.senseRubble(ml);
-                if (rubble < centerRubble) {
-                    return Double.MAX_VALUE;
-                }
-                totalRuble += rubble;
-                totalLocations++;
+                rubble = rc.senseRubble(ml);
+            } else {
+                rubble = 500;
             }
+
+            if (rubble < centerRubble) {
+                return Double.MAX_VALUE;
+            }
+            totalRuble += rubble;
+            totalLocations++;
         }
         return totalRuble / (double) totalLocations;
     }
 
-    public static boolean shouldRelocate() throws GameActionException {
+    public static boolean shouldRelocate(MapLocation relocate) throws GameActionException {
+        if (!rc.canTransform()) return false;
+        if (relocate == null || rc.getLocation().isWithinDistanceSquared(relocate, 54)) return false;
         return CommsHelper.getFarthestArchon() == Archon.myIndex && !CommsHelper.anyArchonMoving();
     }
 
@@ -54,7 +60,7 @@ public class ArchonMover {
         for (int i = infos.length; --i >= 0;) {
             if (infos[i] != null) {
                 MapLocation ml = infos[i].location;
-                int dist = 0;
+                int dist = Math.min(ml.x*ml.x, ml.y*ml.y);
                 for (int j = mls.length; --j >= 0; ) {
                     if (j != Archon.myIndex && mls[j] != null) {
                         dist += ml.distanceSquaredTo(mls[j]);

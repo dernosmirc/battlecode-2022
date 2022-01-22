@@ -108,16 +108,19 @@ public strictfp class Archon {
 		checkIfDefenseNeeded();
 		updateArchonHp();
 
-		switch (rc.getMode()) {
+		if (rc.isMovementReady() || rc.isActionReady()) {
+			transforming = false;
+		}
+		if (transforming) {
+			goodSpot = relocate = null;
+		} else switch (rc.getMode()) {
 			case TURRET:
-				if (ArchonMover.shouldRelocate() && rc.canTransform()) {
-					relocate = ArchonMover.getRelocateLocation();
-					if (relocate != null) {
-						rc.transform();
-						transforming = true;
-						CommsHelper.setArchonPortable(myIndex, true);
-						break;
-					}
+				relocate = ArchonMover.getRelocateLocation();
+				if (ArchonMover.shouldRelocate(relocate)) {
+					rc.transform();
+					transforming = true;
+					CommsHelper.setArchonPortable(myIndex, true);
+					break;
 				}
 				act();
 				CommsHelper.setArchonPortable(myIndex, false);
@@ -140,12 +143,6 @@ public strictfp class Archon {
 	private static MapLocation goodSpot = null;
 	private static boolean transforming = false;
 	private static void move() throws GameActionException {
-		if (rc.isMovementReady()) {
-			transforming = false;
-		}
-		if (transforming) {
-			goodSpot = relocate = null;
-		}
 		MapLocation rn = rc.getLocation();
 		if (rn.equals(goodSpot)) {
 			if (rc.isTransformReady() && rc.canTransform()) {
@@ -165,6 +162,9 @@ public strictfp class Archon {
 		}
 		if (relocate == null) {
 			relocate = ArchonMover.getRelocateLocation();
+			if (relocate == null) {
+				relocate = rn;
+			}
 		}
 		if (rn.isWithinDistanceSquared(relocate, 25)) {
 			goodSpot = ArchonMover.getSpotToSettle(rn.directionTo(relocate));
@@ -179,7 +179,6 @@ public strictfp class Archon {
 
 	private static void act() throws GameActionException {
 		if (!rc.isActionReady()) return;
-		transforming = false;
 		RobotType toSpawn = SpawnHelper.getNextDroid();
 		if (toSpawn != null) {
 			Direction direction = SpawnHelper.getOptimalDirection(directions[buildDirectionIndex], toSpawn);
