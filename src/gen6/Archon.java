@@ -98,7 +98,6 @@ public strictfp class Archon {
 	}
 
 	public static void run() throws GameActionException {
-		Logger logger = new Logger("Archon", LogCondition.ExceedsRound);
 		if (rc.getRoundNum() % 10 == 0) {
 			SoldierDensity.reset();
 		}
@@ -117,9 +116,7 @@ public strictfp class Archon {
 		int roundNumber = rc.getRoundNum();
 
 		if (roundNumber % 2 == 1) {
-			logger.log("populating");
 			ArchonMover.rubbleGrid.populate();
-			logger.log("populated");
 		}
 
 		if (rc.isMovementReady() || rc.isActionReady()) {
@@ -129,9 +126,7 @@ public strictfp class Archon {
 			switch (rc.getMode()) {
 				case TURRET:
 					if (roundNumber % 2 == 1) {
-						logger.log("getting relocation");
 						relocate = ArchonMover.getRelocateLocation();
-						logger.log("got relocation");
 					} else {
 						relocate = null;
 					}
@@ -143,9 +138,7 @@ public strictfp class Archon {
 					} else {
 						relocate = null;
 						if (roundNumber % 2 == 0) {
-							logger.log("getting better spot");
 							goodSpot = ArchonMover.getBetterSpotToSettle();
-							logger.log("got better spot");
 						} else {
 							goodSpot = null;
 						}
@@ -167,7 +160,6 @@ public strictfp class Archon {
 					break;
 			}
 		}
-		logger.flush();
 	}
 
 	private static void updateLocation() throws GameActionException {

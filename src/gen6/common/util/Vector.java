@@ -15,12 +15,6 @@ public class Vector<T> implements Iterable<T> {
     public final int maxSize;
     public int length = 0;
 
-    private void log(String log) {
-        if (DEBUG) {
-            System.out.println(log);
-        }
-    }
-
     public Vector (int maxSize) {
         container = (T[]) new Object[maxSize];
         this.maxSize = maxSize;
@@ -37,11 +31,7 @@ public class Vector<T> implements Iterable<T> {
     }
 
     public void add(T val) {
-        if (length == maxSize) {
-            log("Insufficient size");
-        } else {
-            container[length++] = val;
-        }
+        container[length++] = val;
     }
 
     public T get(int i) {

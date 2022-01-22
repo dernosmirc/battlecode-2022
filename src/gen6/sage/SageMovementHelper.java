@@ -78,7 +78,6 @@ public class SageMovementHelper {
             }
 
             if (archonLocation == null) {
-                System.out.println("No friendly archons");
                 return;
             }
 
@@ -143,7 +142,6 @@ public class SageMovementHelper {
         }
 
         if (archonLocation == null) {
-            System.out.println("No friendly archons");
             return;
         }
 

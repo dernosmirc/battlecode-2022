@@ -63,7 +63,6 @@ public strictfp class SoldierMovementHelper {
             }
 
             if (archonLocation == null) {
-                System.out.println("No friendly archons");
                 return;
             }
 

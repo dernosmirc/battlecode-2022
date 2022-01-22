@@ -119,25 +119,21 @@ public strictfp class Builder {
 
 	private static boolean move() throws GameActionException {
 		if (!rc.isMovementReady()) {
-			rc.setIndicatorString("cant move");
 			return false;
 		}
 
 		if (myBuilderType == BuilderType.FarmSeed) {
 			MapLocation ml = FarmingHelper.getBaldSpot();
 			if (ml != null) {
-				rc.setIndicatorString("farm near");
 				return MovementHelper.tryMove(ml, false);
 			}
 		} else {
 			MapLocation repair = BuildingHelper.getRepairLocation();
 			if (repair != null) {
-				rc.setIndicatorString("repair");
 				return MovementHelper.tryMove(repair, false);
 			}
 		}
 
-		rc.setIndicatorString("defense");
 		SageMovementHelper.defenseRevolution(myArchonLocation);
 		return true;
 	}
@@ -149,7 +145,6 @@ public strictfp class Builder {
 		MapLocation my = rc.getLocation();
 		if (!my.isWithinDistanceSquared(constructedBuilding.location, myType.actionRadiusSquared)) {
 			if (rc.isMovementReady()) {
-				rc.setIndicatorString("construction");
 				MovementHelper.tryMove(my, false);
 			}
 		}
@@ -173,15 +168,11 @@ public strictfp class Builder {
 		// update location each round
 		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
 
-		rc.setIndicatorString(myBuilderType.name());
-		Logger logger = new Logger("Builder", LogCondition.Never);
 		if (rc.getRoundNum() > 1150 && rc.getRoundNum() < 1425 && myBuilderType != BuilderType.FarmSeed) {
 			mutateLab();
-			logger.log("mutated");
 		}
 		if (rc.isActionReady()) {
 			act();
-			logger.log("acted");
 		}
 		MapLocation construction = null;
 		if (nextBuilding != null && rc.getTeamLeadAmount(myTeam) > nextBuilding.type.buildCostLead) {
@@ -189,10 +180,7 @@ public strictfp class Builder {
 		}
 		if (rc.isMovementReady() && BuildingHelper.shouldMove(myArchonLocation, construction)) {
 			move();
-			logger.log("moved");
 		}
-
-		logger.flush();
 	}
 
 	public static void init() throws GameActionException {

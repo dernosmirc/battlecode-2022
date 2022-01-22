@@ -48,7 +48,6 @@ public strictfp class Soldier {
 		// update location each round
 		// myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
 
-		Logger logger = new Logger("Soldier", LogCondition.Never);
 		// Update the soldier count
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(7, rc.readSharedArray(7) + 1);
@@ -82,20 +81,14 @@ public strictfp class Soldier {
 
 		updateGuessedEnemyArchonSymmetries();
 
-		logger.log("Before movement");
 		SoldierMovementHelper.move();
-		logger.log("After movement");
 
 		// Update lead and gold sources nearby to help miners
 		GoldMiningHelper.updateGoldAmountInGridCell();
 
-		if (logger.getTotal() < 5500) {
-			logger.log("Updating Lead and gold");
+		if (Clock.getBytecodeNum() < 5500) {
 			LeadMiningHelper.updateLeadAmountInGridCell();
-			logger.log("Updated Lead and gold");
 		}
-
-		logger.flush();
 	}
 
 	private static void updateGuessedEnemyArchonSymmetries() throws GameActionException {

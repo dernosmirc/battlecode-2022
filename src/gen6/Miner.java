@@ -39,7 +39,6 @@ public strictfp class Miner {
 			rc.writeSharedArray(8, rc.readSharedArray(8) + 1);
 		}
 
-		Logger logger = new Logger("Miner", LogCondition.Never);
 		int round = rc.getRoundNum();
 
 		if (myDirection == null) {
@@ -54,7 +53,6 @@ public strictfp class Miner {
 		LeadMiningHelper.mineLead();
 
 		if (rc.isMovementReady()) {
-			logger.log("moving");
 			if (!move()) {
 				stillCount++;
 			}
@@ -63,41 +61,33 @@ public strictfp class Miner {
 					stillCount = 0;
 				}
 			}
-			logger.log("moved");
 		}
 
 		if (Clock.getBytecodesLeft() >= 3500 && round == rc.getRoundNum()) {
-			logger.log("Updating Lead");
 			LeadMiningHelper.updateLeadAmountInGridCell();
-			logger.log("Updated Lead");
 		}
-		logger.flush();
 	}
 
 	private static boolean clockwise = random.nextDouble() > 0.5;
 	private static boolean move() throws GameActionException {
 		Direction antiSoldier = getAntiSoldierDirection();
 		if (antiSoldier != null) {
-			rc.setIndicatorString("anti soldier");
 			return MovementHelper.moveBellmanFord(antiSoldier);
 		}
 
 		MapLocation gold = GoldMiningHelper.spotGold();
 		if (gold != null) {
-			rc.setIndicatorString("gold near");
 			return MovementHelper.moveBellmanFord(gold);
 		}
 		if (!isExplorer && isGoldMiner) {
 			gold = GoldMiningHelper.spotGoldOnGrid();
 			if (gold != null) {
-				rc.setIndicatorString("gold far");
 				return MovementHelper.moveBellmanFord(gold);
 			}
 		}
 
 		MapLocation lead = LeadMiningHelper.spotLead();
 		if (lead != null) {
-			rc.setIndicatorString("lead near");
 			return MovementHelper.moveBellmanFord(lead);
 		}
 		if (isExplorer) {
@@ -107,18 +97,15 @@ public strictfp class Miner {
 		} else {
 			lead = LeadMiningHelper.spotLeadOnGrid();
 			if (lead != null) {
-				rc.setIndicatorString("lead far");
 				return MovementHelper.moveBellmanFord(lead);
 			}
 		}
 
-		rc.setIndicatorString("chilling");
 		boolean gotFromAntiCorner = false;
 		Direction antiCorner = Functions.getDirectionAlongEdge(clockwise, 3);
 		if (antiCorner != null) {
 			myDirection = antiCorner;
 			gotFromAntiCorner = true;
-			rc.setIndicatorString("anti corner");
 		}
 		if (
 				!CommsHelper.isLocationInEnemyZone(rc.getLocation()) &&
@@ -128,7 +115,6 @@ public strictfp class Miner {
 				clockwise = !clockwise;
 			}
 			myDirection = myDirection.opposite();
-			rc.setIndicatorString("anti enemy area");
 		}
 		return MovementHelper.moveBellmanFord(myDirection);
 	}

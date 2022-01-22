@@ -135,7 +135,6 @@ public strictfp class AttackHelper {
 			}
 		}
 
-		rc.setIndicatorString("" + ourRobots + " " + enemyRobots);
 		if (ourRobots >= enemyRobots + 1) {
 			return null;
 		}
