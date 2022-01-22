@@ -16,6 +16,7 @@ import gen6.soldier.SoldierDensity;
 
 import java.util.Comparator;
 
+import static gen6.RobotPlayer.myType;
 import static gen6.RobotPlayer.rc;
 
 public class ArchonMover {
@@ -55,6 +56,9 @@ public class ArchonMover {
     public static boolean shouldRelocate(MapLocation relocate) throws GameActionException {
         if (!rc.canTransform()) return false;
         if (relocate == null) return false;
+        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length > 15) return false;
+        MapLocation rn = rc.getLocation();
+        if (rn.isWithinDistanceSquared(relocate, 13)) return false;
         return CommsHelper.getFarthestArchon() == Archon.myIndex && !CommsHelper.anyArchonMoving();
     }
 

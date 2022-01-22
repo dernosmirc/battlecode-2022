@@ -146,16 +146,14 @@ public strictfp class Archon {
 	private static MapLocation relocate = null;
 	private static MapLocation goodSpot = null;
 	private static boolean transforming = false;
+	private static int staleLocation = 0;
 	private static void move() throws GameActionException {
-		if (rc.getID() == 4) {
-			int a = 0;
-		}
-
 		MapLocation rn = rc.getLocation();
-		if (rn.equals(goodSpot)) {
+		if (rn.equals(goodSpot) || staleLocation > 20) {
 			if (rc.isTransformReady() && rc.canTransform()) {
 				rc.transform();
 				transforming = true;
+				staleLocation = 0;
 			}
 			return;
 		}
@@ -165,7 +163,9 @@ public strictfp class Archon {
 		}
 
 		if (goodSpot != null) {
-			MovementHelper.moveBellmanFord(goodSpot);
+			if (!MovementHelper.moveBellmanFord(goodSpot)) {
+				staleLocation++;
+			}
 			return;
 		}
 		if (relocate == null) {
@@ -174,14 +174,16 @@ public strictfp class Archon {
 				relocate = rn;
 			}
 		}
-		if (rn.isWithinDistanceSquared(relocate, 25)) {
+		if (rn.isWithinDistanceSquared(relocate, 13)) {
 			goodSpot = ArchonMover.getSpotToSettle(rn.directionTo(relocate));
 			if (goodSpot == null) {
 				relocate = ArchonMover.getRelocateLocation();
 			}
 		}
 		if (relocate != null) {
-			MovementHelper.moveBellmanFord(relocate);
+			if (!MovementHelper.moveBellmanFord(relocate)) {
+				staleLocation++;
+			}
 		}
 	}
 
