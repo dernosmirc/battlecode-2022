@@ -35,7 +35,7 @@ public strictfp class Sage {
 						getBits(value, 6, 11), getBits(value, 0, 5)
 				);
 				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
-					myArchonLocation = new MapLocation(archonLocation.x, archonLocation.y);
+					myArchonLocation = archonLocation;
 					myArchonIndex = i;
 				}
 			} else {
