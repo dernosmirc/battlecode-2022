@@ -262,7 +262,13 @@ public strictfp class SpawnHelper {
 		return null;
 	}
 
-	private static boolean isVeryCloseToCenter() {
+	private static boolean isVeryCloseToEnemy() {
+		RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
+		for (int i = ris.length; --i >= 0;) {
+			if (ris[i].type == RobotType.ARCHON) {
+				return true;
+			}
+		}
 		MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
 		return rc.getLocation().isWithinDistanceSquared(center, 34);
 	}
@@ -287,7 +293,7 @@ public strictfp class SpawnHelper {
 			return null;
 		}
 
-		if (isVeryCloseToCenter()) {
+		if (isVeryCloseToEnemy()) {
 			int centerFactor = maxArchonCount;
 			if (minersBuilt < 3/centerFactor) return RobotType.MINER;
 			if (soldiersBuilt < 6*centerFactor) return RobotType.SOLDIER;

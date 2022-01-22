@@ -103,6 +103,7 @@ public strictfp class Archon {
 			SoldierDensity.reset();
 		}
 		updateSharedArray();
+		ArchonMover.updateRubble();
 		TailHelper.updateTarget();
 
 		// DON'T SPAWN SOLDIER ON FIRST ROUND
@@ -120,7 +121,9 @@ public strictfp class Archon {
 			switch (rc.getMode()) {
 				case TURRET:
 					if ((rc.getRoundNum() % 2) == 1) {
+						logger.log("getting relocation");
 						relocate = ArchonMover.getRelocateLocation();
+						logger.log("got relocation");
 					} else {
 						relocate = null;
 					}
@@ -132,8 +135,13 @@ public strictfp class Archon {
 					} else {
 						relocate = null;
 						if ((rc.getRoundNum() % 2) == 0) {
+							logger.log("getting better spot");
 							goodSpot = ArchonMover.getBetterSpotToSettle();
+							logger.log("got better spot");
 						} else {
+							logger.log("populating");
+							ArchonMover.rubbleGrid.populate();
+							logger.log("populated");
 							goodSpot = null;
 						}
 						if (ArchonMover.shouldRelocateNearby(goodSpot)) {
@@ -341,7 +349,7 @@ public strictfp class Archon {
 				value = setBits(value, 0, 5, rc.getLocation().y);
 				myIndex = i;
 				rc.writeSharedArray(50 + myIndex, value);
-				value = setBits(0, 15, 15, 1);
+				value = setBits(value, 15, 15, 1);
 				rc.writeSharedArray(32 + myIndex, value);
 				break;
 			}
