@@ -37,6 +37,7 @@ public strictfp class SoldierMovementHelper {
                 }
             }
 
+            rc.setIndicatorString("" + defenseLocation.x + ", " + defenseLocation.y);
             circleAround(defenseLocation);
             return;
         }
@@ -80,7 +81,7 @@ public strictfp class SoldierMovementHelper {
             return;
         }
 
-        RobotInfo[] robots = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam); // try vision radius?
+        RobotInfo[] robots = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam); // try vision radius?
         RobotInfo archon = null;
         for (int i = robots.length; --i >= 0; ) {
             RobotInfo robot = robots[i];
@@ -123,7 +124,7 @@ public strictfp class SoldierMovementHelper {
         moveTowards(guessedEnemyArchonLocation);
     }
 
-    private static boolean tryConcave() throws GameActionException {
+    public static boolean tryConcave() throws GameActionException {
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
         RobotInfo nearestRobot = null;
         int minDistance = 100000;
@@ -260,15 +261,22 @@ public strictfp class SoldierMovementHelper {
         return best;
     }
 
-    private static void circleAround(MapLocation location) throws GameActionException {
+    public static void circleAround(MapLocation location) throws GameActionException {
         int distance = rc.getLocation().distanceSquaredTo(location);
         if (distance < INNER_DEFENSE_RADIUS) {
             Direction dir = rc.getLocation().directionTo(location).opposite();
-            MovementHelper.greedyTryMove(dir);
+            if (!MovementHelper.greedyTryMove(dir)) {
+                dir = dir.opposite();
+                if (!MovementHelper.tryMove(dir.rotateRight(), true)) {
+                    MovementHelper.tryMove(dir.rotateRight().rotateRight(), true);
+                }
+            }
         } else if (INNER_DEFENSE_RADIUS <= distance && distance <= OUTER_DEFENSE_RADIUS) {
             if (!DefenseHelper.tryMoveRight(location)) {
                 Direction dir = rc.getLocation().directionTo(location).rotateRight();
-                MovementHelper.tryMove(dir, true);
+                if (!MovementHelper.tryMove(dir, true)) {
+                    MovementHelper.tryMove(dir.rotateLeft(), true);
+                }
             }
         } else if (distance <= RobotType.ARCHON.visionRadiusSquared) {
             Direction dir = rc.getLocation().directionTo(location);

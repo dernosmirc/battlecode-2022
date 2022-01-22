@@ -16,7 +16,7 @@ public class SageAttackHelper {
     // SAGE
     private static final int[] priority = {6, -1, 5, -1, -1, 3, 4};
 
-    private static final int SAGE_ATTACK_THRESHOLD = 35;
+    private static final int SAGE_ATTACK_THRESHOLD = 1;
 
     public static void attack() throws GameActionException {
         if (!rc.isActionReady()) {
@@ -26,9 +26,16 @@ public class SageAttackHelper {
         int maxPriority = -1;
         int furyDamage = 0, chargeDamage = 0, attackDamage = 0;
         RobotInfo robotToAttack = null;
-        RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.actionRadiusSquared, enemyTeam);
+        RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.actionRadiusSquared);
         for (int i = enemyRobots.length; --i >= 0; ) {
             RobotInfo robot = enemyRobots[i];
+            if (robot.team == myTeam) {
+                if (robot.mode == RobotMode.TURRET) {
+                    furyDamage = -1000000000;
+                }
+                continue;
+            }
+
             if (robot.mode == RobotMode.TURRET) {
                 furyDamage += Math.min(robot.health, robot.type.getMaxHealth(robot.level)/10);
             } else if (robot.mode == RobotMode.DROID) {

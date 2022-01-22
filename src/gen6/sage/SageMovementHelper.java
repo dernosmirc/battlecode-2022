@@ -7,13 +7,17 @@ import gen6.common.MovementHelper;
 import gen6.common.util.Vector;
 import gen6.soldier.AttackHelper;
 import gen6.soldier.DefenseHelper;
+import gen6.soldier.SoldierMovementHelper;
+import gen6.soldier.TailHelper;
 
 import static gen6.RobotPlayer.*;
 import static gen6.Sage.*;
+import static gen6.common.Functions.getDistance;
 
 public class SageMovementHelper {
 
     public static final int HP_THRESHOLD = 40;
+    private static final int FULL_HEAL_THRESHOLD = 80;
     private static final int TURNS_THRESHOLD = 25;
 
     private static final int INNER_DEFENSE_RADIUS = 5;
@@ -37,53 +41,117 @@ public class SageMovementHelper {
     }
 
     public static void move() throws GameActionException {
+        TailHelper.updateTarget();
+
         MapLocation antiCharge = getAntiChargeLocation();
         if (antiCharge != null) {
             MovementHelper.moveBellmanFord(antiCharge);
             return;
         }
 
-        if (rc.getHealth() < HP_THRESHOLD || rc.getActionCooldownTurns()/10 >= TURNS_THRESHOLD) {
-            defenseRevolution(myArchonLocation);
-            return;
-        }
-
-        MapLocation attack = SageAttackHelper.getArchonAttackLocation();
-        if (attack != null) {
-            MovementHelper.moveBellmanFord(attack);
+        if (rc.getActionCooldownTurns()/10 >= TURNS_THRESHOLD) {
+            moveTowards(BuildingHelper.getOptimalLabLocation());
             return;
         }
 
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();
         if (defenseLocation != null) {
-            defenseRevolution(defenseLocation);
+            if (rc.getLocation().isWithinDistanceSquared(defenseLocation, RobotType.SOLDIER.visionRadiusSquared)) {
+                if (SoldierMovementHelper.tryConcave()) {
+                    return;
+                }
+            }
+
+            SoldierMovementHelper.circleAround(defenseLocation);
+            return;
+        }
+
+        if (rc.getHealth() < HP_THRESHOLD) {
+            MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
+            int minDistance = rc.getMapWidth() * rc.getMapHeight();
+            MapLocation archonLocation = null;
+            for (int i = maxArchonCount; --i >= 0; ) {
+                if (archons[i] != null) {
+                    int distance = getDistance(archons[i], rc.getLocation());
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        archonLocation = archons[i];
+                    }
+                }
+            }
+
+            if (archonLocation == null) {
+                System.out.println("No friendly archons");
+                return;
+            }
+
+            if (rc.getLocation().isWithinDistanceSquared(archonLocation, RobotType.SOLDIER.visionRadiusSquared)) {
+                if (SoldierMovementHelper.tryConcave()) {
+                    return;
+                }
+            }
+
+            SoldierMovementHelper.circleAround(archonLocation);
             return;
         }
 
         Direction dir = AttackHelper.shouldMoveBack();
         if (dir != null) {
-            Direction d = MovementHelper.whereGreedyTryMove(dir);
-            if (d != null) {
-                MapLocation tentativeMoveLocation = rc.getLocation().add(d);
-                MapLocation[] friendlyArchon = CommsHelper.getFriendlyArchonLocations();
-                for (int i = maxArchonCount; --i >= 0;){
-                    if (friendlyArchon[i] == null)  continue;
-                    if (tentativeMoveLocation.distanceSquaredTo(friendlyArchon[i]) <= 34){
-                        return;
-                    }
-                }
-                MovementHelper.tryMove(d, true);
+            MovementHelper.greedyTryMove(dir);
+            return;
+        }
+
+        if (SoldierMovementHelper.tryConcave()) {
+            return;
+        }
+
+        RobotInfo[] robots = rc.senseNearbyRobots(RobotType.ARCHON.actionRadiusSquared, myTeam); // try vision radius?
+        RobotInfo archon = null;
+        for (int i = robots.length; --i >= 0; ) {
+            RobotInfo robot = robots[i];
+            if (robot.type == RobotType.ARCHON) {
+                archon = robot;
+                break;
             }
+        }
+
+        if (archon != null && rc.getHealth() < FULL_HEAL_THRESHOLD) {
+            SoldierMovementHelper.circleAround(archon.location);
+            return;
+        }
+
+        if (TailHelper.foundTarget() && TailHelper.getTargetPriority() >= 5) {
+            MapLocation target = TailHelper.getTargetLocation();
+            moveTowards(target);
             return;
         }
 
         MapLocation enemyArchonLocation = CommsHelper.getEnemyArchonLocation();
         if (enemyArchonLocation != null) {
-            MovementHelper.moveBellmanFord(enemyArchonLocation);
+            moveTowards(enemyArchonLocation);
             return;
         }
 
-        defenseRevolution(myArchonLocation);
+        MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
+        int minDistance = rc.getMapWidth() * rc.getMapHeight();
+        MapLocation archonLocation = null;
+        for (int i = maxArchonCount; --i >= 0; ) {
+            if (archons[i] != null) {
+                int distance = getDistance(archons[i], rc.getLocation());
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    archonLocation = archons[i];
+                }
+            }
+        }
+
+        if (archonLocation == null) {
+            System.out.println("No friendly archons");
+            return;
+        }
+
+        SoldierMovementHelper.circleAround(archonLocation);
+        return;
     }
 
     private static Vector<Integer> chargeRounds;
@@ -98,14 +166,25 @@ public class SageMovementHelper {
     }
 
     private static MapLocation getAntiChargeLocation() throws GameActionException {
-        if (!chargeRounds.isEmpty()) {
+        while (!chargeRounds.isEmpty()) {
             int dif = chargeRounds.last() - rc.getRoundNum();
             if (dif <= 0) {
                 chargeRounds.popLast();
-            } if (dif < 75) {
+            } else if (dif < 75) {
                 return BuildingHelper.getOptimalLabLocation();
+            } else {
+                break;
             }
         }
+
         return null;
+    }
+
+    private static void moveTowards(MapLocation location) throws GameActionException {
+        if (MovementHelper.moveBellmanFord(location))
+            return;
+
+        Direction dir = rc.getLocation().directionTo(location);
+        MovementHelper.greedyTryMove(dir);
     }
 }
