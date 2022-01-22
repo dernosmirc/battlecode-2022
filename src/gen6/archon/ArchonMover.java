@@ -180,6 +180,22 @@ public class ArchonMover {
         return isEnemyAround() && rc.senseRubble(rc.getLocation()) <= RUBBLE_THRESHOLD_STOP;
     }
 
+    public static MapLocation getEmergencyStop() throws GameActionException {
+        MapLocation rn = rc.getLocation(), stop = null;
+        int leastRubble = 101;
+        for (int i = 9; --i >= 0;) {
+            MapLocation ne = rn.add(Direction.values()[i]);
+            if (rc.canSenseLocation(ne) && !rc.isLocationOccupied(ne)) {
+                int rubble = rc.senseRubble(ne);
+                if (leastRubble > rubble) {
+                    leastRubble = rubble;
+                    stop = ne;
+                }
+            }
+        }
+        return stop;
+    }
+
     public static MapLocation getBetterSpotToSettle() throws GameActionException {
         MapLocation rn = rc.getLocation();
         MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 13);

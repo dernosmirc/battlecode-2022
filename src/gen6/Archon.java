@@ -160,15 +160,23 @@ public strictfp class Archon {
 	private static MapLocation relocate = null;
 	private static MapLocation goodSpot = null;
 	private static boolean transforming = false;
+	private static boolean transformNextRound = false;
 	private static int staleLocation = 0;
 	private static void move() throws GameActionException {
 		MapLocation rn = rc.getLocation();
-		if (rn.equals(goodSpot) || staleLocation > 27 || ArchonMover.shouldStopMoving()) {
-			if (rc.isTransformReady() && rc.canTransform()) {
+		if (transformNextRound) {
+			if (rc.canTransform()) {
 				rc.transform();
 				transforming = true;
+				transformNextRound = false;
 				staleLocation = 0;
+				goodSpot = relocate = null;
 			}
+		}
+
+		if (rn.equals(goodSpot) || staleLocation > 27 || ArchonMover.shouldStopMoving() && rc.canTransform()) {
+			transformNextRound = true;
+			MovementHelper.tryMove(ArchonMover.getEmergencyStop(), true);
 			return;
 		}
 

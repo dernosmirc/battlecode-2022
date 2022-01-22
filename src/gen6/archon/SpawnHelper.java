@@ -315,15 +315,16 @@ public strictfp class SpawnHelper {
 			return RobotType.BUILDER;
 		}
 
-		int centerFactor = 1;
 		if (isVeryCloseToCenter()) {
-			centerFactor = maxArchonCount;
+			int centerFactor = maxArchonCount;
+			if (minersBuilt < 3/centerFactor) return RobotType.MINER;
+			if (soldiersBuilt < 6*centerFactor) return RobotType.SOLDIER;
+		} else {
+			if (minersBuilt < 3) return RobotType.MINER;
+			if (soldiersBuilt < 6 ) return RobotType.SOLDIER;
+			if (minersBuilt < 5) return RobotType.MINER;
+			if (soldiersBuilt < 9) return RobotType.SOLDIER;
 		}
-
-		if (minersBuilt < 3/centerFactor) return RobotType.MINER;
-		if (soldiersBuilt < 6*centerFactor) return RobotType.SOLDIER;
-		if (minersBuilt < 5) return RobotType.MINER;
-		if (soldiersBuilt < 9) return RobotType.SOLDIER;
 
 		if (!isBuilderAround() && !isEnemyAround() && repairersBuilt < 3) {
 			CommsHelper.setBuilderType(BuilderType.Repairer, Archon.myIndex);

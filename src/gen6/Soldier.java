@@ -54,7 +54,7 @@ public strictfp class Soldier {
 			rc.writeSharedArray(7, rc.readSharedArray(7) + 1);
 		}
 
-		Logger logger = new Logger("Soldier", LogCondition.ExceedsBytecode);
+		Logger logger = new Logger("Soldier", LogCondition.Never);
 		sensedEnemyAttackRobot = false;
 		updateEnemyArchonLocations();
 		SoldierDensity.update();
