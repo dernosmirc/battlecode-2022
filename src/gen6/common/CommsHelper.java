@@ -75,7 +75,7 @@ public strictfp class CommsHelper {
 		MapLocation[] archons = new MapLocation[maxArchonCount];
 		for (int i = 0; i < maxArchonCount; ++i) {
 			if (!isDead[i]) {
-				int value = rc.readSharedArray(32 + i);
+				int value = rc.readSharedArray(50 + i);
 				archons[i] = getLocationFrom12Bits(value);
 			}
 		}
