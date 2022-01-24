@@ -295,12 +295,10 @@ public strictfp class SpawnHelper {
 		if (isVeryCloseToEnemy()) {
 			int centerFactor = maxArchonCount;
 			if (minersBuilt < 3/centerFactor) return RobotType.MINER;
-			if (soldiersBuilt < 6*centerFactor) return RobotType.SOLDIER;
+			if (soldiersBuilt < 5*centerFactor) return RobotType.SOLDIER;
 		} else {
-			if (minersBuilt < 4) return RobotType.MINER;
-			if (soldiersBuilt < 6) return RobotType.SOLDIER;
-			if (minersBuilt < 6) return RobotType.MINER;
-			if (soldiersBuilt < 9) return RobotType.SOLDIER;
+			if (minersBuilt < 3) return RobotType.MINER;
+			if (soldiersBuilt < 5) return RobotType.SOLDIER;
 		}
 
 		if (!isBuilderAround() && !isEnemyAround() && repairersBuilt < 3) {
