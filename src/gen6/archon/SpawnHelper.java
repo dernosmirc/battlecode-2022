@@ -114,7 +114,7 @@ public strictfp class SpawnHelper {
 		updateDeadArchons();
 		for (int i = 0; i < maxArchonCount; ++i) {
 			if (Archon.myIndex != i && !archonDead[i] && !CommsHelper.isArchonPortable(i)) {
-				droidsBuilt = getBits(rc.readSharedArray(10 + i), 0, 11);
+				droidsBuilt = Math.max(droidsBuilt, getBits(rc.readSharedArray(10 + i), 0, 11));
 			}
 		}
 	}

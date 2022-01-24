@@ -195,7 +195,7 @@ public strictfp class CommsHelper {
 		int minDistance = rc.getMapWidth() * rc.getMapHeight();
 		int archonIndex = 0;
 		for (int i = maxArchonCount; --i >= 0; ) {
-			if (archons[i] != null) {
+			if (archons[i] != null && !isArchonPortable(i)) {
 				int distance = getDistance(archons[i], centre);
 				if (distance < minDistance) {
 					minDistance = distance;
