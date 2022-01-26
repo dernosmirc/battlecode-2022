@@ -213,7 +213,7 @@ public strictfp class CommsHelper {
 		int maxDistance = 0;
 		int archonIndex = 0;
 		for (int i = maxArchonCount; --i >= 0; ) {
-			if (archons[i] != null) {
+			if (archons[i] != null && !isArchonPortable(i)) {
 				int distance = getDistance(archons[i], centre);
 				if (maxDistance < distance) {
 					maxDistance = distance;
