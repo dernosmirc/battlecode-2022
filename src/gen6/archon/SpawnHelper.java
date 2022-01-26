@@ -64,10 +64,10 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getSoldierWeight() throws GameActionException {
-		if (!shouldBuildMiner()) {
-			return 1;
-		}
-		return 0;
+		// if (!shouldBuildMiner()) {
+		// 	return 1;
+		// }
+		return 0.05;
 	}
 
 	private static double getMinerWeight() throws GameActionException {
