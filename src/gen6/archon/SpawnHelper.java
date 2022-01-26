@@ -16,7 +16,7 @@ import static gen6.common.Functions.sigmoid;
 public strictfp class SpawnHelper {
 	private static final int ARCHON_MUTATE_WINDOW = 50;
 	private static final int LAB_WINDOW = 25;
-	private static final int SOLDIER_SAGE_RATIO = 4;
+	private static final int SOLDIER_SAGE_RATIO = 3;
 
 	private static final Random random = new Random(rc.getID());
 
