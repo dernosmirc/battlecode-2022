@@ -11,7 +11,7 @@ import static gen6.RobotPlayer.rc;
 public class FarmingHelper {
 
     private static final int FARM_RADIUS_LOWER = 2;
-    private static final int FARM_RADIUS_UPPER = 20;
+    private static final int FARM_RADIUS_UPPER = 34;
 
     public static MapLocation getFarmCenter() {
         return Builder.myArchonLocation;
