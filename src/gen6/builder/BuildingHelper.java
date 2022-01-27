@@ -55,7 +55,7 @@ public class BuildingHelper {
             }
         }
         for (RobotInfo ri: infos) {
-            if (ri.health < ri.type.getMaxHealth(ri.level)) {
+            if (ri.mode != RobotMode.DROID && ri.health < ri.type.getMaxHealth(ri.level)) {
                 return ri.location;
             }
         }
