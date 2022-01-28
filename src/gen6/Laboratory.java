@@ -11,7 +11,7 @@ public strictfp class Laboratory {
 	private static final int RATE_THRESHOLD = 10;
 
 	private static double getLeadThreshold() throws GameActionException {
-		return SpawnHelper.getLeadThreshold() + 2;
+		return 1;
 	}
 
 	public static void run() throws GameActionException {

@@ -119,6 +119,11 @@ public strictfp class Archon {
 			ArchonMover.rubbleGrid.populate();
 		}
 
+		if (roundNumber == 1) {
+			act();
+			return;
+		}
+
 		if (rc.isMovementReady() || rc.isActionReady()) {
 			transforming = false;
 		}
@@ -224,7 +229,12 @@ public strictfp class Archon {
 
 	private static void act() throws GameActionException {
 		if (!rc.isActionReady()) return;
-		RobotType toSpawn = SpawnHelper.getNextDroid();
+		RobotType toSpawn;
+		if (rc.getRoundNum() == 1) {
+			toSpawn = RobotType.MINER;
+		} else {
+			toSpawn = SpawnHelper.getNextDroid();
+		}
 		if (toSpawn != null) {
 			Direction direction = SpawnHelper.getOptimalDirection(directions[buildDirectionIndex], toSpawn);
 			if (direction != null && rc.canBuildRobot(toSpawn, direction)) {
