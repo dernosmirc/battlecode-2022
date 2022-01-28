@@ -36,7 +36,7 @@ public class SageAttackHelper {
                 continue;
             }
 
-            if (robot.mode == RobotMode.TURRET) {
+            if (robot.mode != RobotMode.DROID) {
                 furyDamage += Math.min(robot.health, robot.type.getMaxHealth(robot.level)/10);
             } else if (robot.mode == RobotMode.DROID && robot.type.canAttack()) {
                 chargeDamage += Math.min(robot.health, (robot.type.getMaxHealth(robot.level) * 22)/100);
