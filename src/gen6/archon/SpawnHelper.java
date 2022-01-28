@@ -103,7 +103,7 @@ public strictfp class SpawnHelper {
 	}
 
 	private static double getSageGoldThreshold() throws GameActionException {
-		if (CommsHelper.getCentralArchon() != Archon.myIndex) return 100;
+		if (CommsHelper.getCentralArchon() != Archon.myIndex) return 40;
 		return 20;
 	}
 
@@ -127,6 +127,12 @@ public strictfp class SpawnHelper {
 				break;
 			case BUILDER:
 				buildersBuilt++;
+				if (!CommsHelper.builderBuilt()) {
+					CommsHelper.setBuilderBuilt();
+					CommsHelper.setEarlyBuilder();
+				} else {
+					CommsHelper.unsetEarlyBuilder();
+				}
 				break;
 			case SAGE:
 				sagesBuilt++;
@@ -303,9 +309,17 @@ public strictfp class SpawnHelper {
 	public static int mapSizeType = 0;
 
 	public static RobotType getNextDroid() throws GameActionException {
+		if (getSageGoldThreshold() <= rc.getTeamGoldAmount(myTeam)) {
+			return RobotType.SAGE;
+		}
+
 		double threshold = getLeadThreshold();
-		if (rc.getTeamLeadAmount(myTeam) < threshold * getArchonDroidPriority()) {
+		if (rc.getRoundNum() > 1 && rc.getTeamLeadAmount(myTeam) < threshold * getArchonDroidPriority()) {
 			return null;
+		}
+
+		if (minersBuilt >= 1 && CommsHelper.getFarthestArchon() == Archon.myIndex && !CommsHelper.builderBuilt()) {
+			return RobotType.BUILDER;
 		}
 
 		if (isVeryCloseToEnemy()) {
@@ -314,7 +328,10 @@ public strictfp class SpawnHelper {
 			if (soldiersBuilt < 6*centerFactor) return RobotType.SOLDIER;
 		} else {
 			if (minersBuilt < 3) return RobotType.MINER;
-			if (soldiersBuilt < 6) return RobotType.SOLDIER;
+			if (soldiersBuilt < 2) return RobotType.SOLDIER;
+			if (CommsHelper.getNumberOfLabs() == 0
+				&& rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead + 50) return null;
+			if (soldiersBuilt < 4) return RobotType.SOLDIER;
 		}
 
 		if (CommsHelper.getFarthestArchon() == Archon.myIndex && isLabWindow() && labBuildersBuilt < 1) {
@@ -323,9 +340,9 @@ public strictfp class SpawnHelper {
 			return RobotType.BUILDER;
 		}
 
-		if (getSageGoldThreshold() <= rc.getTeamGoldAmount(myTeam)) {
-			return RobotType.SAGE;
-		}
+		// if (getSageGoldThreshold() <= rc.getTeamGoldAmount(myTeam)) {
+		// 	return RobotType.SAGE;
+		// }
 
 		if (isLabWindow() && labBuildersBuilt < 3) {
 			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
@@ -353,7 +370,11 @@ public strictfp class SpawnHelper {
 		min /= total;
 		bui /= total;
 		if (rand < sol) {
-			return RobotType.SOLDIER;
+			if (rand < 0.05 || rc.getTeamLeadAmount(myTeam) >= 300 || CommsHelper.getNumberOfLabs() == 0) {
+				return RobotType.SOLDIER;
+			} else {
+				return null;
+			}
 		}
 		if (rand < sol + min) {
 			return RobotType.MINER;

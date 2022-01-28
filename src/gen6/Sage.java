@@ -3,6 +3,7 @@ package gen6;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import gen6.common.MovementHelper;
+import gen6.miner.GoldMiningHelper;
 import gen6.sage.SageAttackHelper;
 import gen6.sage.SageMovementHelper;
 import gen6.soldier.SoldierDensity;
@@ -24,6 +25,7 @@ public strictfp class Sage {
 		SoldierDensity.update();
 		SageAttackHelper.attack();
 		SageMovementHelper.move();
+		GoldMiningHelper.updateGoldAmountInGridCell();
 	}
 
 	public static void init() throws GameActionException {

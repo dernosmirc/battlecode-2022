@@ -14,7 +14,7 @@ public class SageAttackHelper {
     // BUILDER
     // SOLDIER
     // SAGE
-    private static final int[] priority = {6, -1, 5, -1, -1, 3, 4};
+    private static final int[] priority = {6, 0, 5, 2, 1, 3, 4};
 
     private static final int SAGE_ATTACK_THRESHOLD = 1;
 

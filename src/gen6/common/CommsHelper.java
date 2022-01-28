@@ -347,4 +347,36 @@ public strictfp class CommsHelper {
 		}
 		return false;
 	}
+
+	public static boolean builderBuilt() throws GameActionException {
+		return getBits(rc.readSharedArray(63), 0, 0) == 1;
+	}
+
+	public static void setBuilderBuilt() throws GameActionException {
+		int value = rc.readSharedArray(63);
+		if (getBits(value, 0, 0) == 0) {
+			value = setBits(value, 0, 0, 1);
+			rc.writeSharedArray(63, value);
+		}
+	}
+
+	public static boolean isEarlyBuilder() throws GameActionException {
+		return getBits(rc.readSharedArray(63), 1, 1) == 1;
+	}
+
+	public static void setEarlyBuilder() throws GameActionException {
+		int value = rc.readSharedArray(63);
+		if (getBits(value, 1, 1) == 0) {
+			value = setBits(value, 1, 1, 1);
+			rc.writeSharedArray(63, value);
+		}
+	}
+
+	public static void unsetEarlyBuilder() throws GameActionException {
+		int value = rc.readSharedArray(63);
+		if (getBits(value, 1, 1) == 1) {
+			value = setBits(value, 1, 1, 0);
+			rc.writeSharedArray(63, value);
+		}
+	}
 }

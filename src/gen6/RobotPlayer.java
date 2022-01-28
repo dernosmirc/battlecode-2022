@@ -70,33 +70,40 @@ public strictfp class RobotPlayer {
 		}
 
 		while (true) {
-			switch (myType) {
-				case LABORATORY:
-					Laboratory.run();
-					break;
-				case MINER:
-					Miner.run();
-					break;
-				case BUILDER:
-					Builder.run();
-					break;
-				case SAGE:
-					Sage.run();
-					break;
-				case SOLDIER:
-					Soldier.run();
-					break;
-				case WATCHTOWER:
-					Watchtower.run();
-					break;
-				case ARCHON:
-					Archon.run();
-					break;
+			try {
+				switch (myType) {
+					case LABORATORY:
+						Laboratory.run();
+						break;
+					case MINER:
+						Miner.run();
+						break;
+					case BUILDER:
+						Builder.run();
+						break;
+					case SAGE:
+						Sage.run();
+						break;
+					case SOLDIER:
+						Soldier.run();
+						break;
+					case WATCHTOWER:
+						Watchtower.run();
+						break;
+					case ARCHON:
+						Archon.run();
+						break;
+				}
+			} catch (GameActionException e) {
+				System.out.println(myType + " exception");
+				e.printStackTrace();
+			} catch (Exception e) {
+				System.out.println(myType + " exception");
+                e.printStackTrace();
+			} finally {
+				updateIncome();
+				Clock.yield();
 			}
-
-			updateIncome();
-
-			Clock.yield();
 		}
 	}
 }

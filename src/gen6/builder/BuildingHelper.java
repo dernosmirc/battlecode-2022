@@ -155,4 +155,28 @@ public class BuildingHelper {
         }
         return null;
     }
+
+    public static MapLocation getNearestCorner(int archonIndex) throws GameActionException {
+        MapLocation archonLocation = CommsHelper.getLocationFrom12Bits(rc.readSharedArray(32 + archonIndex));
+        int w = rc.getMapWidth() - 1;
+        int h = rc.getMapHeight() - 1;
+        MapLocation[] possible = {
+            new MapLocation(0, 0),
+            new MapLocation(0, h),
+            new MapLocation(w, 0),
+            new MapLocation(w, h),
+        };
+
+        int minDistance = (w + 1) * (h + 1);
+        MapLocation best = possible[0];
+        for (int i = possible.length; --i >= 0; ) {
+            int distance = Functions.getDistance(archonLocation, possible[i]);
+            if (distance < minDistance) {
+                minDistance = distance;
+                best = possible[i];
+            }
+        }
+
+        return best;
+    }
 }

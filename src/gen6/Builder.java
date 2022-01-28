@@ -34,9 +34,13 @@ public strictfp class Builder {
 	public static BuilderType myBuilderType;
 	private static MapLocation farmCenter = null;
 
+	private static boolean amEarlyBuilder = false;
+	private static MapLocation labLocation = null;
+
 	private static void act() throws GameActionException {
 		MapLocation rn = rc.getLocation();
-		if (myBuilderType == BuilderType.FarmSeed && FarmingHelper.isLocationInFarm(rn) && rc.senseLead(rn) == 0) {
+		if (!amEarlyBuilder && myBuilderType == BuilderType.FarmSeed
+			&& FarmingHelper.isLocationInFarm(rn) && rc.senseLead(rn) == 0) {
 			rc.disintegrate();
 			return;
 		}
@@ -56,6 +60,43 @@ public strictfp class Builder {
 		MapLocation repair = BuildingHelper.getRepairLocation();
 		if (repair != null && rc.canRepair(repair)) {
 			rc.repair(repair);
+			return;
+		}
+
+		if (amEarlyBuilder) {
+			if (labLocation != null) {
+				RobotInfo lab = rc.senseRobotAtLocation(labLocation);
+				if (lab.health == lab.type.getMaxHealth(lab.level)) {
+					amEarlyBuilder = false;
+					myBuilderType = BuilderType.LabBuilder;
+					nextBuilding = new ConstructionInfo(RobotType.LABORATORY, BuildingHelper.getOptimalLabLocation());
+				}
+				return;
+			}
+
+			if (rc.getTeamLeadAmount(myTeam) >= RobotType.LABORATORY.buildCostLead) {
+				int minRubble = 1000;
+				Direction optimalDirection = null;
+				for (int i = directions.length; --i >= 0; ) {
+					Direction dir = directions[i];
+					if (rc.canBuildRobot(RobotType.LABORATORY, dir)) {
+						int rubble = rc.senseRubble(rc.getLocation().add(dir));
+						if (rubble < minRubble) {
+							minRubble = rubble;
+							optimalDirection = dir;
+						}
+					}
+				}
+
+				if (optimalDirection != null && rc.canBuildRobot(RobotType.LABORATORY, optimalDirection)) {
+					rc.buildRobot(RobotType.LABORATORY, optimalDirection);
+					labLocation = rc.getLocation().add(optimalDirection);
+					CommsHelper.updateLabBuilt(myArchonIndex);
+				}
+			} else if (rc.isMovementReady()) {
+				MovementHelper.moveBellmanFord(BuildingHelper.getNearestCorner(myArchonIndex));
+			}
+
 			return;
 		}
 
@@ -174,8 +215,16 @@ public strictfp class Builder {
 		if (rc.isActionReady()) {
 			act();
 		}
+
+		if (amEarlyBuilder) {
+			if (labLocation == null && rc.isMovementReady()) {
+				MovementHelper.moveBellmanFord(BuildingHelper.getNearestCorner(myArchonIndex));
+			}
+			return;
+		}
+
 		MapLocation construction = null;
-		if (nextBuilding != null && rc.getTeamLeadAmount(myTeam) > nextBuilding.type.buildCostLead) {
+		if (nextBuilding != null && rc.getTeamLeadAmount(myTeam) >= nextBuilding.type.buildCostLead) {
 			construction = nextBuilding.location;
 		}
 		if (rc.isMovementReady() && BuildingHelper.shouldMove(myArchonLocation, construction)) {
@@ -185,6 +234,7 @@ public strictfp class Builder {
 
 	public static void init() throws GameActionException {
 		maxArchonCount = 0;
+		amEarlyBuilder = CommsHelper.isEarlyBuilder();
 		MovementHelper.prepareBellmanFord(20);
 		for (int i = 0; i < 4; ++i) {
 			int value = rc.readSharedArray(i + 32);
