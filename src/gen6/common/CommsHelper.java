@@ -17,6 +17,8 @@ public strictfp class CommsHelper {
 	private static int SOLDIER_COUNT = 0;
 	private static int MINER_COUNT = 0;
 	private static int SAGE_COUNT = 0;
+	private static int BUILDER_COUNT = 0;
+	private static int LAB_COUNT = 0;
 	public static MapLocation getLocationFrom12Bits(int bits) {
 		return new MapLocation(getBits(bits, 6, 11), getBits(bits, 0, 5));
 	}
@@ -324,6 +326,28 @@ public strictfp class CommsHelper {
 		else{
 			SAGE_COUNT = rc.readSharedArray(9);
 			return SAGE_COUNT;
+		}
+	}
+
+	public static int getAliveBuilderCount() throws GameActionException{
+		int roundNumber = rc.getRoundNum();
+		if (roundNumber%2 == 1){
+			return BUILDER_COUNT;
+		}
+		else{
+			BUILDER_COUNT = rc.readSharedArray(25);
+			return BUILDER_COUNT;
+		}
+	}
+
+	public static int getAliveLabCount() throws GameActionException{
+		int roundNumber = rc.getRoundNum();
+		if (roundNumber%2 == 1){
+			return LAB_COUNT;
+		}
+		else{
+			LAB_COUNT = rc.readSharedArray(26);
+			return LAB_COUNT;
 		}
 	}
 

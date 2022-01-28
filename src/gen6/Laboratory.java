@@ -15,6 +15,10 @@ public strictfp class Laboratory {
 	}
 
 	public static void run() throws GameActionException {
+		// Update the lab count
+		if (rc.getRoundNum()%2 == 1){
+			rc.writeSharedArray(26, rc.readSharedArray(26) + 1);
+		}
 		if (rc.isActionReady()) {
 			if (
 					rc.getTeamLeadAmount(myTeam) >= getLeadThreshold() &&

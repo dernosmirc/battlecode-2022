@@ -206,6 +206,10 @@ public strictfp class Builder {
 	}
 
 	public static void run() throws GameActionException {
+		// Update the builder count
+		if (rc.getRoundNum()%2 == 1){
+			rc.writeSharedArray(25, rc.readSharedArray(25) + 1);
+		}
 		// update location each round
 		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
 

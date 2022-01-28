@@ -78,9 +78,16 @@ public strictfp class Archon {
 	public static void updateSharedArray() throws GameActionException{
 		// Set count 0 before each round start
 		if (rc.getRoundNum()%2 == 1){
+			// Soldier
 			rc.writeSharedArray(7, 0);
+			// Miner
 			rc.writeSharedArray(8, 0);
+			// Sage
 			rc.writeSharedArray(9, 0);
+			// Builder
+			rc.writeSharedArray(25, 0);
+			// Lab
+			rc.writeSharedArray(26, 0);
 		}
 		int v = rc.readSharedArray(32 + myIndex);
 		if (getBits(v, 13, 13) == 1){
