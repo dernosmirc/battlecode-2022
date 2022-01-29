@@ -14,14 +14,13 @@ import java.util.Comparator;
 
 import static gen6.RobotPlayer.*;
 import static gen6.common.Functions.directionTo;
-import static gen6.common.Functions.getAntiEdgeDirection;
 
 public class ArchonMover {
 
     public static final int RUBBLE_THRESHOLD = 16;
     public static final int RUBBLE_THRESHOLD_STOP = 30;
     public static final int MIN_DISTANCE_BETWEEN_ARCHONS = 13;
-    public static final int TOO_CLOSE_RANGE = 13;
+    public static final int TOO_CLOSE_RANGE = 25;
 
     public static RubbleGrid rubbleGrid = new RubbleGrid();
 

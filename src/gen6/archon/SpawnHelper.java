@@ -151,6 +151,7 @@ public strictfp class SpawnHelper {
 				droidsBuilt = Math.max(droidsBuilt, getBits(rc.readSharedArray(10 + i), 0, 11));
 			}
 		}
+		droidsBuilt--;
 	}
 
 	private static boolean[] archonDead = new boolean[4];
