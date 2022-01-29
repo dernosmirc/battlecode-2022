@@ -179,4 +179,46 @@ public class BuildingHelper {
 
         return best;
     }
+
+    public static MapLocation getOptimalEarlyLabLocation() throws GameActionException {
+        MapLocation[] locations = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), myType.visionRadiusSquared);
+        int minRubble = rc.senseRubble(rc.getLocation());
+        MapLocation optimalLocation = rc.getLocation();
+        int lowestDistanceFromEdge = getDistanceFromEdge(rc.getLocation());
+        for (int i = locations.length; --i >= 0; ) {
+            MapLocation location = locations[i];
+            int rubble = rc.senseRubble(location);
+            if (rubble <= minRubble) {
+                if (rc.canSenseRobotAtLocation(location)) {
+                    RobotInfo robot = rc.senseRobotAtLocation(location);
+                    if (robot.mode == RobotMode.TURRET || robot.mode == RobotMode.PROTOTYPE) {
+                        continue;
+                    }
+                }
+
+                if (rubble < minRubble) {
+                    minRubble = rubble;
+                    optimalLocation = location;
+                } else if (rubble == minRubble) {
+                    int distanceFromEdge = getDistanceFromEdge(location);
+                    if (distanceFromEdge < lowestDistanceFromEdge) {
+                        minRubble = rubble;
+                        optimalLocation = location;
+                        lowestDistanceFromEdge = distanceFromEdge;
+                    }
+                }
+            }
+        }
+
+        return optimalLocation;
+    }
+
+    private static int getDistanceFromEdge(MapLocation location) throws GameActionException {
+        int width = rc.getMapWidth();
+        int height = rc.getMapHeight();
+        int distance = Math.min(location.x, width - 1 - location.x);
+        distance = Math.min(distance, location.y);
+        distance = Math.min(distance, height - 1 - location.y);
+        return distance;
+    }
 }

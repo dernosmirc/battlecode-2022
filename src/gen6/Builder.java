@@ -26,6 +26,8 @@ public strictfp class Builder {
 		}
 	}
 
+	private static final int LAB_RUBBLE_THRESHOLD = 20;
+
 	public static MapLocation myArchonLocation;
 	public static Direction myDirection;
 	public static int myArchonIndex;
@@ -64,14 +66,16 @@ public strictfp class Builder {
 		}
 
 		if (amEarlyBuilder) {
-			if (labLocation != null) {
+			if (rc.getLocation().isAdjacentTo(labLocation)) {
 				RobotInfo lab = rc.senseRobotAtLocation(labLocation);
-				if (lab.health == lab.type.getMaxHealth(lab.level)) {
+				if (lab != null && lab.type == RobotType.LABORATORY && lab.health == lab.type.getMaxHealth(lab.level)) {
 					amEarlyBuilder = false;
 					myBuilderType = BuilderType.LabBuilder;
 					nextBuilding = new ConstructionInfo(RobotType.LABORATORY, BuildingHelper.getOptimalLabLocation());
 				}
-				return;
+				if (lab != null && lab.type == RobotType.LABORATORY) {
+					return;
+				}
 			}
 
 			if (rc.getTeamLeadAmount(myTeam) >= RobotType.LABORATORY.buildCostLead) {
@@ -93,8 +97,26 @@ public strictfp class Builder {
 					labLocation = rc.getLocation().add(optimalDirection);
 					CommsHelper.updateLabBuilt(myArchonIndex);
 				}
-			} else if (rc.isMovementReady()) {
-				MovementHelper.moveBellmanFord(BuildingHelper.getNearestCorner(myArchonIndex));
+			} else if (rc.getLocation().equals(labLocation)) {
+				int minRubble = 1000;
+				Direction optimalDirection = null;
+				for (int i = directions.length; --i >= 0; ) {
+					Direction dir = directions[i];
+					MapLocation location = rc.getLocation().add(dir);
+					if (rc.canMove(dir)) {
+						int rubble = rc.senseRubble(location);
+						if (rubble < minRubble) {
+							minRubble = rubble;
+							optimalDirection = dir;
+						}
+					}
+				}
+
+				if (optimalDirection != null && rc.canMove(optimalDirection)) {
+					MovementHelper.tryMove(optimalDirection, true);
+				}
+			} else if (!rc.getLocation().isAdjacentTo(labLocation)) {
+				MovementHelper.moveBellmanFord(labLocation);
 			}
 
 			return;
@@ -105,7 +127,7 @@ public strictfp class Builder {
 			if (
 					rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 2)
 			) {
-				boolean highRubble = rc.senseRubble(nextBuilding.location) > 30;
+				boolean highRubble = rc.senseRubble(nextBuilding.location) > LAB_RUBBLE_THRESHOLD;
 				if (rc.canBuildRobot(nextBuilding.type, buildDirection) && !highRubble) {
 					rc.buildRobot(nextBuilding.type, buildDirection);
 					switch (nextBuilding.type) {
@@ -130,7 +152,7 @@ public strictfp class Builder {
 						for (int d = 1; d < 4; d++) {
 							if (rc.canSenseLocation(left)) {
 								lab = rc.senseRobotAtLocation(left);
-								if ((lab == null || lab.mode != RobotMode.TURRET) && rc.senseRubble(left) <= 30) {
+								if ((lab == null || lab.mode != RobotMode.TURRET) && rc.senseRubble(left) <= LAB_RUBBLE_THRESHOLD) {
 									nextBuilding = new ConstructionInfo(
 											RobotType.LABORATORY, left
 									);
@@ -139,7 +161,7 @@ public strictfp class Builder {
 							}
 							if (rc.canSenseLocation(right)) {
 								lab = rc.senseRobotAtLocation(right);
-								if ((lab == null || lab.mode != RobotMode.TURRET) && rc.senseRubble(right) <= 30) {
+								if ((lab == null || lab.mode != RobotMode.TURRET) && rc.senseRubble(right) <= LAB_RUBBLE_THRESHOLD) {
 									nextBuilding = new ConstructionInfo(
 											RobotType.LABORATORY, right
 									);
@@ -221,9 +243,6 @@ public strictfp class Builder {
 		}
 
 		if (amEarlyBuilder) {
-			if (labLocation == null && rc.isMovementReady()) {
-				MovementHelper.moveBellmanFord(BuildingHelper.getNearestCorner(myArchonIndex));
-			}
 			return;
 		}
 
@@ -257,6 +276,10 @@ public strictfp class Builder {
 			} else {
 				break;
 			}
+		}
+
+		if (amEarlyBuilder) {
+			labLocation = BuildingHelper.getOptimalEarlyLabLocation();
 		}
 	}
 }

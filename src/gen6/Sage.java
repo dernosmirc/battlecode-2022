@@ -2,8 +2,10 @@ package gen6;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.Clock;
 import gen6.common.MovementHelper;
 import gen6.miner.GoldMiningHelper;
+import gen6.miner.LeadMiningHelper;
 import gen6.sage.SageAttackHelper;
 import gen6.sage.SageMovementHelper;
 import gen6.soldier.SoldierDensity;
@@ -26,6 +28,9 @@ public strictfp class Sage {
 		SageAttackHelper.attack();
 		SageMovementHelper.move();
 		GoldMiningHelper.updateGoldAmountInGridCell();
+		if (Clock.getBytecodeNum() < 5500) {
+			LeadMiningHelper.updateLeadAmountInGridCell();
+		}
 	}
 
 	public static void init() throws GameActionException {
