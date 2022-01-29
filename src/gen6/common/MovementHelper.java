@@ -3,6 +3,8 @@ package gen6.common;
 import battlecode.common.*;
 
 import gen6.common.bellmanford.*;
+import gen6.common.util.LogCondition;
+import gen6.common.util.Logger;
 import gen6.common.util.Vector;
 
 import static gen6.RobotPlayer.*;
@@ -81,6 +83,41 @@ public class MovementHelper {
                     updateMovement(dir, true);
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+
+    public static boolean lazyMove (MapLocation dir) throws GameActionException {
+        return lazyMove(rc.getLocation().directionTo(dir));
+    }
+
+    public static boolean lazyMove (Direction dir) throws GameActionException {
+        if (dir == null || dir == Direction.CENTER) {
+            dir = Functions.getRandomDirection();
+        }
+        if (rc.isMovementReady()) {
+            Direction[] dirs = {
+                    dir.rotateRight(),
+                    dir,
+                    dir.rotateLeft(),
+            };
+            MapLocation ml = rc.getLocation();
+            Direction opt = null;
+            int leastRubble = rc.senseRubble(ml);
+            for (int i = 0; i < dirs.length; i++) {
+                if (rc.canMove(dirs[i])) {
+                    int rubble = rc.senseRubble(ml.add(dirs[i]));
+                    if (leastRubble > rubble) {
+                        opt = dirs[i];
+                        leastRubble = rubble;
+                    }
+                }
+            }
+            if (opt != null && rc.canMove(opt)) {
+                rc.move(opt);
+                updateMovement(opt, true);
+                return true;
             }
         }
         return false;
@@ -221,4 +258,31 @@ public class MovementHelper {
 
         return false;
     }
+
+    public static Direction getAntiCrowdingDirection() {
+        double[] ratios = new double[8], filter = {.25, .50, .25};
+        MapLocation current = rc.getLocation();
+        RobotInfo[] mls = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam);
+        double total = mls.length;
+        for (int i = mls.length; --i >= 0; ) {
+            ratios[current.directionTo(mls[i].location).ordinal()]++;
+        }
+
+        for (int i = 0; i < 8; i++) {
+            ratios[i] /= total;
+        }
+
+        ratios = Functions.convolveCircularly(ratios, filter);
+
+        int maxInd = -1;
+        double maxRatio = 0;
+        for (int i = 0; i < 8; i++) {
+            if (ratios[i] > maxRatio) {
+                maxRatio = ratios[i];
+                maxInd = i;
+            }
+        }
+        return directions[(maxInd+4)%8];
+    }
+
 }

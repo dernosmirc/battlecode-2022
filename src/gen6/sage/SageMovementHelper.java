@@ -30,9 +30,9 @@ public class SageMovementHelper {
     public static void move() throws GameActionException {
         TailHelper.updateTarget();
 
-        MapLocation antiCharge = getAntiChargeLocation();
+        Direction antiCharge = getAntiChargeLocation();
         if (antiCharge != null) {
-            MovementHelper.moveBellmanFord(antiCharge);
+            MovementHelper.tryMove(antiCharge, false);
             return;
         }
 
@@ -160,13 +160,13 @@ public class SageMovementHelper {
         }
     }
 
-    private static MapLocation getAntiChargeLocation() throws GameActionException {
+    private static Direction getAntiChargeLocation() {
         while (!chargeRounds.isEmpty()) {
             int dif = chargeRounds.last() - rc.getRoundNum();
             if (dif <= 0) {
                 chargeRounds.popLast();
-            } else if (dif < 75) {
-                return BuildingHelper.getOptimalLabLocation();
+            } else if (dif < 25) {
+                return MovementHelper.getAntiCrowdingDirection();
             } else {
                 break;
             }
