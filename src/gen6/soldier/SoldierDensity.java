@@ -17,7 +17,7 @@ public class SoldierDensity {
     private static final int GRID_DIM = 3;
     private static final int CLUSTER_RADIUS = 34;
 
-    private static final int SOLDIER_CLUSTER_THRESHOLD = 20;
+    private static final int SOLDIER_CLUSTER_THRESHOLD = 25;
 
     private static MapLocation getLocationFrom9Bits(int bits) {
         int grid_x = bits / 22;
@@ -48,12 +48,12 @@ public class SoldierDensity {
     }
 
     private static int getNearbySoldierCount() {
-        int count = myType == RobotType.SAGE ? 3 : 1;
+        int count = myType == RobotType.SAGE ? 2 : 1;
         RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam);
         for (int i = ris.length; --i >= 0;) {
             switch (ris[i].type) {
                 case SAGE:
-                    count += 2;
+                    count++;
                 case SOLDIER:
                     count++;
             }

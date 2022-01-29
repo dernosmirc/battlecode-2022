@@ -77,6 +77,18 @@ public class ArchonMover {
         return Functions.getAntiEdgeDirection(ml, 5);
     }
 
+    public static int lowHpAttackerCount() {
+        int count = 0;
+        RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam);
+        for (int i = ris.length; --i >= 0;) {
+            RobotInfo ri = ris[i];
+            if (ri.health < ri.type.getMaxHealth(ri.level)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public static boolean shouldRelocate(MapLocation relocate) throws GameActionException {
         if (!rc.canTransform()) return false;
         if (relocate == null) return false;
@@ -84,19 +96,18 @@ public class ArchonMover {
         if (CommsHelper.getFarthestArchon() != Archon.myIndex) return false;
         if (CommsHelper.anyArchonMoving()) return false;
         if (rc.getLocation().isWithinDistanceSquared(relocate, TOO_CLOSE_RANGE)) return false;
-        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length > 15) return false;
+        if (lowHpAttackerCount() > 10) return false;
         return !isEnemyAround();
     }
 
     public static boolean shouldRelocateNearby(MapLocation betterSpot) throws GameActionException {
         if (!rc.canTransform()) return false;
-        if (rc.getRoundNum() < 50) return false;
+        if (rc.getRoundNum() < 25) return false;
         if (maxArchonCount == 1) return false;
         if (betterSpot == null) return false;
         if (rc.senseRubble(rc.getLocation()) == 0) return false;
         if (archonOnMostRubble() != Archon.myIndex) return false;
         if (CommsHelper.anyArchonMoving()) return false;
-        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length > 30) return false;
         return !isEnemyAround();
     }
 

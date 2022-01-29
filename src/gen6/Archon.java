@@ -249,6 +249,9 @@ public strictfp class Archon {
 				SpawnHelper.incrementDroidsBuilt(toSpawn);
 			}
 		}
+		if (buildDirectionIndex == 8) {
+			buildDirectionIndex = 0;
+		}
 	}
 
 	private static void act() throws GameActionException {
@@ -260,9 +263,6 @@ public strictfp class Archon {
 			if (toHeal != null && rc.canRepair(toHeal)) {
 				rc.repair(toHeal);
 			}
-		}
-		if (buildDirectionIndex == 8) {
-			buildDirectionIndex = 0;
 		}
 	}
 

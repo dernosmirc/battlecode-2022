@@ -165,7 +165,7 @@ public class SageMovementHelper {
             int dif = chargeRounds.last() - rc.getRoundNum();
             if (dif <= 0) {
                 chargeRounds.popLast();
-            } else if (dif < 25) {
+            } else if (dif < 50) {
                 return MovementHelper.getAntiCrowdingDirection();
             } else {
                 break;
