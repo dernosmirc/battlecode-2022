@@ -336,12 +336,12 @@ public strictfp class SpawnHelper {
 			// if (soldiersBuilt < 6*centerFactor) return RobotType.SOLDIER;
 			if (soldiersBuilt < 2) return RobotType.SOLDIER;
 			if (CommsHelper.getNumberOfLabs() == 0
-				&& rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead + 50) return null;
+					&& rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead + 50) return null;
 		} else {
 			if (minersBuilt < 3) return RobotType.MINER;
 			// if (soldiersBuilt < 2) return RobotType.SOLDIER;
 			if (CommsHelper.getNumberOfLabs() == 0
-				&& rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead + 50) return null;
+					&& rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead + 50) return null;
 			// if (soldiersBuilt < 4) return RobotType.SOLDIER;
 		}
 

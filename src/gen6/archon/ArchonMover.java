@@ -1,9 +1,6 @@
 package gen6.archon;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotInfo;
+import battlecode.common.*;
 
 import gen6.Archon;
 import gen6.RobotPlayer;
@@ -16,6 +13,8 @@ import gen6.soldier.SoldierDensity;
 import java.util.Comparator;
 
 import static gen6.RobotPlayer.*;
+import static gen6.common.Functions.directionTo;
+import static gen6.common.Functions.getAntiEdgeDirection;
 
 public class ArchonMover {
 
@@ -233,5 +232,22 @@ public class ArchonMover {
             }
         }
         return theSpot;
+    }
+
+    public static Direction getAntiSoldierDirection() {
+        int dx = 0, dy = 0, count = 0;
+        for (RobotInfo ri: rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
+            if (ri.type.canAttack()) {
+                Direction d = ri.location.directionTo(rc.getLocation());
+                dx += d.dx;
+                dy += d.dy;
+                count++;
+            }
+        }
+
+        if (dx == 0 && dy == 0) {
+            return null;
+        }
+        return directionTo(dx, dy);
     }
 }

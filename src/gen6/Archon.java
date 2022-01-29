@@ -203,6 +203,12 @@ public strictfp class Archon {
 			transformNextRound = true;
 			MovementHelper.tryMove(ArchonMover.getEmergencyStop(), true);
 			return;
+		} else {
+			Direction antiSoldier = ArchonMover.getAntiSoldierDirection();
+			if (antiSoldier != null) {
+				MovementHelper.tryMove(antiSoldier, false);
+				return;
+			}
 		}
 
 		if (!rc.isMovementReady()) {
@@ -234,14 +240,7 @@ public strictfp class Archon {
 		}
 	}
 
-	private static void act() throws GameActionException {
-		if (!rc.isActionReady()) return;
-		RobotType toSpawn;
-		if (rc.getRoundNum() == 1) {
-			toSpawn = RobotType.MINER;
-		} else {
-			toSpawn = SpawnHelper.getNextDroid();
-		}
+	private static void spawnIt(RobotType toSpawn) throws GameActionException {
 		if (toSpawn != null) {
 			Direction direction = SpawnHelper.getOptimalDirection(directions[buildDirectionIndex], toSpawn);
 			if (direction != null && rc.canBuildRobot(toSpawn, direction)) {
@@ -250,6 +249,12 @@ public strictfp class Archon {
 				SpawnHelper.incrementDroidsBuilt(toSpawn);
 			}
 		}
+	}
+
+	private static void act() throws GameActionException {
+		if (!rc.isActionReady()) return;
+		spawnIt(SpawnHelper.getNextDroid());
+
 		if (rc.isActionReady()) {
 			MapLocation toHeal = getHealLocation();
 			if (toHeal != null && rc.canRepair(toHeal)) {
@@ -354,6 +359,7 @@ public strictfp class Archon {
 	}
 
 	public static void init() throws GameActionException {
+		spawnIt(RobotType.MINER);
 		MovementHelper.prepareBellmanFord(34);
 		maxArchonCount = rc.getArchonCount();
 		for (int i = 0; i < maxArchonCount; ++i) {
