@@ -163,7 +163,7 @@ public class SageMovementHelper {
     private static Direction getAntiChargeLocation() {
         while (!chargeRounds.isEmpty()) {
             int dif = chargeRounds.last() - rc.getRoundNum();
-            if (dif <= 0) {
+            if (dif < 0) {
                 chargeRounds.popLast();
             } else if (dif < 50) {
                 return MovementHelper.getAntiCrowdingDirection();

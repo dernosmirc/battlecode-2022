@@ -67,6 +67,9 @@ public strictfp class RobotPlayer {
 			case SAGE:
 				Sage.init();
 				break;
+			case LABORATORY:
+				Laboratory.init();
+				break;
 		}
 
 		while (true) {

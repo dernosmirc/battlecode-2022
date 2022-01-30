@@ -12,6 +12,7 @@ import java.util.Random;
 import static gen6.RobotPlayer.*;
 import static gen6.common.Functions.getBits;
 import static gen6.common.Functions.sigmoid;
+import static gen6.Laboratory.getExpectedMiners;
 
 public strictfp class SpawnHelper {
 	private static final int ARCHON_MUTATE_WINDOW = 50;
@@ -344,6 +345,10 @@ public strictfp class SpawnHelper {
 			if (CommsHelper.getNumberOfLabs() == 0
 					&& rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead + 50) return null;
 			// if (soldiersBuilt < 4) return RobotType.SOLDIER;
+		}
+
+		if (CommsHelper.getAliveMinerCount() < getExpectedMiners()) {
+			return RobotType.MINER;
 		}
 
 		if (CommsHelper.getFarthestArchon() == Archon.myIndex && isLabWindow() && labBuildersBuilt < 1) {

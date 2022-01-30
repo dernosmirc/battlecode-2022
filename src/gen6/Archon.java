@@ -227,7 +227,7 @@ public strictfp class Archon {
 				relocate = rn;
 			}
 		}
-		if (rn.isWithinDistanceSquared(relocate, ArchonMover.TOO_CLOSE_RANGE)) {
+		if (rn.isWithinDistanceSquared(relocate, 13)) {
 			goodSpot = ArchonMover.getSpotToSettle(rn.directionTo(relocate));
 			if (goodSpot == null) {
 				relocate = ArchonMover.getRelocateLocation();
