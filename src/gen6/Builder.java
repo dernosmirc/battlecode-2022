@@ -81,13 +81,23 @@ public strictfp class Builder {
 			if (rc.getTeamLeadAmount(myTeam) >= RobotType.LABORATORY.buildCostLead) {
 				int minRubble = 1000;
 				Direction optimalDirection = null;
+				int minDistanceFromEdge = rc.getMapWidth() * rc.getMapHeight();
 				for (int i = directions.length; --i >= 0; ) {
 					Direction dir = directions[i];
 					if (rc.canBuildRobot(RobotType.LABORATORY, dir)) {
-						int rubble = rc.senseRubble(rc.getLocation().add(dir));
+						MapLocation location = rc.getLocation().add(dir);
+						int rubble = rc.senseRubble(location);
 						if (rubble < minRubble) {
 							minRubble = rubble;
 							optimalDirection = dir;
+							minDistanceFromEdge = BuildingHelper.getDistanceFromEdge(location);
+						} else if (rubble == minRubble) {
+							int distanceFromEdge = BuildingHelper.getDistanceFromEdge(location);
+							if (distanceFromEdge < minDistanceFromEdge) {
+								minRubble = rubble;
+								optimalDirection = dir;
+								minDistanceFromEdge = distanceFromEdge;
+							}
 						}
 					}
 				}

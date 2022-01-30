@@ -213,7 +213,7 @@ public class BuildingHelper {
         return optimalLocation;
     }
 
-    private static int getDistanceFromEdge(MapLocation location) throws GameActionException {
+    public static int getDistanceFromEdge(MapLocation location) throws GameActionException {
         int width = rc.getMapWidth();
         int height = rc.getMapHeight();
         int distance = Math.min(location.x, width - 1 - location.x);
