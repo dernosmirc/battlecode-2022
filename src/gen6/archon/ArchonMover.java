@@ -81,7 +81,7 @@ public class ArchonMover {
         RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam);
         for (int i = ris.length; --i >= 0;) {
             RobotInfo ri = ris[i];
-            if (ri.health < ri.type.getMaxHealth(ri.level)) {
+            if (ri.mode == RobotMode.DROID && ri.type.canAttack() && ri.health < ri.type.getMaxHealth(ri.level)) {
                 count++;
             }
         }
@@ -95,7 +95,7 @@ public class ArchonMover {
         if (CommsHelper.getFarthestArchon() != Archon.myIndex) return false;
         if (CommsHelper.anyArchonMoving()) return false;
         if (rc.getLocation().isWithinDistanceSquared(relocate, TOO_CLOSE_RANGE)) return false;
-        if (lowHpAttackerCount() > 10) return false;
+        if (lowHpAttackerCount() > 5) return false;
         return !isEnemyAround();
     }
 
