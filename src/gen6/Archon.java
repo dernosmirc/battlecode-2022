@@ -79,29 +79,37 @@ public strictfp class Archon {
 		// Set count 0 before each round start
 		if (rc.getRoundNum()%2 == 1){
 			// Soldier
-			rc.writeSharedArray(7, 0);
+			if (rc.readSharedArray(7) != 0) {
+				rc.writeSharedArray(7, 0);
+			}
 			// Miner
-			rc.writeSharedArray(8, 0);
+			if (rc.readSharedArray(8) != 0) {
+				rc.writeSharedArray(8, 0);
+			}
 			// Sage
-			rc.writeSharedArray(9, 0);
+			if (rc.readSharedArray(9) != 0) {
+				rc.writeSharedArray(9, 0);
+			}
 			// Builder
-			rc.writeSharedArray(25, 0);
+			if (rc.readSharedArray(25) != 0) {
+				rc.writeSharedArray(25, 0);
+			}
 			// Lab
-			rc.writeSharedArray(26, 0);
-		}
-		int v = rc.readSharedArray(32 + myIndex);
-		if (getBits(v, 13, 13) == 1){
-			return;
-		}
-		int v1 = rc.readSharedArray(6);
-		int cur = (getBits(v1, 2 * myIndex + 6, 2 * myIndex + 7) + 1)%3;
-		for (int i = 0; i < maxArchonCount; i++){
-			if (i == myIndex)	continue;
-			if ((cur - getBits(v1, 6 + 2 * i, 7 + 2 * i) + 3)%3 > 1){
-				rc.writeSharedArray(32 + i, setBits(rc.readSharedArray(32 + i), 13, 13, 1));
+			if (rc.readSharedArray(26) != 0) {
+				rc.writeSharedArray(26, 0);
 			}
 		}
-		rc.writeSharedArray(6, setBits(v1, 2 * myIndex + 6, 2 * myIndex + 7, cur));
+
+		int roundNumber = rc.getRoundNum();
+		rc.writeSharedArray(54 + myIndex, roundNumber);
+		for (int i = maxArchonCount; --i >= 0; ) {
+			if (roundNumber - rc.readSharedArray(54 + i) >= 3) {
+				int value = rc.readSharedArray(32 + i);
+				if (getBits(value, 13, 13) == 0) {
+					rc.writeSharedArray(32 + i, setBits(value, 13, 13, 1));
+				}
+			}
+		}
 	}
 
 	public static void run() throws GameActionException {
