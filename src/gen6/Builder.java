@@ -66,6 +66,16 @@ public strictfp class Builder {
 		}
 
 		if (amEarlyBuilder) {
+			if (labLocation == null) {
+				if (rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead - 80) {
+					if (rc.isMovementReady()) {
+						MovementHelper.moveBellmanFord(BuildingHelper.getNearestCorner(myArchonIndex));
+					}
+					return;
+				}
+				labLocation = BuildingHelper.getOptimalEarlyLabLocation();
+			}
+
 			if (rc.getLocation().isAdjacentTo(labLocation)) {
 				RobotInfo lab = rc.senseRobotAtLocation(labLocation);
 				if (lab != null && lab.type == RobotType.LABORATORY && lab.health == lab.type.getMaxHealth(lab.level)) {
@@ -78,10 +88,20 @@ public strictfp class Builder {
 				}
 			}
 
+			// Lab has not been built yet
+			if (rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead - 80) {
+				labLocation = null;
+				if (rc.isMovementReady()) {
+					MovementHelper.moveBellmanFord(BuildingHelper.getNearestCorner(myArchonIndex));
+				}
+				return;
+			}
+
 			if (rc.getTeamLeadAmount(myTeam) >= RobotType.LABORATORY.buildCostLead) {
 				int minRubble = 1000;
 				Direction optimalDirection = null;
-				int minDistanceFromEdge = rc.getMapWidth() * rc.getMapHeight();
+				int minEdgeDistance1 = rc.getMapWidth() * rc.getMapHeight();
+				int minEdgeDistance2 = minEdgeDistance1;
 				for (int i = directions.length; --i >= 0; ) {
 					Direction dir = directions[i];
 					if (rc.canBuildRobot(RobotType.LABORATORY, dir)) {
@@ -90,14 +110,22 @@ public strictfp class Builder {
 						if (rubble < minRubble) {
 							minRubble = rubble;
 							optimalDirection = dir;
-							minDistanceFromEdge = BuildingHelper.getDistanceFromEdge(location);
+							minEdgeDistance1 = BuildingHelper.getDistanceFromEdge(location);
+							minEdgeDistance2 = BuildingHelper.getLargerDistanceFromEdge(location);
 						} else if (rubble == minRubble) {
-							int distanceFromEdge = BuildingHelper.getDistanceFromEdge(location);
-							if (distanceFromEdge < minDistanceFromEdge) {
+							int edgeDistance1 = BuildingHelper.getDistanceFromEdge(location);
+							int edgeDistance2 = BuildingHelper.getLargerDistanceFromEdge(location);
+							if (edgeDistance1 < minEdgeDistance1) {
 								minRubble = rubble;
 								optimalDirection = dir;
-								minDistanceFromEdge = distanceFromEdge;
-							}
+								minEdgeDistance1 = edgeDistance1;
+								minEdgeDistance2 = edgeDistance2;
+							} else if (edgeDistance1 == minEdgeDistance1 && edgeDistance2 < minEdgeDistance2) {
+		                        minRubble = rubble;
+		                        optimalDirection = dir;
+		                        minEdgeDistance1 = edgeDistance1;
+		                        minEdgeDistance2 = edgeDistance2;
+		                    }
 						}
 					}
 				}
@@ -286,10 +314,6 @@ public strictfp class Builder {
 			} else {
 				break;
 			}
-		}
-
-		if (amEarlyBuilder) {
-			labLocation = BuildingHelper.getOptimalEarlyLabLocation();
 		}
 	}
 }

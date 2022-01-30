@@ -184,7 +184,8 @@ public class BuildingHelper {
         MapLocation[] locations = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), myType.visionRadiusSquared);
         int minRubble = rc.senseRubble(rc.getLocation());
         MapLocation optimalLocation = rc.getLocation();
-        int lowestDistanceFromEdge = getDistanceFromEdge(rc.getLocation());
+        int minEdgeDistance1 = getDistanceFromEdge(rc.getLocation());
+        int minEdgeDistance2 = getLargerDistanceFromEdge(rc.getLocation());
         for (int i = locations.length; --i >= 0; ) {
             MapLocation location = locations[i];
             int rubble = rc.senseRubble(location);
@@ -199,12 +200,21 @@ public class BuildingHelper {
                 if (rubble < minRubble) {
                     minRubble = rubble;
                     optimalLocation = location;
+                    minEdgeDistance1 = getDistanceFromEdge(location);
+                    minEdgeDistance2 = getLargerDistanceFromEdge(location);
                 } else if (rubble == minRubble) {
-                    int distanceFromEdge = getDistanceFromEdge(location);
-                    if (distanceFromEdge < lowestDistanceFromEdge) {
+                    int edgeDistance1 = getDistanceFromEdge(location);
+                    int edgeDistance2 = getLargerDistanceFromEdge(location);
+                    if (edgeDistance1 < minEdgeDistance1) {
                         minRubble = rubble;
                         optimalLocation = location;
-                        lowestDistanceFromEdge = distanceFromEdge;
+                        minEdgeDistance1 = edgeDistance1;
+                        minEdgeDistance2 = edgeDistance2;
+                    } else if (edgeDistance1 == minEdgeDistance1 && edgeDistance2 < minEdgeDistance2) {
+                        minRubble = rubble;
+                        optimalLocation = location;
+                        minEdgeDistance1 = edgeDistance1;
+                        minEdgeDistance2 = edgeDistance2;
                     }
                 }
             }
@@ -213,12 +223,24 @@ public class BuildingHelper {
         return optimalLocation;
     }
 
-    public static int getDistanceFromEdge(MapLocation location) throws GameActionException {
+    public static int getDistanceFromEdge(MapLocation location) {
         int width = rc.getMapWidth();
         int height = rc.getMapHeight();
         int distance = Math.min(location.x, width - 1 - location.x);
         distance = Math.min(distance, location.y);
         distance = Math.min(distance, height - 1 - location.y);
         return distance;
+    }
+
+    public static int getLargerDistanceFromEdge(MapLocation location) {
+        int width = rc.getMapWidth();
+        int height = rc.getMapHeight();
+        int distanceX = Math.min(location.x, width - 1 - location.x);
+        int distanceY = Math.min(location.y, height - 1 - location.y);
+        if (distanceX > distanceY) {
+            return distanceX;
+        } else {
+            return distanceY;
+        }
     }
 }
