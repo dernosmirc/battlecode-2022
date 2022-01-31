@@ -220,11 +220,18 @@ public class LeadMiningHelper {
         }
     }
 
+    private static int leaveMinLead(MapLocation loc) throws GameActionException {
+        if (CommsHelper.isLocationInEnemyZone(loc)) {
+            return 0;
+        }
+        return 1;
+    }
+
     public static void mineLead() throws GameActionException {
         MapLocation[] mps = rc.senseNearbyLocationsWithLead(myType.actionRadiusSquared, 2);
         for (int i = mps.length; --i >= 0;) {
             MapLocation mp = mps[i];
-            while (rc.isActionReady() && rc.senseLead(mp) > 1) {
+            while (rc.isActionReady() && rc.senseLead(mp) > leaveMinLead(mp)) {
                 rc.mineLead(mp);
             }
             if (!rc.isActionReady()) {

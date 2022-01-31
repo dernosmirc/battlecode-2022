@@ -89,7 +89,6 @@ public strictfp class Miner {
 			if (rc.getLocation().isWithinDistanceSquared(lead, 2)) {
 				return MovementHelper.lazyMove(lead);
 			}
-
 			return MovementHelper.moveBellmanFord(lead);
 		}
 		if (isExplorer) {
