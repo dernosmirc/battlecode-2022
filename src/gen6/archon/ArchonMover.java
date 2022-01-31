@@ -95,7 +95,6 @@ public class ArchonMover {
         if (!rc.canTransform()) return false;
         if (rc.getRoundNum() < 25) return false;
         if (betterSpot == null) return false;
-        if (rc.senseRubble(rc.getLocation()) == 0) return false;
         if (archonOnMostRubble() != Archon.myIndex) return false;
         if (CommsHelper.anyArchonMoving()) return false;
         return !isEnemyAround();
@@ -177,6 +176,9 @@ public class ArchonMover {
             }
         }
         int bestAvg = Integer.MAX_VALUE;
+        if (grid.get(rn) == leastRubble) {
+            bestAvg = getWeightedAverageRubble(rn, grid);
+        }
         MapLocation theSpot = rn;
         for (int i = spots.length; --i >= 0; ) {
             MapLocation ml = spots.get(i);
@@ -227,7 +229,10 @@ public class ArchonMover {
                 }
             }
         }
-        int bestAvg = 10000;
+        int bestAvg = Integer.MAX_VALUE;
+        if (grid.get(rn) == leastRubble) {
+            bestAvg = getWeightedAverageRubble(rn, grid);
+        }
         MapLocation theSpot = null;
         for (int i = spots.length; --i >= 0; ) {
             MapLocation ml = spots.get(i);
