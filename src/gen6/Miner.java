@@ -6,6 +6,7 @@ import gen6.miner.GoldMiningHelper;
 import gen6.miner.LeadMiningHelper;
 import gen6.common.MovementHelper;
 import gen6.common.Functions;
+import gen6.soldier.TailHelper;
 
 import java.util.Random;
 
@@ -34,6 +35,7 @@ public strictfp class Miner {
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(8, rc.readSharedArray(8) + 1);
 		}
+		TailHelper.updateTarget();
 
 		int round = rc.getRoundNum();
 

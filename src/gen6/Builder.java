@@ -11,6 +11,7 @@ import gen6.common.util.LogCondition;
 import gen6.common.util.Logger;
 import gen6.common.util.Pair;
 import gen6.sage.SageMovementHelper;
+import gen6.soldier.TailHelper;
 
 import static gen6.RobotPlayer.*;
 import static gen6.common.Functions.*;
@@ -270,6 +271,8 @@ public strictfp class Builder {
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(25, rc.readSharedArray(25) + 1);
 		}
+		TailHelper.updateTarget();
+
 		// update location each round
 		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
 

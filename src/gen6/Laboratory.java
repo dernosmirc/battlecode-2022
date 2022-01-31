@@ -3,6 +3,7 @@ package gen6;
 import battlecode.common.*;
 import gen6.common.CommsHelper;
 import gen6.common.Functions;
+import gen6.soldier.TailHelper;
 
 import static gen6.RobotPlayer.myTeam;
 import static gen6.RobotPlayer.rc;
@@ -34,6 +35,8 @@ public strictfp class Laboratory {
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(26, rc.readSharedArray(26) + 1);
 		}
+		TailHelper.updateTarget();
+
 		if (rc.isActionReady()) {
 			if (
 					rc.getTeamLeadAmount(myTeam) >= getLeadThreshold() &&
