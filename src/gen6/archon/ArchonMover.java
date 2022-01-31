@@ -94,7 +94,6 @@ public class ArchonMover {
     public static boolean shouldRelocateNearby(MapLocation betterSpot) throws GameActionException {
         if (!rc.canTransform()) return false;
         if (rc.getRoundNum() < 25) return false;
-        if (maxArchonCount == 1) return false;
         if (betterSpot == null) return false;
         if (rc.senseRubble(rc.getLocation()) == 0) return false;
         if (archonOnMostRubble() != Archon.myIndex) return false;
