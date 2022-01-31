@@ -3,21 +3,17 @@ package gen6.archon;
 import battlecode.common.*;
 
 import gen6.Archon;
-import gen6.RobotPlayer;
 import gen6.common.*;
 import gen6.common.bellmanford.HeuristicsProvider;
 import gen6.common.bellmanford.heuristics.Heuristics20;
 import gen6.common.util.Vector;
 import gen6.soldier.SoldierDensity;
 
-import java.util.Comparator;
-
 import static gen6.RobotPlayer.*;
 import static gen6.common.Functions.directionTo;
 
 public class ArchonMover {
 
-    public static final int RUBBLE_THRESHOLD = 16;
     public static final int RUBBLE_THRESHOLD_STOP = 30;
     public static final int MIN_DISTANCE_BETWEEN_ARCHONS = 13;
     public static final int TOO_CLOSE_RANGE = 34;
@@ -47,19 +43,15 @@ public class ArchonMover {
         return archon;
     }
 
-    private static double getWeightedAverageRubble(MapLocation center, RubbleGrid grid) {
-        int centerRubble = grid.get(center);
-        int totalRuble = centerRubble, totalLocations = 4;
-        Direction[] dirs = RobotPlayer.directions;
-        for (int i = dirs.length; --i >= 0; ) {
-            int rubble = grid.get(center.add(dirs[i]));
-            if (rubble < centerRubble) {
-                return Double.MAX_VALUE;
-            }
-            totalRuble += rubble;
-            totalLocations++;
-        }
-        return totalRuble / (double) totalLocations;
+    private static int getWeightedAverageRubble(MapLocation center, RubbleGrid grid) {
+        return grid.get(center.add(Direction.NORTH)) +
+                grid.get(center.add(Direction.NORTHEAST)) +
+                grid.get(center.add(Direction.EAST)) +
+                grid.get(center.add(Direction.SOUTHEAST)) +
+                grid.get(center.add(Direction.SOUTH)) +
+                grid.get(center.add(Direction.SOUTHWEST)) +
+                grid.get(center.add(Direction.WEST)) +
+                grid.get(center.add(Direction.NORTHWEST));
     }
 
     public static boolean isEnemyAround() {
@@ -165,8 +157,9 @@ public class ArchonMover {
         }
         int[] locsX = heuristicsProvider.getLocationsX(direction.ordinal());
         int[] locsY = heuristicsProvider.getLocationsY(direction.ordinal());
-        Vector<GridInfo> spots = new Vector<>(locsX.length);
+        Vector<MapLocation> spots = new Vector<>(locsX.length);
         MapLocation[] mls = CommsHelper.getFriendlyArchonLocations();
+        int leastRubble = 100;
         for (int i = locsX.length; --i >= 0; ) {
             MapLocation ml = new MapLocation(locsX[i] + rnX_r, locsY[i] + rnY_r);
             boolean tooClose = false;
@@ -178,20 +171,22 @@ public class ArchonMover {
             }
             if (!tooClose) {
                 int rubble = grid.get(ml);
-                if (rubble < RUBBLE_THRESHOLD && distanceFromEdge(ml) > 5) {
-                    spots.add(new GridInfo(rubble, ml));
+                if (rubble <= leastRubble && distanceFromEdge(ml) > 5) {
+                    spots.add(ml);
+                    leastRubble = rubble;
                 }
             }
         }
-        spots.sort(Comparator.comparingInt(GridInfo::getCount));
-        double bestAvg = Double.MAX_VALUE;
+        int bestAvg = Integer.MAX_VALUE;
         MapLocation theSpot = rn;
         for (int i = spots.length; --i >= 0; ) {
-            MapLocation ml = spots.get(i).location;
-            double avg = getWeightedAverageRubble(ml, grid);
-            if (bestAvg > avg) {
-                bestAvg = avg;
-                theSpot = ml;
+            MapLocation ml = spots.get(i);
+            if (grid.get(ml) == leastRubble) {
+                int avg = getWeightedAverageRubble(ml, grid);
+                if (bestAvg > avg) {
+                    bestAvg = avg;
+                    theSpot = ml;
+                }
             }
         }
         return theSpot;
@@ -220,38 +215,41 @@ public class ArchonMover {
     public static MapLocation getBetterSpotToSettle() throws GameActionException {
         MapLocation rn = rc.getLocation();
         MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 20);
-        Vector<GridInfo> spots = new Vector<>(locs.length);
+        Vector<MapLocation> spots = new Vector<>(locs.length);
         RubbleGrid grid = rubbleGrid;
+        int leastRubble = 100;
         for (int i = locs.length; --i >= 0; ) {
             MapLocation ml = locs[i];
-            if (!rn.isWithinDistanceSquared(ml, 5)) {
+            if (!rn.isWithinDistanceSquared(ml, 2)) {
                 int r = grid.get(ml);
-                if (r < RUBBLE_THRESHOLD && distanceFromEdge(ml) > 5) {
-                    spots.add(new GridInfo(r, ml));
+                if (r <= leastRubble && distanceFromEdge(ml) > 5) {
+                    spots.add(ml);
+                    leastRubble = r;
                 }
             }
         }
-        double bestAvg = getWeightedAverageRubble(rn, grid);
+        int bestAvg = 10000;
         MapLocation theSpot = null;
-        for (int i = Math.min(25, spots.length); --i >= 0; ) {
-            MapLocation ml = spots.get(i).location;
-            double avg = getWeightedAverageRubble(ml, grid);
-            if (bestAvg > avg) {
-                bestAvg = avg;
-                theSpot = ml;
+        for (int i = spots.length; --i >= 0; ) {
+            MapLocation ml = spots.get(i);
+            if (leastRubble == grid.get(ml)) {
+                int avg = getWeightedAverageRubble(ml, grid);
+                if (bestAvg > avg) {
+                    bestAvg = avg;
+                    theSpot = ml;
+                }
             }
         }
         return theSpot;
     }
 
     public static Direction getAntiSoldierDirection() {
-        int dx = 0, dy = 0, count = 0;
+        int dx = 0, dy = 0;
         for (RobotInfo ri: rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
             if (ri.type.canAttack()) {
                 Direction d = ri.location.directionTo(rc.getLocation());
                 dx += d.dx;
                 dy += d.dy;
-                count++;
             }
         }
 
