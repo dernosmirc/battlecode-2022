@@ -3,8 +3,6 @@ package gen6.common;
 import battlecode.common.*;
 
 import gen6.common.bellmanford.*;
-import gen6.common.util.LogCondition;
-import gen6.common.util.Logger;
 import gen6.common.util.Vector;
 
 import static gen6.RobotPlayer.*;
@@ -27,30 +25,13 @@ public class MovementHelper {
         }
     }
 
-    public static boolean moveAndAvoid(
-            Direction direction, MapLocation location, int distanceSquared
-    ) throws GameActionException {
-        Direction[] dirs = {
-                direction,
-                direction.rotateLeft(),
-                direction.rotateRight()
-        };
-        for (Direction dir: dirs) {
-            if (!rc.getLocation().add(dir).isWithinDistanceSquared(location, distanceSquared)) {
-                if (tryMove(dir, false)) {
-                    return true;
-                }
-            }
-        }
-        return tryMove(direction, false);
-    }
-
     public static boolean tryMove (MapLocation loc, boolean force) throws GameActionException {
         return tryMove(rc.getLocation().directionTo(loc), force);
     }
 
     public static boolean tryMove (Direction dir, boolean force) throws GameActionException {
         if (dir == null || dir == Direction.CENTER) {
+            if (force) return false;
             dir = Functions.getRandomDirection();
         }
         if (rc.isMovementReady()) {

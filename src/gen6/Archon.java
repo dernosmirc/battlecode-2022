@@ -203,27 +203,35 @@ public strictfp class Archon {
 				goodSpot = relocate = null;
 				SpawnHelper.levelDroidsBuilt();
 			}
+			return;
 		}
 
-		if (rn.equals(goodSpot) || staleLocation > 27 || ArchonMover.shouldStopMoving() && rc.canTransform()) {
+		if ((rn.equals(goodSpot) || staleLocation > 20 || ArchonMover.shouldStopMoving()) && rc.canTransform()) {
 			transformNextRound = true;
 			MovementHelper.tryMove(ArchonMover.getEmergencyStop(), true);
 			return;
-		} else {
-			Direction antiSoldier = ArchonMover.getAntiSoldierDirection();
-			if (antiSoldier != null) {
-				MovementHelper.tryMove(antiSoldier, false);
-				return;
-			}
 		}
 
 		if (!rc.isMovementReady()) {
 			return;
 		}
 
+		Direction antiSoldier = ArchonMover.getAntiSoldierDirection();
+		if (antiSoldier != null) {
+			if (MovementHelper.tryMove(antiSoldier, false)) {
+				staleLocation = 0;
+			} else {
+				staleLocation++;
+			}
+			return;
+		}
+
+
 		if (goodSpot != null) {
 			if (!MovementHelper.moveBellmanFord(goodSpot)) {
 				staleLocation++;
+			} else {
+				staleLocation = 0;
 			}
 			return;
 		}
@@ -242,6 +250,8 @@ public strictfp class Archon {
 		if (relocate != null) {
 			if (!MovementHelper.moveBellmanFord(relocate)) {
 				staleLocation++;
+			} else {
+				staleLocation = 0;
 			}
 		}
 	}

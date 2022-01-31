@@ -200,9 +200,9 @@ public class ArchonMover {
     }
 
     public static MapLocation getEmergencyStop() throws GameActionException {
-        MapLocation rn = rc.getLocation(), stop = null;
-        int leastRubble = 101;
-        for (int i = 9; --i >= 0;) {
+        MapLocation rn = rc.getLocation(), stop = rn;
+        int leastRubble = rc.senseRubble(rn);
+        for (int i = 8; --i >= 0;) {
             MapLocation ne = rn.add(Direction.values()[i]);
             if (rc.canSenseLocation(ne) && !rc.isLocationOccupied(ne)) {
                 int rubble = rc.senseRubble(ne);
