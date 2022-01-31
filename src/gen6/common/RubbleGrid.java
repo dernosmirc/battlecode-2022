@@ -45,7 +45,7 @@ public class RubbleGrid {
         }
         RobotInfo[] ris = rc.senseNearbyRobots(radiusSquared);
         for (int i = ris.length; --i >= 0;) {
-            if (ris[i].mode == RobotMode.TURRET) {
+            if (ris[i].mode != RobotMode.DROID) {
                 dump[ris[i].location.x-centerX_r][ris[i].location.y-centerY_r] = 500;
             }
         }
