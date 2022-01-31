@@ -32,12 +32,16 @@ public class RubbleGrid {
         centerX_r = centerX-radius;
         centerY_r = centerY-radius;
 
+        for (int i = diameter; --i >= 0;) {
+            for (int j = diameter; --j >= 0;) {
+                dump[i][j] = 500;
+            }
+        }
+
         MapLocation[] mls = rc.getAllLocationsWithinRadiusSquared(center, radiusSquared);
         for (int i = mls.length; --i >= 0;) {
             MapLocation ml = mls[i];
-            if (rc.canSenseLocation(ml)) {
-                dump[ml.x-centerX_r][ml.y-centerY_r] = rc.senseRubble(ml);
-            }
+            dump[ml.x-centerX_r][ml.y-centerY_r] = rc.senseRubble(ml);
         }
         RobotInfo[] ris = rc.senseNearbyRobots(radiusSquared);
         for (int i = ris.length; --i >= 0;) {

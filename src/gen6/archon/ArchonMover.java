@@ -221,12 +221,10 @@ public class ArchonMover {
         int leastRubble = 100;
         for (int i = locs.length; --i >= 0; ) {
             MapLocation ml = locs[i];
-            if (!rn.isWithinDistanceSquared(ml, 2)) {
-                int r = grid.get(ml);
-                if (r <= leastRubble && distanceFromEdge(ml) > 5) {
-                    spots.add(ml);
-                    leastRubble = r;
-                }
+            int r = grid.get(ml);
+            if (r <= leastRubble && distanceFromEdge(ml) > 2) {
+                spots.add(ml);
+                leastRubble = r;
             }
         }
         int bestAvg = Integer.MAX_VALUE;
@@ -243,6 +241,9 @@ public class ArchonMover {
                     theSpot = ml;
                 }
             }
+        }
+        if (rc.getID() == 3 && rc.getRoundNum() > 120) {
+            int a = 1;
         }
         return theSpot;
     }
