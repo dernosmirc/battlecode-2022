@@ -71,6 +71,7 @@ public class ArchonMover {
     public static int lowHpAttackerCount() {
         int count = 0;
         RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam);
+        if (ris.length > 35) return 35;
         for (int i = ris.length; --i >= 0;) {
             RobotInfo ri = ris[i];
             if (ri.mode == RobotMode.DROID && ri.type.canAttack() && ri.health < ri.type.getMaxHealth(ri.level)) {
@@ -97,6 +98,7 @@ public class ArchonMover {
         if (betterSpot == null) return false;
         if (archonOnMostRubble() != Archon.myIndex) return false;
         if (CommsHelper.anyArchonMoving()) return false;
+        if (lowHpAttackerCount() > 15) return false;
         return !isEnemyAround();
     }
 
