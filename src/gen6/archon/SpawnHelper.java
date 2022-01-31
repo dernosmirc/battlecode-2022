@@ -194,24 +194,19 @@ public strictfp class SpawnHelper {
 		return false;
 	}
 
-	private static final boolean[] builderSpawned = new boolean[8];
 	private static Direction getOptimalBuilderSpawnDirection() throws GameActionException {
 		MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
-		int ideal = rc.getLocation().directionTo(center).ordinal();
+		int ideal = center.directionTo(rc.getLocation()).ordinal();
 		for (int i = 0; i < 5; i++) {
 			int l = (ideal + i) % 8, r = (ideal - i + 8) % 8;
-			MapLocation ml = rc.getLocation().add(directions[l]);
-			if (!builderSpawned[l] && rc.onTheMap(ml) && !rc.isLocationOccupied(ml)) {
-				builderSpawned[l] = true;
+			if (rc.onTheMap(rc.getLocation().add(directions[l])) && !rc.isLocationOccupied(rc.getLocation().add(directions[l]))) {
 				return directions[l];
 			}
-			ml = rc.getLocation().add(directions[r]);
-			if (!builderSpawned[r] && rc.onTheMap(ml) && !rc.isLocationOccupied(ml)) {
-				builderSpawned[r] = true;
+			if (rc.onTheMap(rc.getLocation().add(directions[l])) && !rc.isLocationOccupied(rc.getLocation().add(directions[r]))) {
 				return directions[r];
 			}
 		}
-		return getOptimalSoldierSpawnDirection();
+		return null;
 	}
 
 	private static Direction getOptimalSoldierSpawnDirection() throws GameActionException{

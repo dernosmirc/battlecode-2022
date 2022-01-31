@@ -8,8 +8,6 @@ import gen6.archon.SpawnHelper;
 import gen6.common.Functions;
 import gen6.common.MovementHelper;
 import gen6.common.SymmetryType;
-import gen6.common.util.LogCondition;
-import gen6.common.util.Logger;
 import gen6.soldier.SoldierDensity;
 import gen6.soldier.TailHelper;
 
