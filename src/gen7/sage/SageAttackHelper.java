@@ -80,21 +80,15 @@ public class SageAttackHelper {
         }
 
         if (furyDamage > 0 && furyDamage >= attackDamage && furyDamage >= chargeDamage) {
-            if (rc.canEnvision(AnomalyType.FURY)) {
-                return new AttackInfo(AttackType.Fury, furyDamage);
-            }
+            return new AttackInfo(AttackType.Fury, furyDamage);
         }
 
         if (chargeDamage >= SAGE_ATTACK_THRESHOLD && chargeDamage >= attackDamage && chargeDamage >= furyDamage) {
-            if (rc.canEnvision(AnomalyType.CHARGE)) {
-                return new AttackInfo(AttackType.Charge, chargeDamage);
-            }
+            return new AttackInfo(AttackType.Charge, chargeDamage);
         }
 
         if (maxPriority != -1 && attackDamage >= SAGE_ATTACK_THRESHOLD) {
-            if (rc.canAttack(robotToAttack.location)) {
-                return new AttackInfo(AttackType.Attack, attackDamage, robotToAttack.location);
-            }
+            return new AttackInfo(AttackType.Attack, attackDamage, robotToAttack.location);
         }
 
         return null;
