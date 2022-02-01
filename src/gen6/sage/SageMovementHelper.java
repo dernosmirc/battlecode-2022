@@ -28,7 +28,9 @@ public class SageMovementHelper {
     }
 
     public static void move() throws GameActionException {
-        TailHelper.updateTarget();
+        if (!rc.isMovementReady()) {
+            return;
+        }
 
         Direction antiCharge = getAntiChargeLocation();
         if (antiCharge != null) {

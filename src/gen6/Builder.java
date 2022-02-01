@@ -12,6 +12,8 @@ import gen6.common.util.Logger;
 import gen6.common.util.Pair;
 import gen6.sage.SageMovementHelper;
 import gen6.soldier.TailHelper;
+import gen6.miner.GoldMiningHelper;
+import gen6.miner.LeadMiningHelper;
 
 import static gen6.RobotPlayer.*;
 import static gen6.common.Functions.*;
@@ -284,6 +286,10 @@ public strictfp class Builder {
 		}
 
 		if (amEarlyBuilder) {
+			GoldMiningHelper.updateGoldAmountInGridCell();
+			if (Clock.getBytecodesLeft() >= 4500) {
+				LeadMiningHelper.updateLeadAmountInGridCell();
+			}
 			return;
 		}
 
@@ -293,6 +299,11 @@ public strictfp class Builder {
 		}
 		if (rc.isMovementReady() && BuildingHelper.shouldMove(myArchonLocation, construction)) {
 			move();
+		}
+
+		GoldMiningHelper.updateGoldAmountInGridCell();
+		if (Clock.getBytecodesLeft() >= 4500) {
+			LeadMiningHelper.updateLeadAmountInGridCell();
 		}
 	}
 

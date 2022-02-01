@@ -4,6 +4,8 @@ import battlecode.common.*;
 import gen6.common.CommsHelper;
 import gen6.common.Functions;
 import gen6.soldier.TailHelper;
+import gen6.miner.GoldMiningHelper;
+import gen6.miner.LeadMiningHelper;
 
 import static gen6.RobotPlayer.myTeam;
 import static gen6.RobotPlayer.rc;
@@ -46,6 +48,11 @@ public strictfp class Laboratory {
 					rc.transmute();
 				}
 			}
+		}
+
+		GoldMiningHelper.updateGoldAmountInGridCell();
+		if (Clock.getBytecodesLeft() >= 4500) {
+			LeadMiningHelper.updateLeadAmountInGridCell();
 		}
 	}
 

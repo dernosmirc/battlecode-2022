@@ -9,6 +9,7 @@ import gen6.miner.LeadMiningHelper;
 import gen6.sage.SageAttackHelper;
 import gen6.sage.SageMovementHelper;
 import gen6.soldier.SoldierDensity;
+import gen6.soldier.TailHelper;
 
 import static gen6.RobotPlayer.maxArchonCount;
 import static gen6.RobotPlayer.rc;
@@ -25,6 +26,7 @@ public strictfp class Sage {
 			rc.writeSharedArray(9, rc.readSharedArray(9) + 1);
 		}
 		SoldierDensity.update();
+		TailHelper.updateTarget();
 		SageAttackHelper.attack();
 		SageMovementHelper.move();
 		GoldMiningHelper.updateGoldAmountInGridCell();
