@@ -204,7 +204,7 @@ public class ArchonMover {
         int leastRubble = rc.senseRubble(rn);
         for (int i = 8; --i >= 0;) {
             MapLocation ne = rn.add(Direction.values()[i]);
-            if (rc.canSenseLocation(ne) && !rc.isLocationOccupied(ne)) {
+            if (rc.onTheMap(ne) && !rc.canSenseRobotAtLocation(ne)) {
                 int rubble = rc.senseRubble(ne);
                 if (leastRubble > rubble) {
                     leastRubble = rubble;

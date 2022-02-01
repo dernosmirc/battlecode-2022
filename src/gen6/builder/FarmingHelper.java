@@ -37,7 +37,7 @@ public class FarmingHelper {
         int minDist = 10000;
         for (int i = mls.length; --i >= 0; ) {
             MapLocation ml = mls[i];
-            if (isLocationInFarm(ml) && rc.senseLead(ml) == 0 && !rc.isLocationOccupied(ml)) {
+            if (isLocationInFarm(ml) && rc.senseLead(ml) == 0 && !rc.canSenseRobotAtLocation(ml)) {
                 int dist = my.distanceSquaredTo(ml);
                 if (dist < minDist) {
                     best = ml;

@@ -200,10 +200,14 @@ public strictfp class SpawnHelper {
 		int ideal = builderDirection;
 		for (int i = 0; i < 5; i++) {
 			int l = (ideal + i) % 8, r = (ideal - i + 8) % 8;
-			if (rc.onTheMap(rc.getLocation().add(directions[l])) && !rc.isLocationOccupied(rc.getLocation().add(directions[l]))) {
+			if (rc.onTheMap(rc.getLocation().add(directions[l])) &&
+					!rc.canSenseRobotAtLocation(rc.getLocation().add(directions[l]))
+			) {
 				return directions[l];
 			}
-			if (rc.onTheMap(rc.getLocation().add(directions[r])) && !rc.isLocationOccupied(rc.getLocation().add(directions[r]))) {
+			if (rc.onTheMap(rc.getLocation().add(directions[r])) &&
+					!rc.canSenseRobotAtLocation(rc.getLocation().add(directions[r]))
+			) {
 				return directions[r];
 			}
 		}
@@ -217,7 +221,7 @@ public strictfp class SpawnHelper {
 		MapLocation curLoc = rc.getLocation();
 		for (int i = 8; --i >= 0;) {
 			MapLocation loc = curLoc.add(cur);
-			if (rc.canSenseLocation(loc) && !rc.isLocationOccupied(loc) && rc.senseRubble(loc) < minRubble){
+			if (rc.onTheMap(loc) && !rc.canSenseRobotAtLocation(loc) && rc.senseRubble(loc) < minRubble){
 				minRubble = rc.senseRubble(loc);
 				d = cur;
 			}
@@ -283,12 +287,12 @@ public strictfp class SpawnHelper {
 		for (int i = 0; i < 5; i++) {
 			Direction got = directions[Math.floorMod(dirInt + i, 8)];
 			MapLocation ml = current.add(got);
-			if (rc.onTheMap(ml) && !rc.isLocationOccupied(ml)) {
+			if (rc.onTheMap(ml) && !rc.canSenseRobotAtLocation(ml)) {
 				return got;
 			}
 			got = directions[Math.floorMod(dirInt - i, 8)];
 			ml = current.add(got);
-			if (rc.onTheMap(ml) && !rc.isLocationOccupied(ml)) {
+			if (rc.onTheMap(ml) && !rc.canSenseRobotAtLocation(ml)) {
 				return got;
 			}
 		}
