@@ -11,7 +11,7 @@ import static gen6.RobotPlayer.rc;
 public class FarmingHelper {
 
     private static final int FARM_RADIUS_LOWER = 2;
-    private static final int FARM_RADIUS_UPPER = 34;
+    private static final int FARM_RADIUS_UPPER = 20;
 
     public static MapLocation getFarmCenter() {
         return Builder.myArchonLocation;
@@ -37,7 +37,7 @@ public class FarmingHelper {
         int minDist = 10000;
         for (int i = mls.length; --i >= 0; ) {
             MapLocation ml = mls[i];
-            if (isLocationInFarm(ml) && rc.senseLead(ml) == 0 && !rc.canSenseRobotAtLocation(ml)) {
+            if (rc.onTheMap(ml) && isLocationInFarm(ml) && rc.senseLead(ml) == 0 && !rc.isLocationOccupied(ml)) {
                 int dist = my.distanceSquaredTo(ml);
                 if (dist < minDist) {
                     best = ml;

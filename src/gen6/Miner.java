@@ -2,11 +2,12 @@ package gen6;
 
 import battlecode.common.*;
 import gen6.common.CommsHelper;
+import gen6.common.util.LogCondition;
 import gen6.miner.GoldMiningHelper;
 import gen6.miner.LeadMiningHelper;
 import gen6.common.MovementHelper;
 import gen6.common.Functions;
-import gen6.soldier.TailHelper;
+import gen6.common.util.Logger;
 
 import java.util.Random;
 
@@ -21,8 +22,9 @@ public strictfp class Miner {
 		return sigmoid((250-rc.getRoundNum())/100.0);
 	}
 
-	private static MapLocation myTargetLocation;
+	private static MapLocation myArchonLocation, myTargetLocation;
 	private static Direction myDirection;
+	private static int myArchonIndex;
 	private static boolean isGoldMiner = false;
 	private static boolean isExplorer = false;
 	private static final Random random = new Random(rc.getID());
@@ -30,12 +32,12 @@ public strictfp class Miner {
 	private static int stillCount = 0;
 	public static void run() throws GameActionException {
 		// update location each round
+		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
 
 		// Update the miner count
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(8, rc.readSharedArray(8) + 1);
 		}
-		TailHelper.updateTarget();
 
 		int round = rc.getRoundNum();
 
@@ -86,9 +88,6 @@ public strictfp class Miner {
 
 		MapLocation lead = LeadMiningHelper.spotLead();
 		if (lead != null) {
-			if (rc.getLocation().isWithinDistanceSquared(lead, 2)) {
-				return MovementHelper.lazyMove(lead);
-			}
 			return MovementHelper.moveBellmanFord(lead);
 		}
 		if (isExplorer) {
@@ -120,7 +119,7 @@ public strictfp class Miner {
 		return MovementHelper.moveBellmanFord(myDirection);
 	}
 
-	private static final boolean[] directionsExplored = new boolean[9];
+	private static boolean[] directionsExplored = new boolean[9];
 	private static int directionsExploredCount = 0;
 
 	private static void updateDirectionsExplored() throws GameActionException {
@@ -170,6 +169,14 @@ public strictfp class Miner {
 			int value = rc.readSharedArray(i + 32);
 			if (getBits(value, 15, 15) == 1) {
 				++maxArchonCount;
+				value = rc.readSharedArray(i + 50);
+				MapLocation archonLocation = new MapLocation(
+						getBits(value, 6, 11), getBits(value, 0, 5)
+				);
+				if (rc.getLocation().distanceSquaredTo(archonLocation) <= 2) {
+					myArchonLocation = archonLocation;
+					myArchonIndex = i;
+				}
 			} else {
 				break;
 			}

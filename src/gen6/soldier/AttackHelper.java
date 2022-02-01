@@ -3,7 +3,6 @@ package gen6.soldier;
 import battlecode.common.RobotInfo;
 import battlecode.common.GameActionException;
 import battlecode.common.Direction;
-import battlecode.common.RobotType;
 
 import static gen6.RobotPlayer.*;
 import static gen6.Soldier.allRobots;
@@ -18,7 +17,7 @@ public strictfp class AttackHelper {
 	// BUILDER
 	// SOLDIER
 	// SAGE
-	public static final int[] priority = {3, 2, 4, 1, 0, 5, 6};
+	public static final int[] priority = {3, 0, 4, 2, 1, 5, 6};
 
 	public static void attack() throws GameActionException {
 		if (!rc.isActionReady()) {
@@ -136,10 +135,7 @@ public strictfp class AttackHelper {
 			}
 		}
 
-		if (ourRobots >= enemyRobots + 1 && myType != RobotType.SAGE) {
-			return null;
-		}
-		if (enemyRobots == 0) {
+		if (ourRobots >= enemyRobots + 1) {
 			return null;
 		}
 

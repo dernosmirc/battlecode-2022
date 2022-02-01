@@ -2,14 +2,10 @@ package gen6;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import battlecode.common.Clock;
 import gen6.common.MovementHelper;
-import gen6.miner.GoldMiningHelper;
-import gen6.miner.LeadMiningHelper;
 import gen6.sage.SageAttackHelper;
 import gen6.sage.SageMovementHelper;
 import gen6.soldier.SoldierDensity;
-import gen6.soldier.TailHelper;
 
 import static gen6.RobotPlayer.maxArchonCount;
 import static gen6.RobotPlayer.rc;
@@ -26,17 +22,8 @@ public strictfp class Sage {
 			rc.writeSharedArray(9, rc.readSharedArray(9) + 1);
 		}
 		SoldierDensity.update();
-		TailHelper.updateTarget();
-		if (rc.isActionReady()) {
-			SageAttackHelper.attack();
-		}
-		if (rc.isMovementReady()) {
-			SageMovementHelper.move();
-		}
-		GoldMiningHelper.updateGoldAmountInGridCell();
-		if (Clock.getBytecodeNum() < 5500) {
-			LeadMiningHelper.updateLeadAmountInGridCell();
-		}
+		SageAttackHelper.attack();
+		SageMovementHelper.move();
 	}
 
 	public static void init() throws GameActionException {

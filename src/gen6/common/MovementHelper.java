@@ -25,13 +25,30 @@ public class MovementHelper {
         }
     }
 
+    public static boolean moveAndAvoid(
+            Direction direction, MapLocation location, int distanceSquared
+    ) throws GameActionException {
+        Direction[] dirs = {
+                direction,
+                direction.rotateLeft(),
+                direction.rotateRight()
+        };
+        for (Direction dir: dirs) {
+            if (!rc.getLocation().add(dir).isWithinDistanceSquared(location, distanceSquared)) {
+                if (tryMove(dir, false)) {
+                    return true;
+                }
+            }
+        }
+        return tryMove(direction, false);
+    }
+
     public static boolean tryMove (MapLocation loc, boolean force) throws GameActionException {
         return tryMove(rc.getLocation().directionTo(loc), force);
     }
 
     public static boolean tryMove (Direction dir, boolean force) throws GameActionException {
         if (dir == null || dir == Direction.CENTER) {
-            if (force) return false;
             dir = Functions.getRandomDirection();
         }
         if (rc.isMovementReady()) {
@@ -64,41 +81,6 @@ public class MovementHelper {
                     updateMovement(dir, true);
                     return true;
                 }
-            }
-        }
-        return false;
-    }
-
-    public static boolean lazyMove (MapLocation dir) throws GameActionException {
-        return lazyMove(rc.getLocation().directionTo(dir));
-    }
-
-    public static boolean lazyMove (Direction dir) throws GameActionException {
-        if (dir == null || dir == Direction.CENTER) {
-            dir = Functions.getRandomDirection();
-        }
-        if (rc.isMovementReady()) {
-            Direction[] dirs = {
-                    dir.rotateRight(),
-                    dir,
-                    dir.rotateLeft(),
-            };
-            MapLocation ml = rc.getLocation();
-            Direction opt = null;
-            int leastRubble = rc.senseRubble(ml);
-            for (int i = 0; i < dirs.length; i++) {
-                if (rc.canMove(dirs[i])) {
-                    int rubble = rc.senseRubble(ml.add(dirs[i]));
-                    if (leastRubble > rubble) {
-                        opt = dirs[i];
-                        leastRubble = rubble;
-                    }
-                }
-            }
-            if (opt != null && rc.canMove(opt)) {
-                rc.move(opt);
-                updateMovement(opt, true);
-                return true;
             }
         }
         return false;
@@ -239,31 +221,4 @@ public class MovementHelper {
 
         return false;
     }
-
-    public static Direction getAntiCrowdingDirection() {
-        double[] ratios = new double[8], filter = {.25, .50, .25};
-        MapLocation current = rc.getLocation();
-        RobotInfo[] mls = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam);
-        double total = mls.length;
-        for (int i = mls.length; --i >= 0; ) {
-            ratios[current.directionTo(mls[i].location).ordinal()]++;
-        }
-
-        for (int i = 0; i < 8; i++) {
-            ratios[i] /= total;
-        }
-
-        ratios = Functions.convolveCircularly(ratios, filter);
-
-        int maxInd = -1;
-        double maxRatio = 0;
-        for (int i = 0; i < 8; i++) {
-            if (ratios[i] > maxRatio) {
-                maxRatio = ratios[i];
-                maxInd = i;
-            }
-        }
-        return directions[(maxInd+4)%8];
-    }
-
 }

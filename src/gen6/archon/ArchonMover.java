@@ -1,22 +1,28 @@
 package gen6.archon;
 
-import battlecode.common.*;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotInfo;
 
 import gen6.Archon;
+import gen6.RobotPlayer;
 import gen6.common.*;
 import gen6.common.bellmanford.HeuristicsProvider;
 import gen6.common.bellmanford.heuristics.Heuristics20;
 import gen6.common.util.Vector;
 import gen6.soldier.SoldierDensity;
 
+import java.util.Comparator;
+
 import static gen6.RobotPlayer.*;
-import static gen6.common.Functions.directionTo;
 
 public class ArchonMover {
 
+    public static final int RUBBLE_THRESHOLD = 16;
     public static final int RUBBLE_THRESHOLD_STOP = 30;
     public static final int MIN_DISTANCE_BETWEEN_ARCHONS = 13;
-    public static final int TOO_CLOSE_RANGE = 34;
+    public static final int TOO_CLOSE_RANGE = 13;
 
     public static RubbleGrid rubbleGrid = new RubbleGrid();
 
@@ -43,15 +49,19 @@ public class ArchonMover {
         return archon;
     }
 
-    private static int getWeightedAverageRubble(MapLocation center, RubbleGrid grid) {
-        return grid.get(center.add(Direction.NORTH)) +
-                grid.get(center.add(Direction.NORTHEAST)) +
-                grid.get(center.add(Direction.EAST)) +
-                grid.get(center.add(Direction.SOUTHEAST)) +
-                grid.get(center.add(Direction.SOUTH)) +
-                grid.get(center.add(Direction.SOUTHWEST)) +
-                grid.get(center.add(Direction.WEST)) +
-                grid.get(center.add(Direction.NORTHWEST));
+    private static double getWeightedAverageRubble(MapLocation center, RubbleGrid grid) {
+        int centerRubble = grid.get(center);
+        int totalRuble = centerRubble, totalLocations = 4;
+        Direction[] dirs = RobotPlayer.directions;
+        for (int i = dirs.length; --i >= 0; ) {
+            int rubble = grid.get(center.add(dirs[i]));
+            if (rubble < centerRubble) {
+                return Double.MAX_VALUE;
+            }
+            totalRuble += rubble;
+            totalLocations++;
+        }
+        return totalRuble / (double) totalLocations;
     }
 
     public static boolean isEnemyAround() {
@@ -68,19 +78,6 @@ public class ArchonMover {
         return Functions.getAntiEdgeDirection(ml, 5);
     }
 
-    public static int lowHpAttackerCount() {
-        int count = 0;
-        RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam);
-        if (ris.length > 35) return 35;
-        for (int i = ris.length; --i >= 0;) {
-            RobotInfo ri = ris[i];
-            if (ri.mode == RobotMode.DROID && ri.type.canAttack() && ri.health < ri.type.getMaxHealth(ri.level)) {
-                count++;
-            }
-        }
-        return count;
-    }
-
     public static boolean shouldRelocate(MapLocation relocate) throws GameActionException {
         if (!rc.canTransform()) return false;
         if (relocate == null) return false;
@@ -88,17 +85,19 @@ public class ArchonMover {
         if (CommsHelper.getFarthestArchon() != Archon.myIndex) return false;
         if (CommsHelper.anyArchonMoving()) return false;
         if (rc.getLocation().isWithinDistanceSquared(relocate, TOO_CLOSE_RANGE)) return false;
-        if (lowHpAttackerCount() > 5) return false;
+        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length > 15) return false;
         return !isEnemyAround();
     }
 
     public static boolean shouldRelocateNearby(MapLocation betterSpot) throws GameActionException {
         if (!rc.canTransform()) return false;
-        if (rc.getRoundNum() < 25) return false;
+        if (rc.getRoundNum() < 50) return false;
+        if (maxArchonCount == 1) return false;
         if (betterSpot == null) return false;
+        if (rc.senseRubble(rc.getLocation()) == 0) return false;
         if (archonOnMostRubble() != Archon.myIndex) return false;
         if (CommsHelper.anyArchonMoving()) return false;
-        if (lowHpAttackerCount() > 15) return false;
+        if (rc.senseNearbyRobots(myType.visionRadiusSquared).length > 30) return false;
         return !isEnemyAround();
     }
 
@@ -157,9 +156,8 @@ public class ArchonMover {
         }
         int[] locsX = heuristicsProvider.getLocationsX(direction.ordinal());
         int[] locsY = heuristicsProvider.getLocationsY(direction.ordinal());
-        Vector<MapLocation> spots = new Vector<>(locsX.length);
+        Vector<GridInfo> spots = new Vector<>(locsX.length);
         MapLocation[] mls = CommsHelper.getFriendlyArchonLocations();
-        int leastRubble = 100;
         for (int i = locsX.length; --i >= 0; ) {
             MapLocation ml = new MapLocation(locsX[i] + rnX_r, locsY[i] + rnY_r);
             boolean tooClose = false;
@@ -171,25 +169,20 @@ public class ArchonMover {
             }
             if (!tooClose) {
                 int rubble = grid.get(ml);
-                if (rubble <= leastRubble && distanceFromEdge(ml) > 5) {
-                    spots.add(ml);
-                    leastRubble = rubble;
+                if (rubble < RUBBLE_THRESHOLD && distanceFromEdge(ml) > 5) {
+                    spots.add(new GridInfo(rubble, ml));
                 }
             }
         }
-        int bestAvg = Integer.MAX_VALUE;
-        if (grid.get(rn) == leastRubble) {
-            bestAvg = getWeightedAverageRubble(rn, grid);
-        }
+        spots.sort(Comparator.comparingInt(GridInfo::getCount));
+        double bestAvg = Double.MAX_VALUE;
         MapLocation theSpot = rn;
         for (int i = spots.length; --i >= 0; ) {
-            MapLocation ml = spots.get(i);
-            if (grid.get(ml) == leastRubble) {
-                int avg = getWeightedAverageRubble(ml, grid);
-                if (bestAvg > avg) {
-                    bestAvg = avg;
-                    theSpot = ml;
-                }
+            MapLocation ml = spots.get(i).location;
+            double avg = getWeightedAverageRubble(ml, grid);
+            if (bestAvg > avg) {
+                bestAvg = avg;
+                theSpot = ml;
             }
         }
         return theSpot;
@@ -200,11 +193,11 @@ public class ArchonMover {
     }
 
     public static MapLocation getEmergencyStop() throws GameActionException {
-        MapLocation rn = rc.getLocation(), stop = rn;
-        int leastRubble = rc.senseRubble(rn);
-        for (int i = 8; --i >= 0;) {
+        MapLocation rn = rc.getLocation(), stop = null;
+        int leastRubble = 101;
+        for (int i = 9; --i >= 0;) {
             MapLocation ne = rn.add(Direction.values()[i]);
-            if (rc.onTheMap(ne) && !rc.canSenseRobotAtLocation(ne)) {
+            if (rc.canSenseLocation(ne) && !rc.isLocationOccupied(ne)) {
                 int rubble = rc.senseRubble(ne);
                 if (leastRubble > rubble) {
                     leastRubble = rubble;
@@ -218,51 +211,27 @@ public class ArchonMover {
     public static MapLocation getBetterSpotToSettle() throws GameActionException {
         MapLocation rn = rc.getLocation();
         MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 20);
-        Vector<MapLocation> spots = new Vector<>(locs.length);
+        Vector<GridInfo> spots = new Vector<>(locs.length);
         RubbleGrid grid = rubbleGrid;
-        int leastRubble = 100;
         for (int i = locs.length; --i >= 0; ) {
             MapLocation ml = locs[i];
-            int r = grid.get(ml);
-            if (r <= leastRubble && distanceFromEdge(ml) > 2) {
-                spots.add(ml);
-                leastRubble = r;
-            }
-        }
-        int bestAvg = Integer.MAX_VALUE;
-        if (grid.get(rn) == leastRubble) {
-            bestAvg = getWeightedAverageRubble(rn, grid);
-        }
-        MapLocation theSpot = null;
-        for (int i = spots.length; --i >= 0; ) {
-            MapLocation ml = spots.get(i);
-            if (leastRubble == grid.get(ml)) {
-                int avg = getWeightedAverageRubble(ml, grid);
-                if (bestAvg > avg) {
-                    bestAvg = avg;
-                    theSpot = ml;
+            if (!rn.isWithinDistanceSquared(ml, 5)) {
+                int r = grid.get(ml);
+                if (r < RUBBLE_THRESHOLD && distanceFromEdge(ml) > 5) {
+                    spots.add(new GridInfo(r, ml));
                 }
             }
         }
-        if (rc.getID() == 3 && rc.getRoundNum() > 120) {
-            int a = 1;
-        }
-        return theSpot;
-    }
-
-    public static Direction getAntiSoldierDirection() {
-        int dx = 0, dy = 0;
-        for (RobotInfo ri: rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
-            if (ri.type.canAttack()) {
-                Direction d = ri.location.directionTo(rc.getLocation());
-                dx += d.dx;
-                dy += d.dy;
+        double bestAvg = getWeightedAverageRubble(rn, grid);
+        MapLocation theSpot = null;
+        for (int i = Math.min(25, spots.length); --i >= 0; ) {
+            MapLocation ml = spots.get(i).location;
+            double avg = getWeightedAverageRubble(ml, grid);
+            if (bestAvg > avg) {
+                bestAvg = avg;
+                theSpot = ml;
             }
         }
-
-        if (dx == 0 && dy == 0) {
-            return null;
-        }
-        return directionTo(dx, dy);
+        return theSpot;
     }
 }

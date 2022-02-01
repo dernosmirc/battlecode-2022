@@ -55,7 +55,7 @@ public class BuildingHelper {
             }
         }
         for (RobotInfo ri: infos) {
-            if (ri.mode != RobotMode.DROID && ri.health < ri.type.getMaxHealth(ri.level)) {
+            if (ri.health < ri.type.getMaxHealth(ri.level)) {
                 return ri.location;
             }
         }
@@ -154,93 +154,5 @@ public class BuildingHelper {
                 );
         }
         return null;
-    }
-
-    public static MapLocation getNearestCorner(int archonIndex) throws GameActionException {
-        MapLocation archonLocation = CommsHelper.getLocationFrom12Bits(rc.readSharedArray(32 + archonIndex));
-        int w = rc.getMapWidth() - 1;
-        int h = rc.getMapHeight() - 1;
-        MapLocation[] possible = {
-            new MapLocation(0, 0),
-            new MapLocation(0, h),
-            new MapLocation(w, 0),
-            new MapLocation(w, h),
-        };
-
-        int minDistance = (w + 1) * (h + 1);
-        MapLocation best = possible[0];
-        for (int i = possible.length; --i >= 0; ) {
-            int distance = Functions.getDistance(archonLocation, possible[i]);
-            if (distance < minDistance) {
-                minDistance = distance;
-                best = possible[i];
-            }
-        }
-
-        return best;
-    }
-
-    public static MapLocation getOptimalEarlyLabLocation() throws GameActionException {
-        MapLocation[] locations = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), myType.visionRadiusSquared);
-        int minRubble = rc.senseRubble(rc.getLocation());
-        MapLocation optimalLocation = rc.getLocation();
-        int minEdgeDistance1 = getDistanceFromEdge(rc.getLocation());
-        int minEdgeDistance2 = getLargerDistanceFromEdge(rc.getLocation());
-        for (int i = locations.length; --i >= 0; ) {
-            MapLocation location = locations[i];
-            int rubble = rc.senseRubble(location);
-            if (rubble <= minRubble) {
-                if (rc.canSenseRobotAtLocation(location)) {
-                    RobotInfo robot = rc.senseRobotAtLocation(location);
-                    if (robot.mode == RobotMode.TURRET || robot.mode == RobotMode.PROTOTYPE) {
-                        continue;
-                    }
-                }
-
-                if (rubble < minRubble) {
-                    minRubble = rubble;
-                    optimalLocation = location;
-                    minEdgeDistance1 = getDistanceFromEdge(location);
-                    minEdgeDistance2 = getLargerDistanceFromEdge(location);
-                } else if (rubble == minRubble) {
-                    int edgeDistance1 = getDistanceFromEdge(location);
-                    int edgeDistance2 = getLargerDistanceFromEdge(location);
-                    if (edgeDistance1 < minEdgeDistance1) {
-                        minRubble = rubble;
-                        optimalLocation = location;
-                        minEdgeDistance1 = edgeDistance1;
-                        minEdgeDistance2 = edgeDistance2;
-                    } else if (edgeDistance1 == minEdgeDistance1 && edgeDistance2 < minEdgeDistance2) {
-                        minRubble = rubble;
-                        optimalLocation = location;
-                        minEdgeDistance1 = edgeDistance1;
-                        minEdgeDistance2 = edgeDistance2;
-                    }
-                }
-            }
-        }
-
-        return optimalLocation;
-    }
-
-    public static int getDistanceFromEdge(MapLocation location) {
-        int width = rc.getMapWidth();
-        int height = rc.getMapHeight();
-        int distance = Math.min(location.x, width - 1 - location.x);
-        distance = Math.min(distance, location.y);
-        distance = Math.min(distance, height - 1 - location.y);
-        return distance;
-    }
-
-    public static int getLargerDistanceFromEdge(MapLocation location) {
-        int width = rc.getMapWidth();
-        int height = rc.getMapHeight();
-        int distanceX = Math.min(location.x, width - 1 - location.x);
-        int distanceY = Math.min(location.y, height - 1 - location.y);
-        if (distanceX > distanceY) {
-            return distanceX;
-        } else {
-            return distanceY;
-        }
     }
 }

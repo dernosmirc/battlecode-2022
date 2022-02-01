@@ -8,6 +8,8 @@ import gen6.archon.SpawnHelper;
 import gen6.common.Functions;
 import gen6.common.MovementHelper;
 import gen6.common.SymmetryType;
+import gen6.common.util.LogCondition;
+import gen6.common.util.Logger;
 import gen6.soldier.SoldierDensity;
 import gen6.soldier.TailHelper;
 
@@ -76,38 +78,23 @@ public strictfp class Archon {
 	public static void updateSharedArray() throws GameActionException{
 		// Set count 0 before each round start
 		if (rc.getRoundNum()%2 == 1){
-			// Soldier
-			if (rc.readSharedArray(7) != 0) {
-				rc.writeSharedArray(7, 0);
-			}
-			// Miner
-			if (rc.readSharedArray(8) != 0) {
-				rc.writeSharedArray(8, 0);
-			}
-			// Sage
-			if (rc.readSharedArray(9) != 0) {
-				rc.writeSharedArray(9, 0);
-			}
-			// Builder
-			if (rc.readSharedArray(25) != 0) {
-				rc.writeSharedArray(25, 0);
-			}
-			// Lab
-			if (rc.readSharedArray(26) != 0) {
-				rc.writeSharedArray(26, 0);
+			rc.writeSharedArray(7, 0);
+			rc.writeSharedArray(8, 0);
+			rc.writeSharedArray(9, 0);
+		}
+		int v = rc.readSharedArray(32 + myIndex);
+		if (getBits(v, 13, 13) == 1){
+			return;
+		}
+		int v1 = rc.readSharedArray(6);
+		int cur = (getBits(v1, 2 * myIndex + 6, 2 * myIndex + 7) + 1)%3;
+		for (int i = 0; i < maxArchonCount; i++){
+			if (i == myIndex)	continue;
+			if ((cur - getBits(v1, 6 + 2 * i, 7 + 2 * i) + 3)%3 > 1){
+				rc.writeSharedArray(32 + i, setBits(rc.readSharedArray(32 + i), 13, 13, 1));
 			}
 		}
-
-		int roundNumber = rc.getRoundNum();
-		rc.writeSharedArray(54 + myIndex, roundNumber);
-		for (int i = maxArchonCount; --i >= 0; ) {
-			if (roundNumber - rc.readSharedArray(54 + i) >= 3) {
-				int value = rc.readSharedArray(32 + i);
-				if (getBits(value, 13, 13) == 0) {
-					rc.writeSharedArray(32 + i, setBits(value, 13, 13, 1));
-				}
-			}
-		}
+		rc.writeSharedArray(6, setBits(v1, 2 * myIndex + 6, 2 * myIndex + 7, cur));
 	}
 
 	public static void run() throws GameActionException {
@@ -130,11 +117,6 @@ public strictfp class Archon {
 
 		if (roundNumber % 2 == 1) {
 			ArchonMover.rubbleGrid.populate();
-		}
-
-		if (roundNumber == 1) {
-			act();
-			return;
 		}
 
 		if (rc.isMovementReady() || rc.isActionReady()) {
@@ -203,10 +185,9 @@ public strictfp class Archon {
 				goodSpot = relocate = null;
 				SpawnHelper.levelDroidsBuilt();
 			}
-			return;
 		}
 
-		if ((rn.equals(goodSpot) || staleLocation > 20 || ArchonMover.shouldStopMoving()) && rc.canTransform()) {
+		if (rn.equals(goodSpot) || staleLocation > 27 || ArchonMover.shouldStopMoving() && rc.canTransform()) {
 			transformNextRound = true;
 			MovementHelper.tryMove(ArchonMover.getEmergencyStop(), true);
 			return;
@@ -216,22 +197,9 @@ public strictfp class Archon {
 			return;
 		}
 
-		Direction antiSoldier = ArchonMover.getAntiSoldierDirection();
-		if (antiSoldier != null) {
-			if (MovementHelper.tryMove(antiSoldier, false)) {
-				staleLocation = 0;
-			} else {
-				staleLocation++;
-			}
-			return;
-		}
-
-
 		if (goodSpot != null) {
 			if (!MovementHelper.moveBellmanFord(goodSpot)) {
 				staleLocation++;
-			} else {
-				staleLocation = 0;
 			}
 			return;
 		}
@@ -241,7 +209,7 @@ public strictfp class Archon {
 				relocate = rn;
 			}
 		}
-		if (rn.isWithinDistanceSquared(relocate, 13)) {
+		if (rn.isWithinDistanceSquared(relocate, ArchonMover.TOO_CLOSE_RANGE)) {
 			goodSpot = ArchonMover.getSpotToSettle(rn.directionTo(relocate));
 			if (goodSpot == null) {
 				relocate = ArchonMover.getRelocateLocation();
@@ -250,13 +218,13 @@ public strictfp class Archon {
 		if (relocate != null) {
 			if (!MovementHelper.moveBellmanFord(relocate)) {
 				staleLocation++;
-			} else {
-				staleLocation = 0;
 			}
 		}
 	}
 
-	private static void spawnIt(RobotType toSpawn) throws GameActionException {
+	private static void act() throws GameActionException {
+		if (!rc.isActionReady()) return;
+		RobotType toSpawn = SpawnHelper.getNextDroid();
 		if (toSpawn != null) {
 			Direction direction = SpawnHelper.getOptimalDirection(directions[buildDirectionIndex], toSpawn);
 			if (direction != null && rc.canBuildRobot(toSpawn, direction)) {
@@ -265,20 +233,14 @@ public strictfp class Archon {
 				SpawnHelper.incrementDroidsBuilt(toSpawn);
 			}
 		}
-		if (buildDirectionIndex == 8) {
-			buildDirectionIndex = 0;
-		}
-	}
-
-	private static void act() throws GameActionException {
-		if (!rc.isActionReady()) return;
-		spawnIt(SpawnHelper.getNextDroid());
-
 		if (rc.isActionReady()) {
 			MapLocation toHeal = getHealLocation();
 			if (toHeal != null && rc.canRepair(toHeal)) {
 				rc.repair(toHeal);
 			}
+		}
+		if (buildDirectionIndex == 8) {
+			buildDirectionIndex = 0;
 		}
 	}
 
@@ -375,7 +337,6 @@ public strictfp class Archon {
 	}
 
 	public static void init() throws GameActionException {
-		spawnIt(RobotType.MINER);
 		MovementHelper.prepareBellmanFord(34);
 		maxArchonCount = rc.getArchonCount();
 		for (int i = 0; i < maxArchonCount; ++i) {

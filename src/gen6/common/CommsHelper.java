@@ -17,8 +17,6 @@ public strictfp class CommsHelper {
 	private static int SOLDIER_COUNT = 0;
 	private static int MINER_COUNT = 0;
 	private static int SAGE_COUNT = 0;
-	private static int BUILDER_COUNT = 0;
-	private static int LAB_COUNT = 0;
 	public static MapLocation getLocationFrom12Bits(int bits) {
 		return new MapLocation(getBits(bits, 6, 11), getBits(bits, 0, 5));
 	}
@@ -197,7 +195,7 @@ public strictfp class CommsHelper {
 		int minDistance = rc.getMapWidth() * rc.getMapHeight();
 		int archonIndex = 0;
 		for (int i = maxArchonCount; --i >= 0; ) {
-			if (archons[i] != null && !isArchonPortable(i)) {
+			if (archons[i] != null) {
 				int distance = getDistance(archons[i], centre);
 				if (distance < minDistance) {
 					minDistance = distance;
@@ -215,7 +213,7 @@ public strictfp class CommsHelper {
 		int maxDistance = 0;
 		int archonIndex = 0;
 		for (int i = maxArchonCount; --i >= 0; ) {
-			if (archons[i] != null && !isArchonPortable(i)) {
+			if (archons[i] != null) {
 				int distance = getDistance(archons[i], centre);
 				if (maxDistance < distance) {
 					maxDistance = distance;
@@ -329,28 +327,6 @@ public strictfp class CommsHelper {
 		}
 	}
 
-	public static int getAliveBuilderCount() throws GameActionException{
-		int roundNumber = rc.getRoundNum();
-		if (roundNumber%2 == 1){
-			return BUILDER_COUNT;
-		}
-		else{
-			BUILDER_COUNT = rc.readSharedArray(25);
-			return BUILDER_COUNT;
-		}
-	}
-
-	public static int getAliveLabCount() throws GameActionException{
-		int roundNumber = rc.getRoundNum();
-		if (roundNumber%2 == 1){
-			return LAB_COUNT;
-		}
-		else{
-			LAB_COUNT = rc.readSharedArray(26);
-			return LAB_COUNT;
-		}
-	}
-
     public static void setArchonPortable(int archonIndex, boolean portable) throws GameActionException {
         rc.writeSharedArray(
                 archonIndex + 32,
@@ -370,37 +346,5 @@ public strictfp class CommsHelper {
 			}
 		}
 		return false;
-	}
-
-	public static boolean builderBuilt() throws GameActionException {
-		return getBits(rc.readSharedArray(63), 0, 0) == 1;
-	}
-
-	public static void setBuilderBuilt() throws GameActionException {
-		int value = rc.readSharedArray(63);
-		if (getBits(value, 0, 0) == 0) {
-			value = setBits(value, 0, 0, 1);
-			rc.writeSharedArray(63, value);
-		}
-	}
-
-	public static boolean isEarlyBuilder() throws GameActionException {
-		return getBits(rc.readSharedArray(63), 1, 1) == 1;
-	}
-
-	public static void setEarlyBuilder() throws GameActionException {
-		int value = rc.readSharedArray(63);
-		if (getBits(value, 1, 1) == 0) {
-			value = setBits(value, 1, 1, 1);
-			rc.writeSharedArray(63, value);
-		}
-	}
-
-	public static void unsetEarlyBuilder() throws GameActionException {
-		int value = rc.readSharedArray(63);
-		if (getBits(value, 1, 1) == 1) {
-			value = setBits(value, 1, 1, 0);
-			rc.writeSharedArray(63, value);
-		}
 	}
 }

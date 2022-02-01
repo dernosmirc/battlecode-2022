@@ -11,9 +11,6 @@ import gen6.common.util.LogCondition;
 import gen6.common.util.Logger;
 import gen6.common.util.Pair;
 import gen6.sage.SageMovementHelper;
-import gen6.soldier.TailHelper;
-import gen6.miner.GoldMiningHelper;
-import gen6.miner.LeadMiningHelper;
 
 import static gen6.RobotPlayer.*;
 import static gen6.common.Functions.*;
@@ -29,8 +26,6 @@ public strictfp class Builder {
 		}
 	}
 
-	private static final int LAB_RUBBLE_THRESHOLD = 20;
-
 	public static MapLocation myArchonLocation;
 	public static Direction myDirection;
 	public static int myArchonIndex;
@@ -39,13 +34,9 @@ public strictfp class Builder {
 	public static BuilderType myBuilderType;
 	private static MapLocation farmCenter = null;
 
-	private static boolean amEarlyBuilder = false;
-	private static MapLocation labLocation = null;
-
 	private static void act() throws GameActionException {
 		MapLocation rn = rc.getLocation();
-		if (!amEarlyBuilder && myBuilderType == BuilderType.FarmSeed
-			&& FarmingHelper.isLocationInFarm(rn) && rc.senseLead(rn) == 0) {
+		if (myBuilderType == BuilderType.FarmSeed && FarmingHelper.isLocationInFarm(rn) && rc.senseLead(rn) == 0) {
 			rc.disintegrate();
 			return;
 		}
@@ -68,107 +59,12 @@ public strictfp class Builder {
 			return;
 		}
 
-		if (amEarlyBuilder) {
-			if (labLocation == null) {
-				if (rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead - 80) {
-					if (rc.isMovementReady()) {
-						MovementHelper.moveBellmanFord(BuildingHelper.getNearestCorner(myArchonIndex));
-					}
-					return;
-				}
-				labLocation = BuildingHelper.getOptimalEarlyLabLocation();
-			}
-
-			if (rc.getLocation().isAdjacentTo(labLocation)) {
-				RobotInfo lab = rc.senseRobotAtLocation(labLocation);
-				if (lab != null && lab.type == RobotType.LABORATORY && lab.health == lab.type.getMaxHealth(lab.level)) {
-					amEarlyBuilder = false;
-					myBuilderType = BuilderType.LabBuilder;
-					nextBuilding = new ConstructionInfo(RobotType.LABORATORY, BuildingHelper.getOptimalLabLocation());
-				}
-				if (lab != null && lab.type == RobotType.LABORATORY) {
-					return;
-				}
-			}
-
-			// Lab has not been built yet
-			if (rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead - 80) {
-				labLocation = null;
-				if (rc.isMovementReady()) {
-					MovementHelper.moveBellmanFord(BuildingHelper.getNearestCorner(myArchonIndex));
-				}
-				return;
-			}
-
-			if (rc.getTeamLeadAmount(myTeam) >= RobotType.LABORATORY.buildCostLead) {
-				int minRubble = 1000;
-				Direction optimalDirection = null;
-				int minEdgeDistance1 = rc.getMapWidth() * rc.getMapHeight();
-				int minEdgeDistance2 = minEdgeDistance1;
-				for (int i = directions.length; --i >= 0; ) {
-					Direction dir = directions[i];
-					if (rc.canBuildRobot(RobotType.LABORATORY, dir)) {
-						MapLocation location = rc.getLocation().add(dir);
-						int rubble = rc.senseRubble(location);
-						if (rubble < minRubble) {
-							minRubble = rubble;
-							optimalDirection = dir;
-							minEdgeDistance1 = BuildingHelper.getDistanceFromEdge(location);
-							minEdgeDistance2 = BuildingHelper.getLargerDistanceFromEdge(location);
-						} else if (rubble == minRubble) {
-							int edgeDistance1 = BuildingHelper.getDistanceFromEdge(location);
-							int edgeDistance2 = BuildingHelper.getLargerDistanceFromEdge(location);
-							if (edgeDistance1 < minEdgeDistance1) {
-								minRubble = rubble;
-								optimalDirection = dir;
-								minEdgeDistance1 = edgeDistance1;
-								minEdgeDistance2 = edgeDistance2;
-							} else if (edgeDistance1 == minEdgeDistance1 && edgeDistance2 < minEdgeDistance2) {
-		                        minRubble = rubble;
-		                        optimalDirection = dir;
-		                        minEdgeDistance1 = edgeDistance1;
-		                        minEdgeDistance2 = edgeDistance2;
-		                    }
-						}
-					}
-				}
-
-				if (optimalDirection != null && rc.canBuildRobot(RobotType.LABORATORY, optimalDirection)) {
-					rc.buildRobot(RobotType.LABORATORY, optimalDirection);
-					labLocation = rc.getLocation().add(optimalDirection);
-					CommsHelper.updateLabBuilt(myArchonIndex);
-				}
-			} else if (rc.getLocation().equals(labLocation)) {
-				int minRubble = 1000;
-				Direction optimalDirection = null;
-				for (int i = directions.length; --i >= 0; ) {
-					Direction dir = directions[i];
-					MapLocation location = rc.getLocation().add(dir);
-					if (rc.canMove(dir)) {
-						int rubble = rc.senseRubble(location);
-						if (rubble < minRubble) {
-							minRubble = rubble;
-							optimalDirection = dir;
-						}
-					}
-				}
-
-				if (optimalDirection != null && rc.canMove(optimalDirection)) {
-					MovementHelper.tryMove(optimalDirection, true);
-				}
-			} else if (!rc.getLocation().isAdjacentTo(labLocation)) {
-				MovementHelper.moveBellmanFord(labLocation);
-			}
-
-			return;
-		}
-
 		if (nextBuilding != null) {
 			Direction buildDirection = rc.getLocation().directionTo(nextBuilding.location);
 			if (
 					rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 2)
 			) {
-				boolean highRubble = rc.senseRubble(nextBuilding.location) > LAB_RUBBLE_THRESHOLD;
+				boolean highRubble = rc.senseRubble(nextBuilding.location) > 30;
 				if (rc.canBuildRobot(nextBuilding.type, buildDirection) && !highRubble) {
 					rc.buildRobot(nextBuilding.type, buildDirection);
 					switch (nextBuilding.type) {
@@ -193,7 +89,7 @@ public strictfp class Builder {
 						for (int d = 1; d < 4; d++) {
 							if (rc.canSenseLocation(left)) {
 								lab = rc.senseRobotAtLocation(left);
-								if ((lab == null || lab.mode != RobotMode.TURRET) && rc.senseRubble(left) <= LAB_RUBBLE_THRESHOLD) {
+								if ((lab == null || lab.mode != RobotMode.TURRET) && rc.senseRubble(left) <= 30) {
 									nextBuilding = new ConstructionInfo(
 											RobotType.LABORATORY, left
 									);
@@ -202,7 +98,7 @@ public strictfp class Builder {
 							}
 							if (rc.canSenseLocation(right)) {
 								lab = rc.senseRobotAtLocation(right);
-								if ((lab == null || lab.mode != RobotMode.TURRET) && rc.senseRubble(right) <= LAB_RUBBLE_THRESHOLD) {
+								if ((lab == null || lab.mode != RobotMode.TURRET) && rc.senseRubble(right) <= 30) {
 									nextBuilding = new ConstructionInfo(
 											RobotType.LABORATORY, right
 									);
@@ -269,12 +165,6 @@ public strictfp class Builder {
 	}
 
 	public static void run() throws GameActionException {
-		// Update the builder count
-		if (rc.getRoundNum()%2 == 1){
-			rc.writeSharedArray(25, rc.readSharedArray(25) + 1);
-		}
-		TailHelper.updateTarget();
-
 		// update location each round
 		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
 
@@ -284,32 +174,17 @@ public strictfp class Builder {
 		if (rc.isActionReady()) {
 			act();
 		}
-
-		if (amEarlyBuilder) {
-			GoldMiningHelper.updateGoldAmountInGridCell();
-			if (Clock.getBytecodesLeft() >= 4500) {
-				LeadMiningHelper.updateLeadAmountInGridCell();
-			}
-			return;
-		}
-
 		MapLocation construction = null;
-		if (nextBuilding != null && rc.getTeamLeadAmount(myTeam) >= nextBuilding.type.buildCostLead) {
+		if (nextBuilding != null && rc.getTeamLeadAmount(myTeam) > nextBuilding.type.buildCostLead) {
 			construction = nextBuilding.location;
 		}
 		if (rc.isMovementReady() && BuildingHelper.shouldMove(myArchonLocation, construction)) {
 			move();
 		}
-
-		GoldMiningHelper.updateGoldAmountInGridCell();
-		if (Clock.getBytecodesLeft() >= 4500) {
-			LeadMiningHelper.updateLeadAmountInGridCell();
-		}
 	}
 
 	public static void init() throws GameActionException {
 		maxArchonCount = 0;
-		amEarlyBuilder = CommsHelper.isEarlyBuilder();
 		MovementHelper.prepareBellmanFord(20);
 		for (int i = 0; i < 4; ++i) {
 			int value = rc.readSharedArray(i + 32);

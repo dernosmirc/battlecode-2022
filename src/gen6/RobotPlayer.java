@@ -8,7 +8,7 @@ import java.util.Comparator;
 public strictfp class RobotPlayer {
 
 	// toggle logs
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 
 	public static RobotController rc;
 	public static Team myTeam, enemyTeam;
@@ -67,46 +67,36 @@ public strictfp class RobotPlayer {
 			case SAGE:
 				Sage.init();
 				break;
-			case LABORATORY:
-				Laboratory.init();
-				break;
 		}
 
 		while (true) {
-			try {
-				switch (myType) {
-					case LABORATORY:
-						Laboratory.run();
-						break;
-					case MINER:
-						Miner.run();
-						break;
-					case BUILDER:
-						Builder.run();
-						break;
-					case SAGE:
-						Sage.run();
-						break;
-					case SOLDIER:
-						Soldier.run();
-						break;
-					case WATCHTOWER:
-						Watchtower.run();
-						break;
-					case ARCHON:
-						Archon.run();
-						break;
-				}
-			} catch (GameActionException e) {
-				System.out.println(myType + " exception");
-				e.printStackTrace();
-			} catch (Exception e) {
-				System.out.println(myType + " exception");
-                e.printStackTrace();
-			} finally {
-				updateIncome();
-				Clock.yield();
+			switch (myType) {
+				case LABORATORY:
+					Laboratory.run();
+					break;
+				case MINER:
+					Miner.run();
+					break;
+				case BUILDER:
+					Builder.run();
+					break;
+				case SAGE:
+					Sage.run();
+					break;
+				case SOLDIER:
+					Soldier.run();
+					break;
+				case WATCHTOWER:
+					Watchtower.run();
+					break;
+				case ARCHON:
+					Archon.run();
+					break;
 			}
+
+			updateIncome();
+
+			Clock.yield();
 		}
 	}
 }

@@ -12,56 +12,21 @@ import java.util.Random;
 import static gen6.RobotPlayer.*;
 import static gen6.common.Functions.getBits;
 import static gen6.common.Functions.sigmoid;
-import static gen6.Laboratory.getExpectedMiners;
 
 public strictfp class SpawnHelper {
 	private static final int ARCHON_MUTATE_WINDOW = 50;
-	private static final int LAB_WINDOW = 25;
+	private static final int LAB_WINDOW = 75;
 	private static final int SOLDIER_SAGE_RATIO = 3;
 
 	private static final Random random = new Random(rc.getID());
 
 	private static double getSoldierMinerRatio() {
-		return 1.5 + 1.5*sigmoid((rc.getRoundNum() - 1000.0)/200);
+		return 2 + sigmoid((rc.getRoundNum() - 1000.0)/200);
 	}
 
 	private static boolean shouldBuildMiner() throws GameActionException {
 		int attackWeight = CommsHelper.getAliveSoldierCount() + SOLDIER_SAGE_RATIO * CommsHelper.getAliveSageCount();
 		return attackWeight > getSoldierMinerRatio()*CommsHelper.getAliveMinerCount();
-	}
-
-	private static boolean isLabTime() {
-		if (rc.getMapWidth() * rc.getMapHeight() < 30 * 30) {
-			if (rc.getRoundNum() > 150 && labBuildersBuilt < 1) return true;
-			if (rc.getRoundNum() > 500 && labBuildersBuilt < 2) return true;
-			if (rc.getRoundNum() > 1000 && labBuildersBuilt < 3) return true;
-		} else {
-			if (rc.getRoundNum() > 0 && labBuildersBuilt < 1) return true;
-			if (rc.getRoundNum() > 200 && labBuildersBuilt < 2) return true;
-			if (rc.getRoundNum() > 500 && labBuildersBuilt < 3) return true;
-		}
-		return false;
-	}
-
-	private static boolean isLabWindow() {
-		if (rc.getMapWidth() * rc.getMapHeight() < 30 * 30) {
-			if (rc.getRoundNum() > 200 && rc.getRoundNum() < 200 + LAB_WINDOW) return true;
-			if (rc.getRoundNum() > 550 && rc.getRoundNum() < 550 + LAB_WINDOW) return true;
-			if (rc.getRoundNum() > 1050 && rc.getRoundNum() < 1050 + LAB_WINDOW) return true;
-			if (rc.getRoundNum() > 1250 && rc.getRoundNum() < 1250 + LAB_WINDOW) return true;
-			if (rc.getRoundNum() > 1550 && rc.getRoundNum() < 1550 + LAB_WINDOW) return true;
-			if (rc.getRoundNum() > 1750 && rc.getRoundNum() < 1750 + LAB_WINDOW) return true;
-		} else {
-			if (rc.getRoundNum() > 50 && rc.getRoundNum() < 50 + LAB_WINDOW) return true;
-			if (rc.getRoundNum() > 300 && rc.getRoundNum() < 300 + LAB_WINDOW) return true;
-			if (rc.getRoundNum() > 550 && rc.getRoundNum() < 550 + LAB_WINDOW) return true;
-			if (rc.getRoundNum() > 750 && rc.getRoundNum() < 750 + LAB_WINDOW) return true;
-			if (rc.getRoundNum() > 1050 && rc.getRoundNum() < 1050 + LAB_WINDOW) return true;
-			if (rc.getRoundNum() > 1250 && rc.getRoundNum() < 1250 + LAB_WINDOW) return true;
-			if (rc.getRoundNum() > 1500 && rc.getRoundNum() < 1500 + LAB_WINDOW) return true;
-			if (rc.getRoundNum() > 1750 && rc.getRoundNum() < 1750 + LAB_WINDOW) return true;
-		}
-		return false;
 	}
 
 	private static double getSoldierWeight() throws GameActionException {
@@ -80,13 +45,15 @@ public strictfp class SpawnHelper {
 
 	private static double getBuilderWeight() {
 		if (rc.getRoundNum() < 1000 && farmSeedsBuilt > 15) return 0.00;
-		if (rc.getRoundNum() < 1000) return 0.5;
+		if (rc.getRoundNum() < 250) return 0.00;
+		if (rc.getRoundNum() < 500) return 0.5;
+		if (rc.getRoundNum() < 1000) return 0.25;
 		if (labBuildersBuilt < 2 && rc.getRoundNum() > 1000) return 0.100;
 		return 0.005;
 	}
 
 	private static BuilderType geNextBuilderType() {
-		if (rc.getRoundNum() < 500 || random.nextDouble() < 0.95) {
+		if (rc.getRoundNum() < 1000) {
 			farmSeedsBuilt++;
 			return BuilderType.FarmSeed;
 		} else {
@@ -96,16 +63,20 @@ public strictfp class SpawnHelper {
 	}
 
 	public static double getLeadThreshold() throws GameActionException {
-		if (isLabWindow()) return 225;
+		if (175 <= rc.getRoundNum() && rc.getRoundNum() < 175 + LAB_WINDOW &&
+				CommsHelper.getNumberOfLabs() < 1
+		) return 260;
 		if (1250 <= rc.getRoundNum() && rc.getRoundNum() < 1250 + ARCHON_MUTATE_WINDOW &&
 				!CommsHelper.allLArchonsMutated(2)
-		) return 350;
-		return 50;
+		) return 375;
+		if (1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + LAB_WINDOW &&
+				!CommsHelper.allLabsBuilt()
+		) return 260;
+		return 75;
 	}
 
 	private static double getSageGoldThreshold() throws GameActionException {
-		if (gettingAttacked) return 20;
-		if (CommsHelper.getCentralArchon() != Archon.myIndex) return 40;
+		if (CommsHelper.getCentralArchon() != Archon.myIndex) return 100;
 		return 20;
 	}
 
@@ -129,12 +100,6 @@ public strictfp class SpawnHelper {
 				break;
 			case BUILDER:
 				buildersBuilt++;
-				if (!CommsHelper.builderBuilt()) {
-					CommsHelper.setBuilderBuilt();
-					CommsHelper.setEarlyBuilder();
-				} else {
-					CommsHelper.unsetEarlyBuilder();
-				}
 				break;
 			case SAGE:
 				sagesBuilt++;
@@ -149,10 +114,9 @@ public strictfp class SpawnHelper {
 		updateDeadArchons();
 		for (int i = 0; i < maxArchonCount; ++i) {
 			if (Archon.myIndex != i && !archonDead[i] && !CommsHelper.isArchonPortable(i)) {
-				droidsBuilt = Math.max(droidsBuilt, getBits(rc.readSharedArray(10 + i), 0, 11));
+				droidsBuilt = getBits(rc.readSharedArray(10 + i), 0, 11);
 			}
 		}
-		droidsBuilt--;
 	}
 
 	private static boolean[] archonDead = new boolean[4];
@@ -194,24 +158,24 @@ public strictfp class SpawnHelper {
 		return false;
 	}
 
-	private static int builderDirection = 0;
+	private static final boolean[] builderSpawned = new boolean[8];
 	private static Direction getOptimalBuilderSpawnDirection() throws GameActionException {
-		builderDirection = (builderDirection + 1) % 8;
-		int ideal = builderDirection;
+		MapLocation center = new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
+		int ideal = rc.getLocation().directionTo(center).ordinal();
 		for (int i = 0; i < 5; i++) {
 			int l = (ideal + i) % 8, r = (ideal - i + 8) % 8;
-			if (rc.onTheMap(rc.getLocation().add(directions[l])) &&
-					!rc.canSenseRobotAtLocation(rc.getLocation().add(directions[l]))
-			) {
+			MapLocation ml = rc.getLocation().add(directions[l]);
+			if (!builderSpawned[l] && rc.onTheMap(ml) && !rc.isLocationOccupied(ml)) {
+				builderSpawned[l] = true;
 				return directions[l];
 			}
-			if (rc.onTheMap(rc.getLocation().add(directions[r])) &&
-					!rc.canSenseRobotAtLocation(rc.getLocation().add(directions[r]))
-			) {
+			ml = rc.getLocation().add(directions[r]);
+			if (!builderSpawned[r] && rc.onTheMap(ml) && !rc.isLocationOccupied(ml)) {
+				builderSpawned[r] = true;
 				return directions[r];
 			}
 		}
-		return null;
+		return getOptimalSoldierSpawnDirection();
 	}
 
 	private static Direction getOptimalSoldierSpawnDirection() throws GameActionException{
@@ -221,7 +185,7 @@ public strictfp class SpawnHelper {
 		MapLocation curLoc = rc.getLocation();
 		for (int i = 8; --i >= 0;) {
 			MapLocation loc = curLoc.add(cur);
-			if (rc.onTheMap(loc) && !rc.canSenseRobotAtLocation(loc) && rc.senseRubble(loc) < minRubble){
+			if (rc.canSenseLocation(loc) && !rc.isLocationOccupied(loc) && rc.senseRubble(loc) < minRubble){
 				minRubble = rc.senseRubble(loc);
 				d = cur;
 			}
@@ -275,8 +239,6 @@ public strictfp class SpawnHelper {
 			to = getOptimalMinerSpawnDirection();
 		} else if (type == RobotType.SOLDIER) {
 			to = getOptimalSoldierSpawnDirection();
-		} else if (type == RobotType.SAGE) {
-			to = getOptimalSoldierSpawnDirection();
 		}
 		MapLocation current = rc.getLocation();
 		if (to == null) {
@@ -287,12 +249,12 @@ public strictfp class SpawnHelper {
 		for (int i = 0; i < 5; i++) {
 			Direction got = directions[Math.floorMod(dirInt + i, 8)];
 			MapLocation ml = current.add(got);
-			if (rc.onTheMap(ml) && !rc.canSenseRobotAtLocation(ml)) {
+			if (rc.onTheMap(ml) && !rc.isLocationOccupied(ml)) {
 				return got;
 			}
 			got = directions[Math.floorMod(dirInt - i, 8)];
 			ml = current.add(got);
-			if (rc.onTheMap(ml) && !rc.canSenseRobotAtLocation(ml)) {
+			if (rc.onTheMap(ml) && !rc.isLocationOccupied(ml)) {
 				return got;
 			}
 		}
@@ -311,61 +273,48 @@ public strictfp class SpawnHelper {
 	}
 
 	public static int mapSizeType = 0;
-	private static boolean gettingAttacked = false;
 
 	public static RobotType getNextDroid() throws GameActionException {
-		gettingAttacked = isEnemyAround();
 		if (getSageGoldThreshold() <= rc.getTeamGoldAmount(myTeam)) {
 			return RobotType.SAGE;
 		}
 
-		if (gettingAttacked) {
-			return RobotType.SOLDIER;
+		if (CommsHelper.getFarthestArchon() == Archon.myIndex &&
+				labBuildersBuilt < 1 && 100 <= rc.getRoundNum()
+		) {
+			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
+			labBuildersBuilt++;
+			return RobotType.BUILDER;
 		}
 
 		double threshold = getLeadThreshold();
-		if (rc.getRoundNum() > 1 && rc.getTeamLeadAmount(myTeam) < threshold * getArchonDroidPriority()) {
+		if (rc.getTeamLeadAmount(myTeam) < threshold * getArchonDroidPriority()) {
 			return null;
-		}
-
-		if (minersBuilt >= 1 && CommsHelper.getFarthestArchon() == Archon.myIndex && !CommsHelper.builderBuilt()) {
-			return RobotType.BUILDER;
 		}
 
 		if (isVeryCloseToEnemy()) {
 			int centerFactor = maxArchonCount;
 			if (minersBuilt < 3/centerFactor) return RobotType.MINER;
-			// if (soldiersBuilt < 6*centerFactor) return RobotType.SOLDIER;
-			if (soldiersBuilt < 2) return RobotType.SOLDIER;
-			if (CommsHelper.getNumberOfLabs() == 0
-					&& rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead + 50) return null;
+			if (soldiersBuilt < 6*centerFactor) return RobotType.SOLDIER;
 		} else {
-			if (minersBuilt < 3) return RobotType.MINER;
-			// if (soldiersBuilt < 2) return RobotType.SOLDIER;
-			if (CommsHelper.getNumberOfLabs() == 0
-					&& rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead + 50) return null;
-			// if (soldiersBuilt < 4) return RobotType.SOLDIER;
+			if (minersBuilt < 4) return RobotType.MINER;
+			if (soldiersBuilt < 6) return RobotType.SOLDIER;
+			if (minersBuilt < 6) return RobotType.MINER;
+			if (soldiersBuilt < 9) return RobotType.SOLDIER;
 		}
 
-		if (CommsHelper.getAliveMinerCount() < getExpectedMiners()) {
-			return RobotType.MINER;
-		}
-
-		if (CommsHelper.getFarthestArchon() == Archon.myIndex && isLabWindow() && labBuildersBuilt < 1) {
-			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
-			labBuildersBuilt++;
-			return RobotType.BUILDER;
-		}
-
-		if (isLabWindow() && labBuildersBuilt < 3) {
-			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
-			labBuildersBuilt++;
-			return RobotType.BUILDER;
-		}
-
-		if (!isBuilderAround() && !gettingAttacked && repairersBuilt < 3) {
+		if (!isBuilderAround() && !isEnemyAround() && repairersBuilt < 3) {
 			CommsHelper.setBuilderType(BuilderType.Repairer, Archon.myIndex);
 			repairersBuilt++;
+			return RobotType.BUILDER;
+		}
+
+		if (
+				labBuildersBuilt < 2 &&
+						1000 <= rc.getRoundNum() && rc.getRoundNum() < 1000 + LAB_WINDOW
+		) {
+			CommsHelper.setBuilderType(BuilderType.LabBuilder, Archon.myIndex);
+			labBuildersBuilt++;
 			return RobotType.BUILDER;
 		}
 
@@ -383,11 +332,7 @@ public strictfp class SpawnHelper {
 		min /= total;
 		bui /= total;
 		if (rand < sol) {
-			if (rand < 0.05 || rc.getTeamLeadAmount(myTeam) >= 300 || CommsHelper.getNumberOfLabs() == 0) {
-				return RobotType.SOLDIER;
-			} else {
-				return null;
-			}
+			return RobotType.SOLDIER;
 		}
 		if (rand < sol + min) {
 			return RobotType.MINER;
