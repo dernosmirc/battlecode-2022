@@ -164,7 +164,6 @@ public class SageMovementHelper {
         }
 
         SoldierMovementHelper.circleAround(archonLocation);
-        return;
     }
 
     private static Vector<Integer> chargeRounds;
