@@ -4,7 +4,6 @@ import battlecode.common.*;
 import gen6.common.MovementHelper;
 
 import static gen6.RobotPlayer.*;
-import static gen6.RobotPlayer.rc;
 
 public class SageAttackHelper {
 
@@ -16,10 +15,9 @@ public class SageAttackHelper {
     // BUILDER
     // SOLDIER
     // SAGE
-    private static final int[] priority = {6, 2, 5, 1, 0, 3, 4};
+    private static final int[] priority = {3, 2, 4, 1, 0, 5, 6};
 
     private static final int SAGE_ATTACK_THRESHOLD = 1;
-
     private static final double EXP_DAMAGE_FACTOR = 1;
     private static final double EXP_RUBBLE_FACTOR = 1;
 
@@ -46,7 +44,7 @@ public class SageAttackHelper {
     }
 
     public static AttackInfo bestDamageFrom(MapLocation ml, RobotInfo[] ris) throws GameActionException {
-        if (!rc.onTheMap(ml) || rc.isLocationOccupied(ml)) return null;
+        if (!rc.onTheMap(ml) || rc.canSenseRobotAtLocation(ml)) return null;
 
         int maxPriority = -1;
         int furyDamage = 0, chargeDamage = 0, attackDamage = 0;
@@ -66,7 +64,7 @@ public class SageAttackHelper {
 
             if (robot.mode == RobotMode.TURRET) {
                 furyDamage += Math.min(robot.health, robot.type.getMaxHealth(robot.level)/10);
-            } else if (robot.mode == RobotMode.DROID) {
+            } else if (robot.mode == RobotMode.DROID && robot.type.canAttack()) {
                 chargeDamage += Math.min(robot.health, (robot.type.getMaxHealth(robot.level) * 22)/100);
             }
             int typeIndex = robot.type.ordinal();
@@ -112,20 +110,23 @@ public class SageAttackHelper {
         AttackInfo best = null;
         if (current != null) {
             bestFactor = Math.pow(current.totalMaxDamage, EXP_DAMAGE_FACTOR) /
-                    Math.pow(rc.senseRubble(rn), EXP_RUBBLE_FACTOR);
+                    Math.pow(1 + rc.senseRubble(rn), EXP_RUBBLE_FACTOR);
             best = current;
         }
-        for (int i = 8; --i >= 0;) {
-            Direction d = Direction.values()[i];
-            MapLocation ml = rn.add(d);
-            AttackInfo info = bestDamageFrom(ml, robots);
-            if (info == null) continue;
-            double factor = Math.pow(info.totalMaxDamage, EXP_DAMAGE_FACTOR) /
-                    Math.pow(rc.senseRubble(ml), EXP_RUBBLE_FACTOR);
-            if (bestFactor < factor) {
-                bestFactor = factor;
-                bestDirection = d;
-                best = info;
+
+        if (rc.isMovementReady()) {
+            for (int i = 8; --i >= 0;) {
+                Direction d = directions[i];
+                MapLocation ml = rn.add(d);
+                AttackInfo info = bestDamageFrom(ml, robots);
+                if (info == null) continue;
+                double factor = Math.pow(info.totalMaxDamage, EXP_DAMAGE_FACTOR) /
+                        Math.pow(1 + rc.senseRubble(ml), EXP_RUBBLE_FACTOR);
+                if (bestFactor < factor) {
+                    bestFactor = factor;
+                    bestDirection = d;
+                    best = info;
+                }
             }
         }
 
@@ -151,6 +152,7 @@ public class SageAttackHelper {
                     if (rc.canAttack(best.attackLocation)) {
                         rc.attack(best.attackLocation);
                     }
+                    break;
             }
         }
     }
