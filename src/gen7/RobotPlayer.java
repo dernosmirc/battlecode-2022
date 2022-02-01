@@ -97,12 +97,9 @@ public strictfp class RobotPlayer {
 						Archon.run();
 						break;
 				}
-			} catch (GameActionException e) {
-				System.out.println(myType + " exception");
-				e.printStackTrace();
 			} catch (Exception e) {
 				System.out.println(myType + " exception");
-                e.printStackTrace();
+				e.printStackTrace();
 			} finally {
 				updateIncome();
 				Clock.yield();

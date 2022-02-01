@@ -6,6 +6,8 @@ import gen7.Archon;
 import gen7.common.*;
 import gen7.common.bellmanford.HeuristicsProvider;
 import gen7.common.bellmanford.heuristics.Heuristics20;
+import gen7.common.util.LogCondition;
+import gen7.common.util.Logger;
 import gen7.common.util.Vector;
 import gen7.soldier.SoldierDensity;
 
@@ -234,7 +236,7 @@ public class ArchonMover {
             bestAvg = getWeightedAverageRubble(rn, grid);
         }
         MapLocation theSpot = null;
-        for (int i = spots.length; --i >= 0; ) {
+        for (int i = Math.min(spots.length, 40); --i >= 0; ) {
             MapLocation ml = spots.get(i);
             if (leastRubble == grid.get(ml)) {
                 int avg = getWeightedAverageRubble(ml, grid);
@@ -243,9 +245,6 @@ public class ArchonMover {
                     theSpot = ml;
                 }
             }
-        }
-        if (rc.getID() == 3 && rc.getRoundNum() > 120) {
-            int a = 1;
         }
         return theSpot;
     }
