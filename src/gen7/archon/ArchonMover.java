@@ -244,6 +244,8 @@ public class ArchonMover {
                     bestAvg = avg;
                     theSpot = ml;
                 }
+            } else {
+                break;
             }
         }
         return theSpot;
