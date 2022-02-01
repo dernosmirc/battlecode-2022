@@ -3,6 +3,7 @@ package gen6.soldier;
 import battlecode.common.RobotInfo;
 import battlecode.common.GameActionException;
 import battlecode.common.Direction;
+import battlecode.common.RobotType;
 
 import static gen6.RobotPlayer.*;
 import static gen6.Soldier.allRobots;
@@ -135,7 +136,10 @@ public strictfp class AttackHelper {
 			}
 		}
 
-		if (ourRobots >= enemyRobots + 1) {
+		if (ourRobots >= enemyRobots + 1 && myType != RobotType.SAGE) {
+			return null;
+		}
+		if (enemyRobots == 0) {
 			return null;
 		}
 
