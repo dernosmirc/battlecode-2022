@@ -236,7 +236,7 @@ public class ArchonMover {
             bestAvg = getWeightedAverageRubble(rn, grid);
         }
         MapLocation theSpot = null;
-        for (int i = Math.min(spots.length, 40); --i >= 0; ) {
+        for (int i = spots.length; --i >= Math.max(spots.length - 40, 0); ) {
             MapLocation ml = spots.get(i);
             if (leastRubble == grid.get(ml)) {
                 int avg = getWeightedAverageRubble(ml, grid);
