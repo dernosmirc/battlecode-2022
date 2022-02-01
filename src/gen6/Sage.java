@@ -27,8 +27,12 @@ public strictfp class Sage {
 		}
 		SoldierDensity.update();
 		TailHelper.updateTarget();
-		SageAttackHelper.attack();
-		SageMovementHelper.move();
+		if (rc.isActionReady()) {
+			SageAttackHelper.attack();
+		}
+		if (rc.isMovementReady()) {
+			SageMovementHelper.move();
+		}
 		GoldMiningHelper.updateGoldAmountInGridCell();
 		if (Clock.getBytecodeNum() < 5500) {
 			LeadMiningHelper.updateLeadAmountInGridCell();

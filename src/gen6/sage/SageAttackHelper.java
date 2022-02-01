@@ -1,11 +1,13 @@
 package gen6.sage;
 
 import battlecode.common.*;
+import gen6.common.MovementHelper;
 
 import static gen6.RobotPlayer.*;
 import static gen6.RobotPlayer.rc;
 
 public class SageAttackHelper {
+
 
     // ARCHON
     // LABORATORY
@@ -18,27 +20,53 @@ public class SageAttackHelper {
 
     private static final int SAGE_ATTACK_THRESHOLD = 1;
 
-    public static void attack() throws GameActionException {
-        if (!rc.isActionReady()) {
-            return;
+    private static final double EXP_DAMAGE_FACTOR = 1;
+    private static final double EXP_RUBBLE_FACTOR = 1;
+
+    enum AttackType {
+        Fury, Charge, Attack
+    }
+
+    static class AttackInfo {
+        final int totalMaxDamage;
+        final AttackType type;
+        final MapLocation attackLocation;
+
+        AttackInfo(AttackType type, int damage) {
+            this.attackLocation = null;
+            this.type = type;
+            this.totalMaxDamage = damage;
         }
+
+        AttackInfo(AttackType type, int damage, MapLocation attackLocation) {
+            this.attackLocation = attackLocation;
+            this.type = type;
+            this.totalMaxDamage = damage;
+        }
+    }
+
+    public static AttackInfo bestDamageFrom(MapLocation ml, RobotInfo[] ris) throws GameActionException {
+        if (!rc.onTheMap(ml) || rc.isLocationOccupied(ml)) return null;
 
         int maxPriority = -1;
         int furyDamage = 0, chargeDamage = 0, attackDamage = 0;
         RobotInfo robotToAttack = null;
-        RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.actionRadiusSquared);
-        for (int i = enemyRobots.length; --i >= 0; ) {
-            RobotInfo robot = enemyRobots[i];
+        for (int i = ris.length; --i >= 0; ) {
+            RobotInfo robot = ris[i];
+            if (!robot.location.isWithinDistanceSquared(ml, myType.actionRadiusSquared)) {
+                continue;
+            }
+
             if (robot.team == myTeam) {
                 if (robot.mode == RobotMode.TURRET) {
-                    furyDamage = -1000000000;
+                    furyDamage = Integer.MIN_VALUE;
                 }
                 continue;
             }
 
             if (robot.mode == RobotMode.TURRET) {
                 furyDamage += Math.min(robot.health, robot.type.getMaxHealth(robot.level)/10);
-            } else if (robot.mode == RobotMode.DROID && robot.type.canAttack()) {
+            } else if (robot.mode == RobotMode.DROID) {
                 chargeDamage += Math.min(robot.health, (robot.type.getMaxHealth(robot.level) * 22)/100);
             }
             int typeIndex = robot.type.ordinal();
@@ -53,40 +81,77 @@ public class SageAttackHelper {
             }
         }
 
-        if (furyDamage >= attackDamage && furyDamage >= chargeDamage && furyDamage > 0) {
+        if (furyDamage > 0 && furyDamage >= attackDamage && furyDamage >= chargeDamage) {
             if (rc.canEnvision(AnomalyType.FURY)) {
-                rc.envision(AnomalyType.FURY);
-                return;
+                return new AttackInfo(AttackType.Fury, furyDamage);
             }
         }
 
-        if (chargeDamage >= attackDamage && chargeDamage >= furyDamage && chargeDamage >= SAGE_ATTACK_THRESHOLD) {
+        if (chargeDamage >= SAGE_ATTACK_THRESHOLD && chargeDamage >= attackDamage && chargeDamage >= furyDamage) {
             if (rc.canEnvision(AnomalyType.CHARGE)) {
-                rc.envision(AnomalyType.CHARGE);
-                return;
+                return new AttackInfo(AttackType.Charge, chargeDamage);
             }
         }
 
-        if (maxPriority == -1 || attackDamage < SAGE_ATTACK_THRESHOLD) {
-            return;
+        if (maxPriority != -1 && attackDamage >= SAGE_ATTACK_THRESHOLD) {
+            if (rc.canAttack(robotToAttack.location)) {
+                return new AttackInfo(AttackType.Attack, attackDamage, robotToAttack.location);
+            }
         }
 
-        if (rc.canAttack(robotToAttack.location)) {
-            rc.attack(robotToAttack.location);
-        }
+        return null;
     }
 
-    public static MapLocation getArchonAttackLocation() {
-        RobotInfo[] enemyRobots = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
-        for (int i = enemyRobots.length; --i >= 0; ) {
+    public static void attack() throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots(myType.visionRadiusSquared);
+        MapLocation rn = rc.getLocation();
 
-            if (
-                    enemyRobots[i].type == RobotType.ARCHON &&
-                    !enemyRobots[i].location.isWithinDistanceSquared(rc.getLocation(), myType.actionRadiusSquared))
-            {
-                return enemyRobots[i].location;
+        Direction bestDirection = Direction.CENTER;
+        AttackInfo current = bestDamageFrom(rn, robots);
+        double bestFactor = 0;
+        AttackInfo best = null;
+        if (current != null) {
+            bestFactor = Math.pow(current.totalMaxDamage, EXP_DAMAGE_FACTOR) /
+                    Math.pow(rc.senseRubble(rn), EXP_RUBBLE_FACTOR);
+            best = current;
+        }
+        for (int i = 8; --i >= 0;) {
+            Direction d = Direction.values()[i];
+            MapLocation ml = rn.add(d);
+            AttackInfo info = bestDamageFrom(ml, robots);
+            if (info == null) continue;
+            double factor = Math.pow(info.totalMaxDamage, EXP_DAMAGE_FACTOR) /
+                    Math.pow(rc.senseRubble(ml), EXP_RUBBLE_FACTOR);
+            if (bestFactor < factor) {
+                bestFactor = factor;
+                bestDirection = d;
+                best = info;
             }
         }
-        return null;
+
+        if (bestFactor > 0) {
+            if (!MovementHelper.tryMove(bestDirection, true)) {
+                best = current;
+            }
+            if (best == null) {
+                return;
+            }
+            switch (best.type) {
+                case Fury:
+                    if (rc.canEnvision(AnomalyType.FURY)) {
+                        rc.envision(AnomalyType.FURY);
+                    }
+                    break;
+                case Charge:
+                    if (rc.canEnvision(AnomalyType.CHARGE)) {
+                        rc.envision(AnomalyType.CHARGE);
+                    }
+                    break;
+                case Attack:
+                    if (rc.canAttack(best.attackLocation)) {
+                        rc.attack(best.attackLocation);
+                    }
+            }
+        }
     }
 }
