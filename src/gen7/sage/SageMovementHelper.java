@@ -30,7 +30,8 @@ public class SageMovementHelper {
     private static void moveOrWait(MapLocation target) throws GameActionException {
         int actionCooldown = rc.getActionCooldownTurns() / 10;
         int distance = getDistance(rc.getLocation(), target);
-        if (actionCooldown <= distance * TURNS_PER_MOVE || actionCooldown <= 5) {
+        rc.setIndicatorString("" + actionCooldown + " " + distance + " " + target);
+        if (actionCooldown <= (distance - 4) * TURNS_PER_MOVE || actionCooldown <= 5 || distance > 10) {
             moveTowards(target);
         }
     }
@@ -142,7 +143,11 @@ public class SageMovementHelper {
         }
 
         if (TailHelper.foundTarget()) {
-            moveOrWait(TailHelper.getTargetLocation());
+            if (TailHelper.getTargetPriority() >= 3) {
+                moveOrWait(TailHelper.getTargetLocation());
+            } else {
+                moveTowards(TailHelper.getTargetLocation());
+            }
             return;
         }
 
