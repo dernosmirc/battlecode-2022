@@ -71,7 +71,6 @@ public strictfp class Builder {
 				RobotInfo lab = rc.senseRobotAtLocation(labLocation);
 				if (lab != null && lab.type == RobotType.LABORATORY && lab.team == myTeam) {
 					if (lab.health == lab.type.getMaxHealth(lab.level)) {
-						CommsHelper.updateLabBuilt(myArchonIndex);
 						labLocation = null;
 					} else {
 						return;
@@ -132,6 +131,7 @@ public strictfp class Builder {
 				if (optimalDirection != null && rc.canBuildRobot(RobotType.LABORATORY, optimalDirection)) {
 					rc.buildRobot(RobotType.LABORATORY, optimalDirection);
 					labLocation = rc.getLocation().add(optimalDirection);
+					CommsHelper.updateLabBuilt(myArchonIndex);
 				}
 
 				return;
