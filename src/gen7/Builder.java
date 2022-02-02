@@ -83,6 +83,7 @@ public strictfp class Builder {
 					amEarlyBuilder = false;
 					myBuilderType = BuilderType.LabBuilder;
 					nextBuilding = new ConstructionInfo(RobotType.LABORATORY, BuildingHelper.getOptimalLabLocation());
+					return;
 				}
 				if (lab != null && lab.type == RobotType.LABORATORY) {
 					return;
