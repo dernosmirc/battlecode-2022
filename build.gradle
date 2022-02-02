@@ -215,8 +215,8 @@ task run(type: JavaExec, dependsOn: 'build') {
         '-Dbc.game.team-b='+project.property('teamB'),
         '-Dbc.game.team-a.url='+project.property('classLocationA'),
         '-Dbc.game.team-b.url='+project.property('classLocationB'),
-        '-Dbc.testing.team-A.movement='+project.property('movementTypeA'),
-        '-Dbc.testing.team-B.movement='+project.property('movementTypeB'),
+        '-Dbc.testing.team-A.lab-hunter-ratio='+project.property('labHunterRatioA'),
+        '-Dbc.testing.team-B.lab-hunter-ratio='+project.property('labHunterRatioB'),
         '-Dbc.game.maps='+project.property('maps'),
         '-Dbc.server.save-file=' +project.property('replay')
     ]
@@ -285,8 +285,8 @@ task runDebug(type: JavaExec, dependsOn: 'build') {
             '-Dbc.game.team-b='+project.property('teamB'),
             '-Dbc.game.team-a.url='+project.property('classLocationA'),
             '-Dbc.game.team-b.url='+project.property('classLocationB'),
-            '-Dbc.testing.team-A.movement='+project.property('movementTypeA'),
-            '-Dbc.testing.team-B.movement='+project.property('movementTypeB'),
+            '-Dbc.testing.team-A.lab-hunter-ratio='+project.property('labHunterRatioA'),
+            '-Dbc.testing.team-B.lab-hunter-ratio='+project.property('labHunterRatioB'),
             '-Dbc.game.maps='+project.property('maps'),
             '-Dbc.server.save-file=' + project.property('replay')
     ]

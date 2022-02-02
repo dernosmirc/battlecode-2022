@@ -14,13 +14,12 @@ import gen7.soldier.TailHelper;
 
 import java.util.Random;
 
-import static gen7.RobotPlayer.maxArchonCount;
-import static gen7.RobotPlayer.rc;
+import static gen7.RobotPlayer.*;
 import static gen7.common.Functions.getBits;
 
 public strictfp class Sage {
 
-	private static final double LAB_HUNTER_RATIO = 0.075;
+	private static double LAB_HUNTER_RATIO = 0.075;
 
 	public static MapLocation myArchonLocation;
 	public static int myArchonIndex;
@@ -54,6 +53,13 @@ public strictfp class Sage {
 	}
 
 	public static void init() throws GameActionException {
+		LAB_HUNTER_RATIO = Double.parseDouble(
+				System.getProperty(
+						"bc.testing.team-" + myTeam.name() + ".lab-hunter-ratio",
+						"0.0"
+				)
+		);
+
 		maxArchonCount = 0;
 		isLabHunter = random.nextDouble() < LAB_HUNTER_RATIO;
 		isClockWise = random.nextDouble() < 0.5;

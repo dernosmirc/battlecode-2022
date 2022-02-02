@@ -5,14 +5,12 @@ import gen7.Sage;
 import gen7.common.CommsHelper;
 import gen7.common.Functions;
 import gen7.common.MovementHelper;
-import gen7.common.util.Pair;
 import gen7.common.util.Vector;
 import gen7.soldier.AttackHelper;
 import gen7.soldier.DefenseHelper;
 import gen7.soldier.SoldierMovementHelper;
 import gen7.soldier.TailHelper;
 
-import java.util.Map;
 
 import static gen7.RobotPlayer.*;
 import static gen7.common.Functions.getDistance;
@@ -21,10 +19,6 @@ public class SageMovementHelper {
 
     public static final int HP_THRESHOLD = 46;
     private static final int FULL_HEAL_THRESHOLD = 80;
-    private static final int TURNS_THRESHOLD = 10;
-
-    private static final int INNER_DEFENSE_RADIUS = 5;
-    private static final int OUTER_DEFENSE_RADIUS = 20;
 
     private static final double TURNS_PER_MOVE = 3;
 
@@ -39,14 +33,6 @@ public class SageMovementHelper {
         if (actionCooldown <= (distance - 4) * TURNS_PER_MOVE || actionCooldown <= 5 || distance > 10) {
             moveTowards(target);
         }
-    }
-
-    private static int distanceFromEdge(MapLocation ml) {
-        int w = rc.getMapWidth(), h = rc.getMapHeight();
-        return Math.min(
-                Math.min(w-ml.x, ml.x + 1),
-                Math.min(h-ml.y, ml.y + 1)
-        );
     }
 
     private static MapLocation getClosestEdge(MapLocation rn) {
@@ -70,14 +56,78 @@ public class SageMovementHelper {
         return new MapLocation(mx, my);
     }
 
+    private static MapLocation spotEnemyLab() {
+        RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
+        for (int i = ris.length; --i >= 0; ) {
+            if (ris[i].type == RobotType.LABORATORY) {
+                return ris[i].location;
+            }
+        }
+        return null;
+    }
+
     public static void moveToHuntLabs() throws GameActionException {
-        MapLocation rn = rc.getLocation();
+        if (rc.getHealth() < HP_THRESHOLD) {
+            MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
+            int minDistance = rc.getMapWidth() * rc.getMapHeight();
+            MapLocation archonLocation = null;
+            boolean foundTurret = false;
+            for (int i = maxArchonCount; --i >= 0; ) {
+                if (archons[i] != null) {
+                    int distance = getDistance(archons[i], rc.getLocation());
+                    if (!CommsHelper.isArchonPortable(i)) {
+                        if (!foundTurret) {
+                            foundTurret = true;
+                            minDistance = distance;
+                            archonLocation = archons[i];
+                        } else if (distance < minDistance) {
+                            minDistance = distance;
+                            archonLocation = archons[i];
+                        }
+                    } else if (!foundTurret && distance < minDistance) {
+                        minDistance = distance;
+                        archonLocation = archons[i];
+                    }
+                }
+            }
+
+            if (archonLocation == null) {
+                return;
+            }
+
+            int actionCooldown = rc.getActionCooldownTurns() / 10;
+            if (rc.getLocation().isWithinDistanceSquared(archonLocation, RobotType.ARCHON.actionRadiusSquared)) {
+                if (actionCooldown <= 5) {
+                    moveTowards(archonLocation);
+                } else {
+                    SoldierMovementHelper.circleAround(archonLocation);
+                }
+            } else {
+                SoldierMovementHelper.circleAround(archonLocation);
+            }
+
+            return;
+        }
+
+        Direction antiCharge = getAntiChargeLocation();
+        if (antiCharge != null) {
+            MovementHelper.tryMove(antiCharge, false);
+            return;
+        }
+
+        MapLocation lab = spotEnemyLab();
+        if (lab != null) {
+            MovementHelper.moveBellmanFord(lab);
+            return;
+        }
+
         Direction alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 6);
         if (alongEdge != null) {
             MovementHelper.tryMove(alongEdge, false);
-        } else {
-            MovementHelper.moveBellmanFord(getClosestEdge(rn));
+            return;
         }
+
+        MovementHelper.moveBellmanFord(getClosestEdge(rc.getLocation()));
     }
 
 
