@@ -74,7 +74,7 @@ public class SageMovementHelper {
         MapLocation rn = rc.getLocation();
         Direction alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 6);
         if (alongEdge != null) {
-            MovementHelper.moveBellmanFord(alongEdge);
+            MovementHelper.tryMove(alongEdge, false);
         } else {
             MovementHelper.moveBellmanFord(getClosestEdge(rn));
         }
