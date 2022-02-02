@@ -1,13 +1,18 @@
 package gen7.sage;
 
 import battlecode.common.*;
+import gen7.Sage;
 import gen7.common.CommsHelper;
+import gen7.common.Functions;
 import gen7.common.MovementHelper;
+import gen7.common.util.Pair;
 import gen7.common.util.Vector;
 import gen7.soldier.AttackHelper;
 import gen7.soldier.DefenseHelper;
 import gen7.soldier.SoldierMovementHelper;
 import gen7.soldier.TailHelper;
+
+import java.util.Map;
 
 import static gen7.RobotPlayer.*;
 import static gen7.common.Functions.getDistance;
@@ -36,11 +41,47 @@ public class SageMovementHelper {
         }
     }
 
-    public static void move() throws GameActionException {
-        if (!rc.isMovementReady()) {
-            return;
-        }
+    private static int distanceFromEdge(MapLocation ml) {
+        int w = rc.getMapWidth(), h = rc.getMapHeight();
+        return Math.min(
+                Math.min(w-ml.x, ml.x + 1),
+                Math.min(h-ml.y, ml.y + 1)
+        );
+    }
 
+    private static MapLocation getClosestEdge(MapLocation rn) {
+        int w = rc.getMapWidth() - 1, h = rc.getMapHeight() - 1;
+        int x = rn.x, y = rn.y, mx = x, my = 0, d = y;
+
+        if (x < d) {
+            mx = 0;
+            my = y;
+            d = x;
+        }
+        if (w - x < d) {
+            mx = w;
+            my = y;
+            d = w - x;
+        }
+        if (h - y < d) {
+            mx = x;
+            my = h;
+        }
+        return new MapLocation(mx, my);
+    }
+
+    public static void moveToHuntLabs() throws GameActionException {
+        MapLocation rn = rc.getLocation();
+        Direction alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 6);
+        if (alongEdge != null) {
+            MovementHelper.moveBellmanFord(alongEdge);
+        } else {
+            MovementHelper.moveBellmanFord(getClosestEdge(rn));
+        }
+    }
+
+
+    public static void move() throws GameActionException {
         Direction moveBack = AttackHelper.shouldMoveBack();
 
         MapLocation defenseLocation = DefenseHelper.getDefenseLocation();

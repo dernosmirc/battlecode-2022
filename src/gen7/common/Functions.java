@@ -183,7 +183,7 @@ public strictfp class Functions {
 		return null;
 	}
 
-	public Direction getEdgeDirection(MapLocation ml, int distance) {
+	public static Direction getEdgeDirection(MapLocation ml, int distance) {
 		Direction anti = getAntiEdgeDirection(ml, distance);
 		if (anti == null) {
 			return null;
