@@ -67,37 +67,32 @@ public strictfp class Builder {
 		}
 
 		if (amEarlyBuilder) {
-			if (labLocation == null) {
-				if (rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead - 80) {
-					if (rc.isMovementReady()) {
-						MovementHelper.moveBellmanFord(BuildingHelper.getNearestCorner(myArchonIndex));
-					}
-					return;
-				}
-				labLocation = BuildingHelper.getOptimalEarlyLabLocation();
-			}
-
-			if (rc.getLocation().isAdjacentTo(labLocation)) {
+			if (labLocation != null && rc.getLocation().isAdjacentTo(labLocation)) {
 				RobotInfo lab = rc.senseRobotAtLocation(labLocation);
-				if (lab != null && lab.type == RobotType.LABORATORY && lab.health == lab.type.getMaxHealth(lab.level)) {
-					// amEarlyBuilder = false;
-					// myBuilderType = BuilderType.LabBuilder;
-					// nextBuilding = new ConstructionInfo(RobotType.LABORATORY, BuildingHelper.getOptimalLabLocation());
-					// return;
-					lab = null;
-					labLocation = BuildingHelper.getOptimalEarlyLabLocation();
-				}
-				if (lab != null && lab.type == RobotType.LABORATORY) {
-					return;
+				if (lab != null && lab.type == RobotType.LABORATORY && lab.team == myTeam) {
+					if (lab.health == lab.type.getMaxHealth(lab.level)) {
+						CommsHelper.updateLabBuilt(myArchonIndex);
+						labLocation = null;
+					} else {
+						return;
+					}
 				}
 			}
 
-			// Lab has not been built yet
 			if (rc.getTeamLeadAmount(myTeam) < RobotType.LABORATORY.buildCostLead - 80) {
-				labLocation = null;
-				if (rc.isMovementReady()) {
-					MovementHelper.moveBellmanFord(BuildingHelper.getNearestCorner(myArchonIndex));
+				MapLocation nearestCorner = BuildingHelper.getNearestCorner(myArchonIndex);
+				if (rc.getLocation().isWithinDistanceSquared(nearestCorner, 13)) {
+					labLocation = BuildingHelper.getOptimalEarlyLabLocation();
+					if (rc.isMovementReady()) {
+						MovementHelper.moveBellmanFord(labLocation);
+					}
+				} else {
+					labLocation = null;
+					if (rc.isMovementReady()) {
+						MovementHelper.moveBellmanFord(nearestCorner);
+					}
 				}
+
 				return;
 			}
 
@@ -137,9 +132,16 @@ public strictfp class Builder {
 				if (optimalDirection != null && rc.canBuildRobot(RobotType.LABORATORY, optimalDirection)) {
 					rc.buildRobot(RobotType.LABORATORY, optimalDirection);
 					labLocation = rc.getLocation().add(optimalDirection);
-					CommsHelper.updateLabBuilt(myArchonIndex);
 				}
-			} else if (rc.getLocation().equals(labLocation)) {
+
+				return;
+			}
+
+			if (labLocation == null) {
+				labLocation = BuildingHelper.getOptimalEarlyLabLocation();
+			}
+
+			if (rc.getLocation().equals(labLocation)) {
 				int minRubble = 1000;
 				Direction optimalDirection = null;
 				for (int i = directions.length; --i >= 0; ) {
@@ -282,7 +284,7 @@ public strictfp class Builder {
 		if (rc.getRoundNum() > 1150 && rc.getRoundNum() < 1425 && myBuilderType != BuilderType.FarmSeed) {
 			mutateLab();
 		}
-		if (rc.isActionReady()) {
+		if (rc.isActionReady() || amEarlyBuilder) {
 			act();
 		}
 
