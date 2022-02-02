@@ -80,10 +80,12 @@ public strictfp class Builder {
 			if (rc.getLocation().isAdjacentTo(labLocation)) {
 				RobotInfo lab = rc.senseRobotAtLocation(labLocation);
 				if (lab != null && lab.type == RobotType.LABORATORY && lab.health == lab.type.getMaxHealth(lab.level)) {
-					amEarlyBuilder = false;
-					myBuilderType = BuilderType.LabBuilder;
-					nextBuilding = new ConstructionInfo(RobotType.LABORATORY, BuildingHelper.getOptimalLabLocation());
-					return;
+					// amEarlyBuilder = false;
+					// myBuilderType = BuilderType.LabBuilder;
+					// nextBuilding = new ConstructionInfo(RobotType.LABORATORY, BuildingHelper.getOptimalLabLocation());
+					// return;
+					lab = null;
+					labLocation = BuildingHelper.getOptimalEarlyLabLocation();
 				}
 				if (lab != null && lab.type == RobotType.LABORATORY) {
 					return;
