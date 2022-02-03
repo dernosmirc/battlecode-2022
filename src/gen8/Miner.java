@@ -102,10 +102,6 @@ public strictfp class Miner {
 			return MovementHelper.moveBellmanFord(myTargetLocation);
 		}
 
-		if (rc.getID() == 10251 && rc.getRoundNum() > 130) {
-			int a = 0;
-		}
-
 		GridInfo leadFar = LeadMiningHelper.spotLeadOnGrid();
 		MapLocation lead = null;
 		if (leadNear != null && leadFar != null) {

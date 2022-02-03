@@ -248,8 +248,11 @@ public strictfp class Builder {
 			}
 		}
 
-		SageMovementHelper.defenseRevolution(myArchonLocation);
-		return true;
+		if (myArchonLocation != null) {
+			SageMovementHelper.defenseRevolution(myArchonLocation);
+			return true;
+		}
+		return false;
 	}
 
 	public static void mutateLab() throws GameActionException{
