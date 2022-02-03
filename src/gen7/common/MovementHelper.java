@@ -263,6 +263,11 @@ public class MovementHelper {
                 maxInd = i;
             }
         }
+
+        if (maxRatio == 0) {
+            return null;
+        }
+
         return directions[(maxInd+4)%8];
     }
 

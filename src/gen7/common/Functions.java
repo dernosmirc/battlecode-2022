@@ -128,6 +128,11 @@ public strictfp class Functions {
 		return null;
 	}
 
+	public static boolean areAdjacent(Direction a, Direction b) {
+		if (a == null || b == null) return false;
+		return a.dx == b.dx || a.dy == b.dy;
+	}
+
 	public static Direction getDirectionAlongEdge(boolean clockwise, int distance) {
 		Direction anti = getAntiEdgeDirection(rc.getLocation(), distance);
 

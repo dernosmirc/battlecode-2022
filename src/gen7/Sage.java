@@ -19,7 +19,7 @@ import static gen7.common.Functions.getBits;
 
 public strictfp class Sage {
 
-	private static double LAB_HUNTER_RATIO = 0.075;
+	private static double LAB_HUNTER_RATIO = 0.05;
 
 	public static MapLocation myArchonLocation;
 	public static int myArchonIndex;
@@ -56,7 +56,7 @@ public strictfp class Sage {
 		LAB_HUNTER_RATIO = Double.parseDouble(
 				System.getProperty(
 						"bc.testing.team-" + myTeam.name() + ".lab-hunter-ratio",
-						"0.0"
+						"0.075"
 				)
 		);
 

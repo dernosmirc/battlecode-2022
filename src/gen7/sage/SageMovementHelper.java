@@ -13,7 +13,7 @@ import gen7.soldier.TailHelper;
 
 
 import static gen7.RobotPlayer.*;
-import static gen7.common.Functions.getDistance;
+import static gen7.common.Functions.*;
 
 public class SageMovementHelper {
 
@@ -66,46 +66,80 @@ public class SageMovementHelper {
         return null;
     }
 
-    public static void moveToHuntLabs() throws GameActionException {
-        if (rc.getHealth() < HP_THRESHOLD) {
-            MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
-            int minDistance = rc.getMapWidth() * rc.getMapHeight();
-            MapLocation archonLocation = null;
-            boolean foundTurret = false;
-            for (int i = maxArchonCount; --i >= 0; ) {
-                if (archons[i] != null) {
-                    int distance = getDistance(archons[i], rc.getLocation());
-                    if (!CommsHelper.isArchonPortable(i)) {
-                        if (!foundTurret) {
-                            foundTurret = true;
-                            minDistance = distance;
-                            archonLocation = archons[i];
-                        } else if (distance < minDistance) {
-                            minDistance = distance;
-                            archonLocation = archons[i];
-                        }
-                    } else if (!foundTurret && distance < minDistance) {
+    private static void retreat(Direction moveBack) throws GameActionException {
+        MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
+        int minDistance = rc.getMapWidth() * rc.getMapHeight();
+        MapLocation archonLocation = null;
+        boolean foundTurret = false;
+        for (int i = maxArchonCount; --i >= 0; ) {
+            if (archons[i] != null) {
+                int distance = getDistance(archons[i], rc.getLocation());
+                if (!CommsHelper.isArchonPortable(i)) {
+                    if (!foundTurret) {
+                        foundTurret = true;
+                        minDistance = distance;
+                        archonLocation = archons[i];
+                    } else if (distance < minDistance) {
                         minDistance = distance;
                         archonLocation = archons[i];
                     }
+                } else if (!foundTurret && distance < minDistance) {
+                    minDistance = distance;
+                    archonLocation = archons[i];
                 }
             }
+        }
 
-            if (archonLocation == null) {
-                return;
-            }
+        if (archonLocation == null) {
+            return;
+        }
 
-            int actionCooldown = rc.getActionCooldownTurns() / 10;
-            if (rc.getLocation().isWithinDistanceSquared(archonLocation, RobotType.ARCHON.actionRadiusSquared)) {
-                if (actionCooldown <= 5) {
-                    moveTowards(archonLocation);
-                } else {
-                    SoldierMovementHelper.circleAround(archonLocation);
-                }
+        int actionCooldown = rc.getActionCooldownTurns() / 10;
+        if (rc.getLocation().isWithinDistanceSquared(archonLocation, RobotType.ARCHON.actionRadiusSquared)) {
+            if (moveBack != null && actionCooldown <= 5) {
+                moveTowards(archonLocation);
+            } else if (moveBack != null) {
+                MovementHelper.greedyTryMove(moveBack);
             } else {
                 SoldierMovementHelper.circleAround(archonLocation);
             }
+        } else {
+            SoldierMovementHelper.circleAround(archonLocation);
+        }
 
+    }
+
+    private static int distanceFromEdge() {
+        MapLocation ml = rc.getLocation();
+        int w = rc.getMapWidth(), h = rc.getMapHeight();
+        return Math.min(
+                Math.min(w-ml.x, ml.x + 1),
+                Math.min(h-ml.y, ml.y + 1)
+        );
+    }
+
+
+    private static Direction getSoldierDirection() {
+        MapLocation rn = rc.getLocation();
+        int dx = 0, dy = 0;
+        for (RobotInfo ri: rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam)) {
+            if (ri.type.canAttack() || ri.type == RobotType.ARCHON) {
+                Direction d = rn.directionTo(ri.location);
+                dx += d.dx;
+                dy += d.dy;
+            }
+        }
+
+        if (dx == 0 && dy == 0) {
+            return null;
+        }
+        return directionTo(dx, dy);
+    }
+
+    private static Direction lastAlongEdge = null;
+    public static void moveToHuntLabs() throws GameActionException {
+        if (rc.getHealth() < HP_THRESHOLD) {
+            retreat(AttackHelper.shouldMoveBack());
             return;
         }
 
@@ -115,18 +149,32 @@ public class SageMovementHelper {
             return;
         }
 
+        Direction alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 6);
+        Direction soldier = getSoldierDirection();
+
+        if (Functions.areAdjacent(alongEdge, soldier)) {
+            Sage.isClockWise = !Sage.isClockWise;
+        }
+
         MapLocation lab = spotEnemyLab();
         if (lab != null) {
             MovementHelper.moveBellmanFord(lab);
             return;
         }
 
-        Direction alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 6);
+        alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 3);
         if (alongEdge != null) {
             MovementHelper.tryMove(alongEdge, false);
+            lastAlongEdge = alongEdge;
             return;
         }
 
+        if (distanceFromEdge() < 6 && lastAlongEdge != null) {
+            MovementHelper.tryMove(lastAlongEdge, false);
+            return;
+        }
+
+        lastAlongEdge = null;
         MovementHelper.moveBellmanFord(getClosestEdge(rc.getLocation()));
     }
 
@@ -153,46 +201,7 @@ public class SageMovementHelper {
         }
 
         if (rc.getHealth() < HP_THRESHOLD) {
-            MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
-            int minDistance = rc.getMapWidth() * rc.getMapHeight();
-            MapLocation archonLocation = null;
-            boolean foundTurret = false;
-            for (int i = maxArchonCount; --i >= 0; ) {
-                if (archons[i] != null) {
-                    int distance = getDistance(archons[i], rc.getLocation());
-                    if (!CommsHelper.isArchonPortable(i)) {
-                        if (!foundTurret) {
-                            foundTurret = true;
-                            minDistance = distance;
-                            archonLocation = archons[i];
-                        } else if (distance < minDistance) {
-                            minDistance = distance;
-                            archonLocation = archons[i];
-                        }
-                    } else if (!foundTurret && distance < minDistance) {
-                        minDistance = distance;
-                        archonLocation = archons[i];
-                    }
-                }
-            }
-
-            if (archonLocation == null) {
-                return;
-            }
-
-            int actionCooldown = rc.getActionCooldownTurns() / 10;
-            if (rc.getLocation().isWithinDistanceSquared(archonLocation, RobotType.ARCHON.actionRadiusSquared)) {
-                if (moveBack != null && actionCooldown <= 5) {
-                    moveTowards(archonLocation);
-                } else if (moveBack != null) {
-                    MovementHelper.greedyTryMove(moveBack);
-                } else {
-                    SoldierMovementHelper.circleAround(archonLocation);
-                }
-            } else {
-                SoldierMovementHelper.circleAround(archonLocation);
-            }
-
+            retreat(moveBack);
             return;
         }
 
