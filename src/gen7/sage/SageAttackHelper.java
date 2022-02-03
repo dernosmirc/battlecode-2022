@@ -45,7 +45,7 @@ public class SageAttackHelper {
     }
 
     public static AttackInfo bestDamageFrom(MapLocation ml, RobotInfo[] ris) throws GameActionException {
-        if (!rc.onTheMap(ml) || rc.canSenseRobotAtLocation(ml)) return null;
+        if (!ml.equals(rc.getLocation()) && (!rc.onTheMap(ml) || rc.canSenseRobotAtLocation(ml))) return null;
 
         int maxPriority = -1;
         int furyDamage = 0, chargeDamage = 0, attackDamage = 0;
