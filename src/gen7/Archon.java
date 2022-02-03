@@ -8,6 +8,7 @@ import gen7.archon.SpawnHelper;
 import gen7.common.Functions;
 import gen7.common.MovementHelper;
 import gen7.common.SymmetryType;
+import gen7.common.bellmanford.BellmanFord;
 import gen7.soldier.SoldierDensity;
 import gen7.soldier.TailHelper;
 
@@ -231,6 +232,7 @@ public strictfp class Archon {
 		}
 
 		if (!rc.isMovementReady()) {
+			BellmanFord.fillArrays();
 			return;
 		}
 

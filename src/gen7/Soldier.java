@@ -1,6 +1,7 @@
 package gen7;
 
 import battlecode.common.*;
+import gen7.common.bellmanford.BellmanFord;
 import gen7.soldier.SoldierMovementHelper;
 import gen7.miner.GoldMiningHelper;
 import gen7.miner.LeadMiningHelper;
@@ -49,6 +50,10 @@ public strictfp class Soldier {
 		// Update the soldier count
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(7, rc.readSharedArray(7) + 1);
+		}
+
+		if (!rc.isMovementReady()) {
+			BellmanFord.fillArrays();
 		}
 
 		allRobots = rc.senseNearbyRobots();
