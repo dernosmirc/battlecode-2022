@@ -29,8 +29,10 @@ public class SageMovementHelper {
     private static void moveOrWait(MapLocation target) throws GameActionException {
         int actionCooldown = rc.getActionCooldownTurns() / 10;
         int distance = getDistance(rc.getLocation(), target);
-        rc.setIndicatorString("" + actionCooldown + " " + distance + " " + target);
-        if (actionCooldown <= (distance - 4) * TURNS_PER_MOVE || actionCooldown <= 5 || distance > 10) {
+        int distanceSquared = rc.getLocation().distanceSquaredTo(target);
+        if (actionCooldown > 0 && distanceSquared <= 53) {
+            // wait
+        } else if (actionCooldown <= (distance - 4) * TURNS_PER_MOVE || actionCooldown <= 5 || distance > 10) {
             moveTowards(target);
         }
     }
