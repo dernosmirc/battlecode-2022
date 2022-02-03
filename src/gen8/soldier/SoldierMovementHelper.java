@@ -8,6 +8,7 @@ import gen8.common.MovementHelper;
 import static gen8.RobotPlayer.*;
 import static gen8.Soldier.*;
 import static gen8.common.Functions.getDistance;
+import static gen8.Sage.attackedThisRound;
 
 public strictfp class SoldierMovementHelper {
     private static final int INNER_DEFENSE_RADIUS = 4;
@@ -298,7 +299,11 @@ public strictfp class SoldierMovementHelper {
     }
 
     private static void moveTowards(MapLocation location) throws GameActionException {
-        if (MovementHelper.moveBellmanFord(location))
+        if (myType == RobotType.SAGE) {
+            if (!attackedThisRound && MovementHelper.moveBellmanFord(location)) {
+                return;
+            }
+        } else if (MovementHelper.moveBellmanFord(location))
             return;
 
         Direction dir = rc.getLocation().directionTo(location);

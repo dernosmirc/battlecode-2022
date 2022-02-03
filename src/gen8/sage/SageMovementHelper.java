@@ -317,7 +317,7 @@ public class SageMovementHelper {
     }
 
     private static void moveTowards(MapLocation location) throws GameActionException {
-        if (MovementHelper.moveBellmanFord(location))
+        if (!Sage.attackedThisRound && MovementHelper.moveBellmanFord(location))
             return;
 
         Direction dir = rc.getLocation().directionTo(location);

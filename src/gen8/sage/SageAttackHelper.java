@@ -111,6 +111,11 @@ public class SageAttackHelper {
         }
 
         if (maxPriority != -1 && attackDamage >= SAGE_ATTACK_THRESHOLD) {
+            if (robotToAttack45 != null && robotToAttack != null) {
+                if (priority[robotToAttack.type.ordinal()] > priority[robotToAttack45.type.ordinal()]) {
+                    robotToAttack45 = null;
+                }
+            }
             if (robotToAttack45 != null) {
                 return new AttackInfo(AttackType.Attack, attackDamage, robotToAttack45.location);
             } else {
@@ -152,7 +157,9 @@ public class SageAttackHelper {
         }
 
         if (bestFactor > 0) {
-            if (!MovementHelper.tryMove(bestDirection, true)) {
+            if (MovementHelper.tryMove(bestDirection, true)) {
+                best = bestDamageFrom(rc.getLocation(), rc.senseNearbyRobots(myType.actionRadiusSquared));
+            } else {
                 best = current;
             }
             if (best == null) {
@@ -162,16 +169,19 @@ public class SageAttackHelper {
                 case Fury:
                     if (rc.canEnvision(AnomalyType.FURY)) {
                         rc.envision(AnomalyType.FURY);
+                        Sage.attackedThisRound = true;
                     }
                     break;
                 case Charge:
                     if (rc.canEnvision(AnomalyType.CHARGE)) {
                         rc.envision(AnomalyType.CHARGE);
+                        Sage.attackedThisRound = true;
                     }
                     break;
                 case Attack:
                     if (rc.canAttack(best.attackLocation)) {
                         rc.attack(best.attackLocation);
+                        Sage.attackedThisRound = true;
                     }
                     break;
             }

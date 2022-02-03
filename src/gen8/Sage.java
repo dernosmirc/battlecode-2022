@@ -26,7 +26,7 @@ public strictfp class Sage {
 	public static int myArchonIndex;
 	private static final Random random = new Random(rc.getID());
 	public static boolean isLabHunter = false, isClockWise = false;
-
+	public static boolean attackedThisRound = false;
 
 	public static void run() throws GameActionException {
 		int round = rc.getRoundNum();
@@ -34,6 +34,7 @@ public strictfp class Sage {
 		if (round%2 == 1){
 			rc.writeSharedArray(9, rc.readSharedArray(9) + 1);
 		}
+		attackedThisRound = false;
 		updateEnemyArchonLocations();
 		SoldierDensity.update();
 		TailHelper.updateTarget();
