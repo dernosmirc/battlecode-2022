@@ -288,6 +288,9 @@ public strictfp class Builder {
 		if (rc.isActionReady() || amEarlyBuilder) {
 			act();
 		}
+		if (!rc.isMovementReady()) {
+			BellmanFord.fillArrays();
+		}
 
 		if (amEarlyBuilder) {
 			GoldMiningHelper.updateGoldAmountInGridCell();
@@ -303,8 +306,6 @@ public strictfp class Builder {
 		}
 		if (rc.isMovementReady() && BuildingHelper.shouldMove(myArchonLocation, construction)) {
 			move();
-		} else {
-			BellmanFord.fillArrays();
 		}
 
 		GoldMiningHelper.updateGoldAmountInGridCell();
