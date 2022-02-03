@@ -1,6 +1,7 @@
 package gen7.sage;
 
 import battlecode.common.*;
+import gen7.Sage;
 import gen7.common.MovementHelper;
 
 import static gen7.RobotPlayer.*;
@@ -60,6 +61,10 @@ public class SageAttackHelper {
                     furyDamage = Integer.MIN_VALUE;
                 }
                 continue;
+            }
+
+            if (Sage.isLabHunter && robot.type == RobotType.BUILDER) {
+                return new AttackInfo(AttackType.Attack, 120, robot.location);
             }
 
             if (robot.mode == RobotMode.TURRET) {

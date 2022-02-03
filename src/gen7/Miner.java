@@ -103,7 +103,7 @@ public strictfp class Miner {
 		}
 
 		boolean gotFromAntiCorner = false;
-		Direction antiCorner = Functions.getDirectionAlongEdge(clockwise, 3);
+		Direction antiCorner = Functions.getDirectionAlongEdge(clockwise, 3, false);
 		if (antiCorner != null) {
 			myDirection = antiCorner;
 			gotFromAntiCorner = true;
