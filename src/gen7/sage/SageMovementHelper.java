@@ -68,7 +68,7 @@ public class SageMovementHelper {
         return null;
     }
 
-    private static void retreat(Direction moveBack) throws GameActionException {
+    private static boolean retreat(Direction moveBack) throws GameActionException {
         MapLocation[] archons = CommsHelper.getFriendlyArchonLocations();
         int minDistance = rc.getMapWidth() * rc.getMapHeight();
         MapLocation archonLocation = null;
@@ -93,7 +93,11 @@ public class SageMovementHelper {
         }
 
         if (archonLocation == null) {
-            return;
+            return false;
+        }
+
+        if (Sage.isLabHunter && !getLocationIn3x3Grid(rc.getLocation()).equals(getLocationIn3x3Grid(archonLocation))) {
+            return false;
         }
 
         int actionCooldown = rc.getActionCooldownTurns() / 10;
@@ -109,6 +113,7 @@ public class SageMovementHelper {
             SoldierMovementHelper.circleAround(archonLocation);
         }
 
+        return true;
     }
 
     private static int distanceFromEdge() {
@@ -151,8 +156,9 @@ public class SageMovementHelper {
             clockWiseCoolDown--;
         }
         if (rc.getHealth() < HP_THRESHOLD) {
-            retreat(AttackHelper.shouldMoveBack());
-            return;
+            if (retreat(AttackHelper.shouldMoveBack())) {
+                return;
+            }
         }
 
         Direction antiCharge = getAntiChargeLocation();
@@ -316,5 +322,22 @@ public class SageMovementHelper {
 
         Direction dir = rc.getLocation().directionTo(location);
         MovementHelper.greedyTryMove(dir);
+    }
+
+    private static MapLocation getLocationIn3x3Grid(MapLocation location) {
+        return new MapLocation(getCoordinateIn3Segments(location.x, rc.getMapWidth()),
+                                getCoordinateIn3Segments(location.y, rc.getMapHeight()));
+    }
+
+    private static int getCoordinateIn3Segments(int x, int length) {
+        ++x;
+        int segment = length / 3;
+        if (x <= segment) {
+            return 0;
+        } else if (x <= 2 * segment + (length % 3 == 2 ? 1 : 0)) {
+            return 1;
+        } else {
+            return 2;
+        }
     }
 }
