@@ -197,9 +197,6 @@ public class LeadMiningHelper {
     }
 
     public static void updateLeadAmountInGridCell() throws GameActionException {
-        if (!shouldUpdateGrid()) {
-            return;
-        }
         GridInfo[] infos = getLeadOnGrid(), adj = getAdjacentLeadInfos();
         GridInfo bestCandidate = new GridInfo(0, rc.getLocation());
         for (int i = adj.length; --i >= 0;) {
@@ -216,7 +213,7 @@ public class LeadMiningHelper {
                 bestCandidate = mInfo;
             }
         }
-        if (bestCandidate.count > 0) {
+        if (bestCandidate.count > 0 && shouldUpdateGrid()) {
             addPositions(infos, bestCandidate);
         }
     }
