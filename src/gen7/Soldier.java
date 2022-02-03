@@ -26,7 +26,7 @@ public strictfp class Soldier {
 	public static boolean sensedEnemyAttackRobot;
 	public static RobotInfo[] allRobots;
 
-	private static void updateEnemyArchonLocations() throws GameActionException {
+	public static void updateEnemyArchonLocations() throws GameActionException {
 		for (int i = 0; i < maxArchonCount; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
