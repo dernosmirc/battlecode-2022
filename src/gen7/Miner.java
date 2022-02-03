@@ -2,7 +2,6 @@ package gen7;
 
 import battlecode.common.*;
 import gen7.common.CommsHelper;
-import gen7.common.bellmanford.BellmanFord;
 import gen7.miner.GoldMiningHelper;
 import gen7.miner.LeadMiningHelper;
 import gen7.common.MovementHelper;
@@ -60,8 +59,6 @@ public strictfp class Miner {
 					stillCount = 0;
 				}
 			}
-		} else {
-			BellmanFord.fillArrays();
 		}
 
 		if (Clock.getBytecodesLeft() >= 3500 && round == rc.getRoundNum()) {
@@ -106,7 +103,7 @@ public strictfp class Miner {
 		}
 
 		boolean gotFromAntiCorner = false;
-		Direction antiCorner = Functions.getDirectionAlongEdge(clockwise, 3, false);
+		Direction antiCorner = Functions.getDirectionAlongEdge(clockwise, 3);
 		if (antiCorner != null) {
 			myDirection = antiCorner;
 			gotFromAntiCorner = true;

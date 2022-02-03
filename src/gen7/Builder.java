@@ -7,7 +7,6 @@ import gen7.common.CommsHelper;
 import gen7.common.MovementHelper;
 import gen7.builder.MutationHelper;
 import gen7.builder.BuilderType;
-import gen7.common.bellmanford.BellmanFord;
 import gen7.common.util.Pair;
 import gen7.sage.SageMovementHelper;
 import gen7.soldier.TailHelper;
@@ -187,8 +186,8 @@ public strictfp class Builder {
 				} else if (nextBuilding.type == RobotType.LABORATORY) {
 					MapLocation req = nextBuilding.location;
 					RobotInfo lab = rc.senseRobotAtLocation(req);
-					Direction antiRight = getDirectionAlongEdge(true, 5, false),
-							antiLeft = getDirectionAlongEdge(false, 5, false);
+					Direction antiRight = getDirectionAlongEdge(true, 5),
+							antiLeft = getDirectionAlongEdge(false, 5);
 					if (
 							(lab != null && lab.mode == RobotMode.TURRET || highRubble)
 									&& antiRight != null && antiLeft != null
@@ -278,9 +277,6 @@ public strictfp class Builder {
 			rc.writeSharedArray(25, rc.readSharedArray(25) + 1);
 		}
 		TailHelper.updateTarget();
-		if (!rc.isMovementReady()) {
-			BellmanFord.fillArrays();
-		}
 
 		// update location each round
 		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
