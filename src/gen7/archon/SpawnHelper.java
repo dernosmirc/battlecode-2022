@@ -22,7 +22,7 @@ public strictfp class SpawnHelper {
 	private static final Random random = new Random(rc.getID());
 
 	private static double getSoldierMinerRatio() {
-		return 1.5 + 1.5*sigmoid((rc.getRoundNum() - 1000.0)/200);
+		return 1.5 + 4.5*sigmoid((rc.getRoundNum() - 1000.0)/200);
 	}
 
 	private static boolean shouldBuildMiner() throws GameActionException {

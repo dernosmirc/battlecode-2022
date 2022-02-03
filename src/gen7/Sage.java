@@ -56,7 +56,7 @@ public strictfp class Sage {
 		LAB_HUNTER_RATIO = Double.parseDouble(
 				System.getProperty(
 						"bc.testing.team-" + myTeam.name() + ".lab-hunter-ratio",
-						"0.075"
+						"0.05"
 				)
 		);
 
