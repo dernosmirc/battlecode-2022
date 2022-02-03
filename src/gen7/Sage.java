@@ -15,6 +15,7 @@ import gen7.soldier.TailHelper;
 import java.util.Random;
 
 import static gen7.RobotPlayer.*;
+import static gen7.Soldier.updateEnemyArchonLocations;
 import static gen7.common.Functions.getBits;
 
 public strictfp class Sage {
@@ -32,6 +33,7 @@ public strictfp class Sage {
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(9, rc.readSharedArray(9) + 1);
 		}
+		updateEnemyArchonLocations();
 		SoldierDensity.update();
 		TailHelper.updateTarget();
 		if (rc.isActionReady()) {
