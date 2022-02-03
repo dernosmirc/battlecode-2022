@@ -4,5 +4,5 @@ public enum BuilderType {
     FarmSeed,
     Repairer,
     WatchtowerBuilder,
-    LabBuilder
+    LabBuilder,
 }

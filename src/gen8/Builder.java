@@ -41,6 +41,17 @@ public strictfp class Builder {
 	private static boolean amEarlyBuilder = false;
 	private static MapLocation labLocation = null;
 
+	private static boolean moveTowards(MapLocation ml) throws GameActionException {
+		if (rc.getLocation().isWithinDistanceSquared(ml, myType.actionRadiusSquared)) {
+			MovementHelper.lazyMove(ml);
+			return true;
+		}
+		if (rc.getLocation().isWithinDistanceSquared(ml, 5)) {
+			return MovementHelper.tryMove(ml, false);
+		}
+		return MovementHelper.moveBellmanFord(ml);
+	}
+
 	private static void act() throws GameActionException {
 		MapLocation rn = rc.getLocation();
 		if (!amEarlyBuilder && myBuilderType == BuilderType.FarmSeed
@@ -57,7 +68,7 @@ public strictfp class Builder {
 					return;
 				}
 			} else {
-				MovementHelper.tryMove(rc.getLocation().directionTo(mutate.a), false);
+				moveTowards(mutate.a);
 			}
 		}
 
@@ -84,12 +95,12 @@ public strictfp class Builder {
 				if (rc.getLocation().isWithinDistanceSquared(nearestCorner, 13)) {
 					labLocation = BuildingHelper.getOptimalEarlyLabLocation();
 					if (rc.isMovementReady()) {
-						MovementHelper.moveBellmanFord(labLocation);
+						moveTowards(labLocation);
 					}
 				} else {
 					labLocation = null;
 					if (rc.isMovementReady()) {
-						MovementHelper.moveBellmanFord(nearestCorner);
+						moveTowards(nearestCorner);
 					}
 				}
 
@@ -161,17 +172,17 @@ public strictfp class Builder {
 					MovementHelper.tryMove(optimalDirection, true);
 				}
 			} else if (!rc.getLocation().isAdjacentTo(labLocation)) {
-				MovementHelper.moveBellmanFord(labLocation);
+				moveTowards(labLocation);
 			}
 
 			return;
 		}
 
 		if (nextBuilding != null) {
-			Direction buildDirection = rc.getLocation().directionTo(nextBuilding.location);
 			if (
 					rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 2)
 			) {
+				Direction buildDirection = rc.getLocation().directionTo(nextBuilding.location);
 				boolean highRubble = rc.senseRubble(nextBuilding.location) > LAB_RUBBLE_THRESHOLD;
 				if (rc.canBuildRobot(nextBuilding.type, buildDirection) && !highRubble) {
 					rc.buildRobot(nextBuilding.type, buildDirection);
@@ -219,26 +230,21 @@ public strictfp class Builder {
 					}
 				}
 			} else {
-				MovementHelper.tryMove(buildDirection,
-						rc.getLocation().isWithinDistanceSquared(nextBuilding.location, 5));
+				moveTowards(nextBuilding.location);
 			}
 		}
 	}
 
 	private static boolean move() throws GameActionException {
-		if (!rc.isMovementReady()) {
-			return false;
-		}
-
 		if (myBuilderType == BuilderType.FarmSeed) {
 			MapLocation ml = FarmingHelper.getBaldSpot();
 			if (ml != null) {
-				return MovementHelper.tryMove(ml, false);
+				return MovementHelper.moveBellmanFord(ml);
 			}
 		} else {
 			MapLocation repair = BuildingHelper.getRepairLocation();
 			if (repair != null) {
-				return MovementHelper.tryMove(repair, false);
+				return moveTowards(repair);
 			}
 		}
 
@@ -253,7 +259,7 @@ public strictfp class Builder {
 		MapLocation my = rc.getLocation();
 		if (!my.isWithinDistanceSquared(constructedBuilding.location, myType.actionRadiusSquared)) {
 			if (rc.isMovementReady()) {
-				MovementHelper.tryMove(my, false);
+				moveTowards(my);
 			}
 		}
 		if (!my.isWithinDistanceSquared(constructedBuilding.location, myType.actionRadiusSquared)) {
@@ -300,11 +306,7 @@ public strictfp class Builder {
 			return;
 		}
 
-		MapLocation construction = null;
-		if (nextBuilding != null && rc.getTeamLeadAmount(myTeam) >= nextBuilding.type.buildCostLead) {
-			construction = nextBuilding.location;
-		}
-		if (rc.isMovementReady() && BuildingHelper.shouldMove(myArchonLocation, construction)) {
+		if (rc.isMovementReady()) {
 			move();
 		}
 
