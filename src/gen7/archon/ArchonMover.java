@@ -157,9 +157,10 @@ public class ArchonMover {
         }
         int[] locsX = heuristicsProvider.getLocationsX(direction.ordinal());
         int[] locsY = heuristicsProvider.getLocationsY(direction.ordinal());
-        Vector<MapLocation> spots = new Vector<>(locsX.length);
+        Vector<MapLocation> spots = spotsDump;
+        spots.resize(0);
         MapLocation[] mls = CommsHelper.getFriendlyArchonLocations();
-        int leastRubble = 100;
+        int leastRubble = grid.get(rn);
         for (int i = locsX.length; --i >= 0; ) {
             MapLocation ml = new MapLocation(locsX[i] + rnX_r, locsY[i] + rnY_r);
             boolean tooClose = false;
@@ -171,7 +172,7 @@ public class ArchonMover {
             }
             if (!tooClose) {
                 int rubble = grid.get(ml);
-                if (rubble <= leastRubble && distanceFromEdge(ml) > 5) {
+                if (rubble <= leastRubble && distanceFromEdge(ml) > 3) {
                     spots.add(ml);
                     leastRubble = rubble;
                 }
@@ -215,29 +216,41 @@ public class ArchonMover {
         return stop;
     }
 
+    private static final Vector<MapLocation> spotsDump = new Vector<>(100);
     public static MapLocation getBetterSpotToSettle() throws GameActionException {
         MapLocation rn = rc.getLocation();
         MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 20);
         RubbleGrid grid = rubbleGrid;
-        int leastRubble = grid.get(rn);
+        int leastRubble = grid.get(rn), bestAvg = Integer.MAX_VALUE, count = 0;
+
         MapLocation theSpot = null;
-        int bestAvg = getWeightedAverageRubble(rn, grid);
+        Vector<MapLocation> spots = spotsDump;
+        spots.resize(0);
 
         for (int i = locs.length; --i >= 0; ) {
             MapLocation ml = locs[i];
             int r = grid.get(ml);
             if (r <= leastRubble && distanceFromEdge(ml) > 2) {
-                if (r < leastRubble) {
-                    leastRubble = r;
-                    bestAvg = getWeightedAverageRubble(ml, grid);
+                leastRubble = r;
+                spots.add(ml);
+            }
+        }
+
+        if (grid.get(rn) == leastRubble) {
+            bestAvg = getWeightedAverageRubble(rn, grid);
+        }
+
+        for (int i = spots.length; --i >= 0 && count < 40; ) {
+            MapLocation ml = spots.get(i);
+            if (leastRubble == grid.get(ml)) {
+                count++;
+                int avg = getWeightedAverageRubble(ml, grid);
+                if (bestAvg > avg) {
+                    bestAvg = avg;
                     theSpot = ml;
-                } else {
-                    int avg = getWeightedAverageRubble(ml, grid);
-                    if (avg < bestAvg) {
-                        bestAvg = avg;
-                        theSpot = ml;
-                    }
                 }
+            } else {
+                break;
             }
         }
         
