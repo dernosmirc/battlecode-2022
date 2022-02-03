@@ -36,29 +36,47 @@ public strictfp class Archon {
 	public static final int[] priority = {0, 0, 0, 2, 1, 3, 4};
 
 	private static MapLocation getHealLocation() {
-		if (!rc.isActionReady()) {
-			return null;
-		}
-
-		int maxHpDiff = 0;
-		int maxPriority = -1;
-		MapLocation robotLoc = null;
+		int maxHpDiff = 0, maxPriority = -1, level22 = 0, level45 = 0, level66 = 0, level99 = 0;
+		MapLocation robotLoc = null, loc22 = null, loc45 = null, loc66 = null, loc99 = null;
 		RobotInfo[] ris = rc.senseNearbyRobots(myType.actionRadiusSquared, myTeam);
+
 		for (int i = ris.length; --i >= 0; ) {
 			RobotInfo robot = ris[i];
 			int typeIndex = robot.type.ordinal();
-			int p = priority[typeIndex], hpDiff = robot.type.getMaxHealth(robot.level) - robot.health;
-			if (p > maxPriority) {
-				maxPriority = p;
-				maxHpDiff = hpDiff;
-				robotLoc = robot.location;
-			} else if (
-					p == maxPriority && maxHpDiff < hpDiff
-			) {
-				maxHpDiff = hpDiff;
-				robotLoc = robot.location;
+			if (typeIndex == 6) {
+				int hp = robot.health;
+				if (hp <= 22 && hp > level22) {
+					level22 = hp;
+					loc22 = robot.location;
+				} else if (hp <= 45 && hp > level45) {
+					level45 = hp;
+					loc45 = robot.location;
+				} else if (hp <= 66 && hp > level66) {
+					level66 = hp;
+					loc66 = robot.location;
+				} else if (hp <= 99 && hp > level99) {
+					level99 = hp;
+					loc99 = robot.location;
+				}
+			} else {
+				int p = priority[typeIndex], hpDiff = robot.type.getMaxHealth(robot.level) - robot.health;
+				if (p > maxPriority) {
+					maxPriority = p;
+					maxHpDiff = hpDiff;
+					robotLoc = robot.location;
+				} else if (
+						p == maxPriority && maxHpDiff < hpDiff
+				) {
+					maxHpDiff = hpDiff;
+					robotLoc = robot.location;
+				}
 			}
 		}
+		if (loc22 != null) return loc22;
+		if (loc45 != null) return loc45;
+		if (loc66 != null) return loc66;
+		if (loc99 != null) return loc99;
+
 		if (maxHpDiff == 0) return null;
 		return robotLoc;
 	}
