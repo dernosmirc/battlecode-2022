@@ -1,7 +1,6 @@
 package gen7.sage;
 
 import battlecode.common.*;
-import gen7.Sage;
 import gen7.common.MovementHelper;
 
 import static gen7.RobotPlayer.*;
@@ -16,7 +15,7 @@ public class SageAttackHelper {
     // BUILDER
     // SOLDIER
     // SAGE
-    private static final int[] priority = {3, 1, 4, 0, 2, 5, 6};
+    private static final int[] priority = {3, 2, 4, 1, 0, 5, 6};
 
     private static final int SAGE_ATTACK_THRESHOLD = 1;
     private static final double EXP_DAMAGE_FACTOR = 1;
@@ -45,7 +44,7 @@ public class SageAttackHelper {
     }
 
     public static AttackInfo bestDamageFrom(MapLocation ml, RobotInfo[] ris) throws GameActionException {
-        if (!ml.equals(rc.getLocation()) && (!rc.onTheMap(ml) || rc.canSenseRobotAtLocation(ml))) return null;
+        if (!rc.onTheMap(ml) || rc.canSenseRobotAtLocation(ml)) return null;
 
         int maxPriority = -1;
         int furyDamage = 0, chargeDamage = 0, attackDamage = 0;
@@ -61,10 +60,6 @@ public class SageAttackHelper {
                     furyDamage = Integer.MIN_VALUE;
                 }
                 continue;
-            }
-
-            if (Sage.isLabHunter && robot.type == RobotType.BUILDER) {
-                return new AttackInfo(AttackType.Attack, 120, robot.location);
             }
 
             if (robot.mode == RobotMode.TURRET) {

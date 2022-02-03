@@ -1,7 +1,6 @@
 package gen7;
 
 import battlecode.common.*;
-import gen7.common.bellmanford.BellmanFord;
 import gen7.soldier.SoldierMovementHelper;
 import gen7.miner.GoldMiningHelper;
 import gen7.miner.LeadMiningHelper;
@@ -27,7 +26,7 @@ public strictfp class Soldier {
 	public static boolean sensedEnemyAttackRobot;
 	public static RobotInfo[] allRobots;
 
-	public static void updateEnemyArchonLocations() throws GameActionException {
+	private static void updateEnemyArchonLocations() throws GameActionException {
 		for (int i = 0; i < maxArchonCount; ++i) {
 			int value = rc.readSharedArray(i);
 			if (getBits(value, 15, 15) == 1) {
@@ -50,10 +49,6 @@ public strictfp class Soldier {
 		// Update the soldier count
 		if (rc.getRoundNum()%2 == 1){
 			rc.writeSharedArray(7, rc.readSharedArray(7) + 1);
-		}
-
-		if (!rc.isMovementReady()) {
-			BellmanFord.fillArrays();
 		}
 
 		allRobots = rc.senseNearbyRobots();

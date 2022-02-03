@@ -49,7 +49,10 @@ public class SageAttackHelper {
 
         int maxPriority = -1;
         int furyDamage = 0, chargeDamage = 0, attackDamage = 0;
+        int minHp = Integer.MAX_VALUE;
+        int maxHp45 = 0;
         RobotInfo robotToAttack = null;
+        RobotInfo robotToAttack45 = null;
         for (int i = ris.length; --i >= 0; ) {
             RobotInfo robot = ris[i];
             if (!robot.location.isWithinDistanceSquared(ml, myType.actionRadiusSquared)) {
@@ -74,13 +77,28 @@ public class SageAttackHelper {
             }
             int typeIndex = robot.type.ordinal();
             int p = priority[typeIndex], damage = Math.min(robot.health, RobotType.SAGE.damage);
+            int health = robot.health;
             if (p > maxPriority) {
                 maxPriority = p;
-                attackDamage = damage;
-                robotToAttack = robot;
-            } else if (p == maxPriority && damage > attackDamage) {
-                attackDamage = damage;
-                robotToAttack = robot;
+                if (health > 45) {
+                    minHp = health;
+                    attackDamage = damage;
+                    robotToAttack = robot;
+                } else {
+                    maxHp45 = health;
+                    attackDamage = damage;
+                    robotToAttack45 = robot;
+                }
+            } else if (p == maxPriority) {
+                if (health > 45 && health < minHp) {
+                    minHp = health;
+                    attackDamage = damage;
+                    robotToAttack = robot;
+                } else if (health <= 45 && health > maxHp45) {
+                    maxHp45 = health;
+                    attackDamage = damage;
+                    robotToAttack45 = robot;
+                }
             }
         }
 
@@ -93,7 +111,11 @@ public class SageAttackHelper {
         }
 
         if (maxPriority != -1 && attackDamage >= SAGE_ATTACK_THRESHOLD) {
-            return new AttackInfo(AttackType.Attack, attackDamage, robotToAttack.location);
+            if (robotToAttack45 != null) {
+                return new AttackInfo(AttackType.Attack, attackDamage, robotToAttack45.location);
+            } else {
+                return new AttackInfo(AttackType.Attack, attackDamage, robotToAttack.location);
+            }
         }
 
         return null;

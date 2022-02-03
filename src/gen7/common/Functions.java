@@ -128,29 +128,22 @@ public strictfp class Functions {
 		return null;
 	}
 
-	public static boolean areAdjacent(Direction a, Direction b) {
-		if (a == null || b == null) return false;
-		return Math.abs(a.ordinal() - b.ordinal()) % 7 <= 1;
-	}
-
-	public static Direction getDirectionAlongEdge(boolean clockwise, int distance, boolean softCorner) {
+	public static Direction getDirectionAlongEdge(boolean clockwise, int distance) {
 		Direction anti = getAntiEdgeDirection(rc.getLocation(), distance);
 
 		if (anti == null) {
 			return null;
 		}
 
-		if (!softCorner) {
-			switch (anti) {
-				case SOUTHWEST:
-					return clockwise ? Direction.SOUTH : Direction.WEST;
-				case SOUTHEAST:
-					return clockwise ? Direction.EAST : Direction.SOUTH;
-				case NORTHEAST:
-					return clockwise ? Direction.NORTH : Direction.EAST;
-				case NORTHWEST:
-					return clockwise ? Direction.WEST : Direction.NORTH;
-			}
+		switch (anti) {
+			case SOUTHWEST:
+				return clockwise ? Direction.SOUTH : Direction.WEST;
+			case SOUTHEAST:
+				return clockwise ? Direction.EAST : Direction.SOUTH;
+			case NORTHEAST:
+				return clockwise ? Direction.NORTH : Direction.EAST;
+			case NORTHWEST:
+				return clockwise ? Direction.WEST : Direction.NORTH;
 		}
 
 		if (clockwise) {
@@ -190,7 +183,7 @@ public strictfp class Functions {
 		return null;
 	}
 
-	public static Direction getEdgeDirection(MapLocation ml, int distance) {
+	public Direction getEdgeDirection(MapLocation ml, int distance) {
 		Direction anti = getAntiEdgeDirection(ml, distance);
 		if (anti == null) {
 			return null;

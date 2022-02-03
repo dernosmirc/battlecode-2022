@@ -157,10 +157,9 @@ public class ArchonMover {
         }
         int[] locsX = heuristicsProvider.getLocationsX(direction.ordinal());
         int[] locsY = heuristicsProvider.getLocationsY(direction.ordinal());
-        Vector<MapLocation> spots = spotsDump;
-        spots.resize(0);
+        Vector<MapLocation> spots = new Vector<>(locsX.length);
         MapLocation[] mls = CommsHelper.getFriendlyArchonLocations();
-        int leastRubble = grid.get(rn);
+        int leastRubble = 100;
         for (int i = locsX.length; --i >= 0; ) {
             MapLocation ml = new MapLocation(locsX[i] + rnX_r, locsY[i] + rnY_r);
             boolean tooClose = false;
@@ -172,7 +171,7 @@ public class ArchonMover {
             }
             if (!tooClose) {
                 int rubble = grid.get(ml);
-                if (rubble <= leastRubble && distanceFromEdge(ml) > 3) {
+                if (rubble <= leastRubble && distanceFromEdge(ml) > 5) {
                     spots.add(ml);
                     leastRubble = rubble;
                 }
@@ -216,30 +215,26 @@ public class ArchonMover {
         return stop;
     }
 
-    private static final Vector<MapLocation> spotsDump = new Vector<>(100);
     public static MapLocation getBetterSpotToSettle() throws GameActionException {
         MapLocation rn = rc.getLocation();
         MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 20);
+        Vector<MapLocation> spots = new Vector<>(locs.length);
         RubbleGrid grid = rubbleGrid;
-        int leastRubble = grid.get(rn), bestAvg = Integer.MAX_VALUE, count = 0;
-
-        MapLocation theSpot = null;
-        Vector<MapLocation> spots = spotsDump;
-        spots.resize(0);
-
+        int leastRubble = 100;
         for (int i = locs.length; --i >= 0; ) {
             MapLocation ml = locs[i];
             int r = grid.get(ml);
             if (r <= leastRubble && distanceFromEdge(ml) > 2) {
-                leastRubble = r;
                 spots.add(ml);
+                leastRubble = r;
             }
         }
-
+        int bestAvg = Integer.MAX_VALUE;
         if (grid.get(rn) == leastRubble) {
             bestAvg = getWeightedAverageRubble(rn, grid);
         }
-
+        MapLocation theSpot = null;
+        int count = 0;
         for (int i = spots.length; --i >= 0 && count < 40; ) {
             MapLocation ml = spots.get(i);
             if (leastRubble == grid.get(ml)) {
@@ -253,7 +248,6 @@ public class ArchonMover {
                 break;
             }
         }
-        
         return theSpot;
     }
 

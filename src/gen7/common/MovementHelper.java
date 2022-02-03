@@ -17,9 +17,12 @@ public class MovementHelper {
     public static Direction getInstantaneousDirection() {
         return Functions.directionTo(dx, dy);
     }
-    public static void updateMovement(Direction d) {
+    public static void updateMovement(Direction d, boolean fillArrays) {
         dx = DIRECTION_BETA * d.dx + (1-DIRECTION_BETA) * dx;
         dy = DIRECTION_BETA * d.dy + (1-DIRECTION_BETA) * dy;
+        if (fillArrays) {
+            BellmanFord.fillArrays();
+        }
     }
 
     public static boolean tryMove (MapLocation loc, boolean force) throws GameActionException {
@@ -52,13 +55,13 @@ public class MovementHelper {
                 }
                 if (opt != null && rc.canMove(opt)) {
                     rc.move(opt);
-                    updateMovement(opt);
+                    updateMovement(opt, true);
                     return true;
                 }
             } else {
                 if (rc.canMove(dir)) {
                     rc.move(dir);
-                    updateMovement(dir);
+                    updateMovement(dir, true);
                     return true;
                 }
             }
@@ -94,7 +97,7 @@ public class MovementHelper {
             }
             if (opt != null && rc.canMove(opt)) {
                 rc.move(opt);
-                updateMovement(opt);
+                updateMovement(opt, true);
                 return true;
             }
         }
@@ -173,8 +176,10 @@ public class MovementHelper {
             vortexRounds.popLast();
         }
 
+        boolean usingBellman = false;
         if (dir != pathDirection || !rc.getLocation().equals(lastLocation)) {
             path = getBellmanFordPath(dir);
+            usingBellman = true;
             pathDirection = dir;
         }
 
@@ -185,7 +190,7 @@ public class MovementHelper {
         Direction d = path.last();
         if (rc.canMove(d)) {
             rc.move(d);
-            updateMovement(path.popLast());
+            updateMovement(path.popLast(), !usingBellman);
             lastLocation = rc.getLocation();
             return true;
         }
@@ -208,12 +213,14 @@ public class MovementHelper {
             vortexRounds.popLast();
         }
 
+        boolean usingBellman = false;
         if (destination != mapLocation || !rc.getLocation().equals(lastLocation)) {
             if (!rc.getLocation().isWithinDistanceSquared(mapLocation, BellmanFord.radiusSquared)) {
                 path = getBellmanFordPath(rc.getLocation().directionTo(mapLocation));
             } else {
                 path = getBellmanFordPath(mapLocation, false);
             }
+            usingBellman = true;
             destination = mapLocation;
         }
 
@@ -225,7 +232,7 @@ public class MovementHelper {
         Direction d = path.last();
         if (rc.canMove(d)) {
             rc.move(d);
-            updateMovement(path.popLast());
+            updateMovement(path.popLast(), !usingBellman);
             lastLocation = rc.getLocation();
             return true;
         }
@@ -256,11 +263,6 @@ public class MovementHelper {
                 maxInd = i;
             }
         }
-
-        if (maxRatio == 0) {
-            return null;
-        }
-
         return directions[(maxInd+4)%8];
     }
 
