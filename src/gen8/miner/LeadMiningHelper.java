@@ -7,9 +7,6 @@ import battlecode.common.RobotType;
 import gen8.common.CommsHelper;
 import gen8.common.Functions;
 import gen8.common.GridInfo;
-import gen8.common.SymmetryType;
-import gen8.common.util.Vector;
-
 import static gen8.RobotPlayer.*;
 
 public class LeadMiningHelper {
@@ -136,40 +133,23 @@ public class LeadMiningHelper {
     }
 
     private static void addPositions(GridInfo[] infos, GridInfo info) throws GameActionException {
-        int amount = info.count;
-        MapLocation loc = info.location;
-        Vector<GridInfo> arr = new Vector<>(4);
-        arr.add(info);
-        SymmetryType sym = SymmetryType.getMapSymmetry();
-        if (sym != SymmetryType.NONE &&
-                LEAD_SYMMETRY_THRESHOLD <= info.count
-                && rc.getRoundNum() < ROUND_SYMMETRY_THRESHOLD
-        ) {
-            MapLocation l = SymmetryType.getSymmetricalLocation(loc, sym);
-            if (!CommsHelper.isLocationInEnemyZone(l)) {
-                arr.add(new GridInfo(amount, l));
+        int index = getLocationIndex(infos, info.location);
+        if (index == -1) {
+            int minAmount = Integer.MAX_VALUE;
+            for (int i = SA_COUNT; --i >= 0;) {
+                GridInfo it = infos[i];
+                if (it == null) {
+                    index = i;
+                    minAmount = Integer.MAX_VALUE;
+                    break;
+                } else if (it.count < minAmount) {
+                    index = i;
+                    minAmount = it.count;
+                }
             }
-        }
-        for (int j = arr.length; --j >= 0;) {
-            GridInfo itj = arr.get(j);
-            int index = getLocationIndex(infos, itj.location);
-            if (index == -1) {
-                int minAmount = Integer.MAX_VALUE;
-                for (int i = SA_COUNT; --i >= 0;) {
-                    GridInfo it = infos[i];
-                    if (it == null) {
-                        index = i;
-                        minAmount = Integer.MAX_VALUE;
-                        break;
-                    } else if (it.count < minAmount) {
-                        index = i;
-                        minAmount = it.count;
-                    }
-                }
-                if (minAmount == Integer.MAX_VALUE || minAmount < itj.count) {
-                    infos[index] = itj;
-                    rc.writeSharedArray(index + SA_START, getInt16FromInfo(itj));
-                }
+            if (minAmount == Integer.MAX_VALUE || minAmount < info.count) {
+                infos[index] = info;
+                rc.writeSharedArray(index + SA_START, getInt16FromInfo(info));
             }
         }
     }
