@@ -1,4 +1,4 @@
-package gen7.common.bellmanford;
+package gen8.common.bellmanford;
 
 
 public class Heuristics34 implements HeuristicsProvider {
