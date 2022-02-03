@@ -59,13 +59,6 @@ public strictfp class Sage {
 	}
 
 	public static void init() throws GameActionException {
-		LAB_HUNTER_RATIO = Double.parseDouble(
-				System.getProperty(
-						"bc.testing.team-" + myTeam.name() + ".lab-hunter-ratio",
-						""+LAB_HUNTER_RATIO
-				)
-		);
-
 		maxArchonCount = 0;
 		isLabHunter = random.nextDouble() < LAB_HUNTER_RATIO;
 		isClockWise = random.nextDouble() < 0.5;
