@@ -133,22 +133,24 @@ public strictfp class Functions {
 		return a.dx == b.dx || a.dy == b.dy;
 	}
 
-	public static Direction getDirectionAlongEdge(boolean clockwise, int distance) {
+	public static Direction getDirectionAlongEdge(boolean clockwise, int distance, boolean softCorner) {
 		Direction anti = getAntiEdgeDirection(rc.getLocation(), distance);
 
 		if (anti == null) {
 			return null;
 		}
 
-		switch (anti) {
-			case SOUTHWEST:
-				return clockwise ? Direction.SOUTH : Direction.WEST;
-			case SOUTHEAST:
-				return clockwise ? Direction.EAST : Direction.SOUTH;
-			case NORTHEAST:
-				return clockwise ? Direction.NORTH : Direction.EAST;
-			case NORTHWEST:
-				return clockwise ? Direction.WEST : Direction.NORTH;
+		if (!softCorner) {
+			switch (anti) {
+				case SOUTHWEST:
+					return clockwise ? Direction.SOUTH : Direction.WEST;
+				case SOUTHEAST:
+					return clockwise ? Direction.EAST : Direction.SOUTH;
+				case NORTHEAST:
+					return clockwise ? Direction.NORTH : Direction.EAST;
+				case NORTHWEST:
+					return clockwise ? Direction.WEST : Direction.NORTH;
+			}
 		}
 
 		if (clockwise) {

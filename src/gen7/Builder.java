@@ -186,8 +186,8 @@ public strictfp class Builder {
 				} else if (nextBuilding.type == RobotType.LABORATORY) {
 					MapLocation req = nextBuilding.location;
 					RobotInfo lab = rc.senseRobotAtLocation(req);
-					Direction antiRight = getDirectionAlongEdge(true, 5),
-							antiLeft = getDirectionAlongEdge(false, 5);
+					Direction antiRight = getDirectionAlongEdge(true, 5, false),
+							antiLeft = getDirectionAlongEdge(false, 5, false);
 					if (
 							(lab != null && lab.mode == RobotMode.TURRET || highRubble)
 									&& antiRight != null && antiLeft != null

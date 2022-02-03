@@ -149,7 +149,7 @@ public class SageMovementHelper {
             return;
         }
 
-        Direction alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 6);
+        Direction alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 6, true);
         Direction soldier = getSoldierDirection();
 
         if (Functions.areAdjacent(alongEdge, soldier)) {
@@ -162,7 +162,7 @@ public class SageMovementHelper {
             return;
         }
 
-        alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 3);
+        alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 3, true);
         if (alongEdge != null) {
             MovementHelper.tryMove(alongEdge, false);
             lastAlongEdge = alongEdge;
