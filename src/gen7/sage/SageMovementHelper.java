@@ -205,14 +205,14 @@ public class SageMovementHelper {
             return;
         }
 
-        Direction antiCharge = getAntiChargeLocation();
-        if (antiCharge != null) {
-            MovementHelper.tryMove(antiCharge, false);
+        if (moveBack != null) {
+            MovementHelper.greedyTryMove(moveBack);
             return;
         }
 
-        if (moveBack != null) {
-            MovementHelper.greedyTryMove(moveBack);
+        Direction antiCharge = getAntiChargeLocation();
+        if (antiCharge != null) {
+            MovementHelper.tryMove(antiCharge, false);
             return;
         }
 
