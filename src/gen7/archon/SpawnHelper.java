@@ -103,10 +103,12 @@ public strictfp class SpawnHelper {
 		return 50;
 	}
 
-	private static double getSageGoldThreshold() throws GameActionException {
-		if (gettingAttacked) return 20;
-		if (CommsHelper.getCentralArchon() != Archon.myIndex) return 40;
-		return 20;
+	private static int getSageGoldThreshold() throws GameActionException {
+		if (gettingAttacked) {
+			return 20;
+		} else {
+			return 20 * archonDroidPriority;
+		}
 	}
 
 	private static int droidsBuilt = 0;
@@ -312,9 +314,11 @@ public strictfp class SpawnHelper {
 
 	public static int mapSizeType = 0;
 	private static boolean gettingAttacked = false;
+	private static int archonDroidPriority = 1;
 
 	public static RobotType getNextDroid() throws GameActionException {
 		gettingAttacked = isEnemyAround();
+		archonDroidPriority = getArchonDroidPriority();
 		if (getSageGoldThreshold() <= rc.getTeamGoldAmount(myTeam)) {
 			return RobotType.SAGE;
 		}
@@ -324,7 +328,7 @@ public strictfp class SpawnHelper {
 		}
 
 		double threshold = getLeadThreshold();
-		if (rc.getRoundNum() > 1 && rc.getTeamLeadAmount(myTeam) < threshold * getArchonDroidPriority()) {
+		if (rc.getRoundNum() > 1 && rc.getTeamLeadAmount(myTeam) < threshold * archonDroidPriority) {
 			return null;
 		}
 
