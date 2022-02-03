@@ -145,7 +145,11 @@ public class SageMovementHelper {
     }
 
     private static Direction lastAlongEdge = null;
+    private static int clockWiseCoolDown = 0;
     public static void moveToHuntLabs() throws GameActionException {
+        if (clockWiseCoolDown > 0) {
+            clockWiseCoolDown--;
+        }
         if (rc.getHealth() < HP_THRESHOLD) {
             retreat(AttackHelper.shouldMoveBack());
             return;
@@ -157,11 +161,12 @@ public class SageMovementHelper {
             return;
         }
 
-        Direction alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, getExitDistance(), false);
+        Direction alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, getExitDistance(), true);
         Direction soldier = getSoldierDirection();
 
-        if (Functions.areAdjacent(alongEdge, soldier)) {
+        if (Functions.areAdjacent(alongEdge, soldier) && clockWiseCoolDown == 0) {
             Sage.isClockWise = !Sage.isClockWise;
+            clockWiseCoolDown = getExitDistance()*3;
         }
 
         MapLocation lab = spotEnemyLab();
