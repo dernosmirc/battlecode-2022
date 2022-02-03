@@ -2,6 +2,7 @@ package gen8.common;
 
 import battlecode.common.*;
 
+import gen8.RobotPlayer;
 import gen8.common.bellmanford.*;
 import gen8.common.util.Vector;
 
@@ -71,32 +72,33 @@ public class MovementHelper {
     }
 
     public static boolean lazyMove (Direction dir) throws GameActionException {
+        if (!rc.isMovementReady()) return false;
+        Direction[] dirs;
         if (dir == null || dir == Direction.CENTER) {
-            dir = Functions.getRandomDirection();
-        }
-        if (rc.isMovementReady()) {
-            Direction[] dirs = {
+            dirs = directions;
+        } else {
+            dirs = new Direction[] {
                     dir.rotateRight(),
                     dir,
                     dir.rotateLeft(),
             };
-            MapLocation ml = rc.getLocation();
-            Direction opt = null;
-            int leastRubble = rc.senseRubble(ml);
-            for (int i = 0; i < dirs.length; i++) {
-                if (rc.canMove(dirs[i])) {
-                    int rubble = rc.senseRubble(ml.add(dirs[i]));
-                    if (leastRubble > rubble) {
-                        opt = dirs[i];
-                        leastRubble = rubble;
-                    }
+        }
+        MapLocation ml = rc.getLocation();
+        Direction opt = null;
+        int leastRubble = rc.senseRubble(ml);
+        for (int i = dirs.length; --i >= 0; ) {
+            if (rc.canMove(dirs[i])) {
+                int rubble = rc.senseRubble(ml.add(dirs[i]));
+                if (leastRubble > rubble) {
+                    opt = dirs[i];
+                    leastRubble = rubble;
                 }
             }
-            if (opt != null && rc.canMove(opt)) {
-                rc.move(opt);
-                updateMovement(opt);
-                return true;
-            }
+        }
+        if (opt != null && rc.canMove(opt)) {
+            rc.move(opt);
+            updateMovement(opt);
+            return true;
         }
         return false;
     }

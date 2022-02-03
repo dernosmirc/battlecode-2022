@@ -20,7 +20,7 @@ public strictfp class Miner {
 	private static final double GOLD_MINER_RATIO = 0.25;
 
 	private static double getExplorerRatio() {
-		return 0.2 + 0.8*sigmoid((250-rc.getRoundNum())/100.0);
+		return sigmoid((300-rc.getRoundNum())/100.0);
 	}
 
 	private static MapLocation myTargetLocation;
@@ -98,25 +98,31 @@ public strictfp class Miner {
 			leadNearCount = leadNear.count;
 		}
 		if (leadNearCount <= 6 && isExplorer && myTargetLocation != null) {
+			rc.setIndicatorString(myTargetLocation.toString());
 			return MovementHelper.moveBellmanFord(myTargetLocation);
 		}
 		GridInfo leadFar = LeadMiningHelper.spotLeadOnGrid();
 		MapLocation lead = null;
 		if (leadNear != null && leadFar != null) {
 			if (leadNear.count >= leadFar.count) {
+				rc.setIndicatorString("lead near");
 				lead = leadNear.location;
 			} else {
+				rc.setIndicatorString("lead far");
 				lead = leadFar.location;
 			}
 		} else if (leadNear != null) {
+			rc.setIndicatorString("lead near");
 			lead = leadNear.location;
 		} else if (leadFar != null) {
+			rc.setIndicatorString("lead far");
 			lead = leadFar.location;
 		}
 
 		if (lead != null) {
-			if (rc.getLocation().isWithinDistanceSquared(lead, 2)) {
-				return MovementHelper.lazyMove(lead);
+			if (rc.getLocation().isWithinDistanceSquared(lead, myType.actionRadiusSquared)) {
+				MovementHelper.lazyMove(lead);
+				return true;
 			}
 			return MovementHelper.moveBellmanFord(lead);
 		}
@@ -128,21 +134,26 @@ public strictfp class Miner {
 	private static boolean move() throws GameActionException {
 		Direction antiSoldier = getAntiSoldierDirection();
 		if (antiSoldier != null) {
+			rc.setIndicatorString("anti soldier");
+			myTargetLocation = null;
+			myDirection = null;
 			return MovementHelper.moveBellmanFord(antiSoldier);
 		}
 
 		MapLocation gold = GoldMiningHelper.spotGold();
 		if (gold != null) {
+			rc.setIndicatorString("gold near");
 			return MovementHelper.moveBellmanFord(gold);
 		}
 		if (!isExplorer && isGoldMiner) {
 			gold = GoldMiningHelper.spotGoldOnGrid();
 			if (gold != null) {
+				rc.setIndicatorString("gold far");
 				return MovementHelper.moveBellmanFord(gold);
 			}
 		}
 
-		if (rc.getRoundNum() > 250) {
+		if (rc.getRoundNum() > 0) {
 			if (farmDynamically()) {
 				return true;
 			}
@@ -174,15 +185,10 @@ public strictfp class Miner {
 	private static int directionsExploredCount = 0;
 
 	private static void updateDirectionsExplored() throws GameActionException {
-		if (directionsExploredCount == 9) {
-			return;
+		if (myTargetLocation != null && rc.getLocation().isWithinDistanceSquared(myTargetLocation, 5)) {
+			myTargetLocation = null;
 		}
-		if (myTargetLocation != null) {
-			if (rc.getLocation().isWithinDistanceSquared(myTargetLocation, 5)) {
-				myTargetLocation = null;
-				setRandomLocation();
-			}
-		} else {
+		if (directionsExploredCount < 9) {
 			setRandomLocation();
 		}
 	}
