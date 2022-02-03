@@ -36,6 +36,9 @@ public strictfp class Sage {
 		updateEnemyArchonLocations();
 		SoldierDensity.update();
 		TailHelper.updateTarget();
+		if (!rc.isMovementReady()) {
+			BellmanFord.fillArrays();
+		}
 		if (rc.isActionReady()) {
 			SageAttackHelper.attack();
 		}
@@ -45,8 +48,6 @@ public strictfp class Sage {
 			} else {
 				SageMovementHelper.move();
 			}
-		} else {
-			BellmanFord.fillArrays();
 		}
 		GoldMiningHelper.updateGoldAmountInGridCell();
 		if (Clock.getBytecodeNum() < 5500) {

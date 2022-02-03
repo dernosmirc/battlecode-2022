@@ -278,6 +278,9 @@ public strictfp class Builder {
 			rc.writeSharedArray(25, rc.readSharedArray(25) + 1);
 		}
 		TailHelper.updateTarget();
+		if (!rc.isMovementReady()) {
+			BellmanFord.fillArrays();
+		}
 
 		// update location each round
 		myArchonLocation = CommsHelper.getArchonLocation(myArchonIndex);
@@ -287,9 +290,6 @@ public strictfp class Builder {
 		}
 		if (rc.isActionReady() || amEarlyBuilder) {
 			act();
-		}
-		if (!rc.isMovementReady()) {
-			BellmanFord.fillArrays();
 		}
 
 		if (amEarlyBuilder) {
