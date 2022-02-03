@@ -258,7 +258,7 @@ public class BugPathingHelper {
                 setDefault();
                 rc.move(newDirection);
                 initialDirection = newDirection;
-                updateMovement(newDirection, true);
+                updateMovement(newDirection);
                 return;
             }
         }
@@ -272,7 +272,7 @@ public class BugPathingHelper {
             // Easy case of Bug 0!
             // No obstacle in the way, so let's just go straight for it!
             rc.move(d);
-            updateMovement(d, true);
+            updateMovement(d);
             setDefault();
             initialDirection = d;
         } else {
@@ -329,7 +329,7 @@ public class BugPathingHelper {
             for (int i = 0; i < 8; i++) {
                 if (rc.canMove(bugDirection) && !isObstacle(bugDirection)) {
                     rc.move(bugDirection);
-                    updateMovement(bugDirection, true);
+                    updateMovement(bugDirection);
                     wallMoveCount += 1;
                     if (loopTowardsSide == 1){
                         bugDirection = bugDirection.rotateRight();

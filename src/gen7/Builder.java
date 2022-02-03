@@ -7,6 +7,7 @@ import gen7.common.CommsHelper;
 import gen7.common.MovementHelper;
 import gen7.builder.MutationHelper;
 import gen7.builder.BuilderType;
+import gen7.common.bellmanford.BellmanFord;
 import gen7.common.util.Pair;
 import gen7.sage.SageMovementHelper;
 import gen7.soldier.TailHelper;
@@ -302,6 +303,8 @@ public strictfp class Builder {
 		}
 		if (rc.isMovementReady() && BuildingHelper.shouldMove(myArchonLocation, construction)) {
 			move();
+		} else {
+			BellmanFord.fillArrays();
 		}
 
 		GoldMiningHelper.updateGoldAmountInGridCell();
