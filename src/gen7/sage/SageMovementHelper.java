@@ -120,6 +120,12 @@ public class SageMovementHelper {
         );
     }
 
+    private static int getExitDistance() {
+        int width = rc.getMapWidth();
+        int height = rc.getMapHeight();
+        return (int) Math.ceil(Math.sqrt(width * height) / 20) + 3;
+    }
+
 
     private static Direction getSoldierDirection() {
         MapLocation rn = rc.getLocation();
@@ -151,7 +157,7 @@ public class SageMovementHelper {
             return;
         }
 
-        Direction alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 6, true);
+        Direction alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, getExitDistance(), false);
         Direction soldier = getSoldierDirection();
 
         if (Functions.areAdjacent(alongEdge, soldier)) {
@@ -164,14 +170,14 @@ public class SageMovementHelper {
             return;
         }
 
-        alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 3, true);
+        alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 2, true);
         if (alongEdge != null) {
             MovementHelper.tryMove(alongEdge, false);
             lastAlongEdge = alongEdge;
             return;
         }
 
-        if (distanceFromEdge() < 6 && lastAlongEdge != null) {
+        if (distanceFromEdge() < getExitDistance() && lastAlongEdge != null) {
             MovementHelper.tryMove(lastAlongEdge, false);
             return;
         }

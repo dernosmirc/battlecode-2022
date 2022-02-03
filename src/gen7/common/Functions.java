@@ -130,7 +130,7 @@ public strictfp class Functions {
 
 	public static boolean areAdjacent(Direction a, Direction b) {
 		if (a == null || b == null) return false;
-		return a.dx == b.dx || a.dy == b.dy;
+		return Math.abs(a.ordinal() - b.ordinal()) % 7 <= 1;
 	}
 
 	public static Direction getDirectionAlongEdge(boolean clockwise, int distance, boolean softCorner) {
