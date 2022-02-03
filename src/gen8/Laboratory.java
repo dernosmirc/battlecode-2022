@@ -10,6 +10,7 @@ import gen8.miner.LeadMiningHelper;
 import static gen8.RobotPlayer.myTeam;
 import static gen8.RobotPlayer.rc;
 import static gen8.RobotPlayer.maxArchonCount;
+import static gen8.common.Functions.*;
 
 public strictfp class Laboratory {
 
@@ -35,7 +36,8 @@ public strictfp class Laboratory {
 	public static void run() throws GameActionException {
 		// Update the lab count
 		if (rc.getRoundNum()%2 == 1){
-			rc.writeSharedArray(26, rc.readSharedArray(26) + 1);
+			int v = getBits(rc.readSharedArray(25), 0, 14) + 1;
+			rc.writeSharedArray(25, setBits(rc.readSharedArray(25), 0, 14, v));
 		}
 		TailHelper.updateTarget();
 

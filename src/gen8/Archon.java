@@ -107,14 +107,14 @@ public strictfp class Archon {
 			if (rc.readSharedArray(9) != 0) {
 				rc.writeSharedArray(9, 0);
 			}
-			// Builder
+			// lab
 			if (rc.readSharedArray(25) != 0) {
 				rc.writeSharedArray(25, 0);
 			}
 			// Lab
-			if (rc.readSharedArray(26) != 0) {
-				rc.writeSharedArray(26, 0);
-			}
+//			if (rc.readSharedArray(26) != 0) {
+//				rc.writeSharedArray(26, 0);
+//			}
 		}
 
 		int roundNumber = rc.getRoundNum();

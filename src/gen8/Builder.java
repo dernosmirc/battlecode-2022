@@ -283,8 +283,11 @@ public strictfp class Builder {
 
 	public static void run() throws GameActionException {
 		// Update the builder count
-		if (rc.getRoundNum()%2 == 1){
-			rc.writeSharedArray(25, rc.readSharedArray(25) + 1);
+//		if (rc.getRoundNum()%2 == 1){
+//			rc.writeSharedArray(25, rc.readSharedArray(25) + 1);
+//		}
+		if (amEarlyBuilder){
+			rc.writeSharedArray(25, setBits(rc.readSharedArray(25), 15, 15, 1));
 		}
 		TailHelper.updateTarget();
 		if (!rc.isMovementReady()) {

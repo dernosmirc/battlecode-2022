@@ -19,6 +19,7 @@ public strictfp class CommsHelper {
 	private static int SAGE_COUNT = 0;
 	private static int BUILDER_COUNT = 0;
 	private static int LAB_COUNT = 0;
+	private static int EARLY_BUILDER_ALIVE_ROUND = 0;
 	public static MapLocation getLocationFrom12Bits(int bits) {
 		return new MapLocation(getBits(bits, 6, 11), getBits(bits, 0, 5));
 	}
@@ -340,13 +341,23 @@ public strictfp class CommsHelper {
 		}
 	}
 
+	public static boolean isEarlyBuilderAlive() throws GameActionException{
+		if (getBits(rc.readSharedArray(25), 15, 15) == 1){
+			EARLY_BUILDER_ALIVE_ROUND = rc.getRoundNum();
+			return true;
+		}
+		else{
+			return (rc.getRoundNum() - EARLY_BUILDER_ALIVE_ROUND) <= 3;
+		}
+	}
+
 	public static int getAliveLabCount() throws GameActionException{
 		int roundNumber = rc.getRoundNum();
 		if (roundNumber%2 == 1){
 			return LAB_COUNT;
 		}
 		else{
-			LAB_COUNT = rc.readSharedArray(26);
+			LAB_COUNT = getBits(rc.readSharedArray(25), 0, 14);
 			return LAB_COUNT;
 		}
 	}
