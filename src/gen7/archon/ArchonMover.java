@@ -218,29 +218,36 @@ public class ArchonMover {
     public static MapLocation getBetterSpotToSettle() throws GameActionException {
         MapLocation rn = rc.getLocation();
         MapLocation[] locs = rc.getAllLocationsWithinRadiusSquared(rn, 20);
+        Vector<MapLocation> spots = new Vector<>(locs.length);
         RubbleGrid grid = rubbleGrid;
-        int leastRubble = grid.get(rn);
-        MapLocation theSpot = null;
-        int bestAvg = getWeightedAverageRubble(rn, grid);
-
+        int leastRubble = 100;
         for (int i = locs.length; --i >= 0; ) {
             MapLocation ml = locs[i];
             int r = grid.get(ml);
             if (r <= leastRubble && distanceFromEdge(ml) > 2) {
-                if (r < leastRubble) {
-                    leastRubble = r;
-                    bestAvg = getWeightedAverageRubble(ml, grid);
-                    theSpot = ml;
-                } else {
-                    int avg = getWeightedAverageRubble(ml, grid);
-                    if (avg < bestAvg) {
-                        bestAvg = avg;
-                        theSpot = ml;
-                    }
-                }
+                spots.add(ml);
+                leastRubble = r;
             }
         }
-        
+        int bestAvg = Integer.MAX_VALUE;
+        if (grid.get(rn) == leastRubble) {
+            bestAvg = getWeightedAverageRubble(rn, grid);
+        }
+        MapLocation theSpot = null;
+        int count = 0;
+        for (int i = spots.length; --i >= 0 && count < 40; ) {
+            MapLocation ml = spots.get(i);
+            if (leastRubble == grid.get(ml)) {
+                count++;
+                int avg = getWeightedAverageRubble(ml, grid);
+                if (bestAvg > avg) {
+                    bestAvg = avg;
+                    theSpot = ml;
+                }
+            } else {
+                break;
+            }
+        }
         return theSpot;
     }
 
