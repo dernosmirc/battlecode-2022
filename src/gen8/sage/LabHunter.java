@@ -82,7 +82,7 @@ public class LabHunter {
 
     public static void move() throws GameActionException {
         if (lastLocation != null) {
-            if (rc.getLocation().isWithinDistanceSquared(lastLocation, 5)) {
+            if (rc.getLocation().isWithinDistanceSquared(lastLocation, 5) && spotEnemyLab() == null) {
                 stillCount++;
             } else {
                 lastLocation = rc.getLocation();
