@@ -80,6 +80,17 @@ public class LabHunter {
         return directionTo(dx, dy);
     }
 
+    private static int friendlySagesNearby() {
+        RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, myTeam);
+        int count = 0;
+        for (int i = ris.length; --i >= 0; ) {
+            if (ris[i].type == RobotType.SAGE) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     private static Direction lastAlongEdge = null;
     private static int clockWiseCoolDown = 0, stillCount = 0;
     private static MapLocation lastLocation = null;
@@ -100,7 +111,7 @@ public class LabHunter {
         if (clockWiseCoolDown > 0) {
             clockWiseCoolDown--;
         }
-        if (rc.getHealth() < HP_THRESHOLD) {
+        if (rc.getHealth() < 56) {
             if (retreat(AttackHelper.shouldMoveBack())) {
                 return;
             }
@@ -127,7 +138,9 @@ public class LabHunter {
 
         MapLocation lab = spotEnemyLab();
         if (lab != null) {
-            if (rc.getLocation().isWithinDistanceSquared(lab, myType.actionRadiusSquared)) {
+            if (rc.getLocation().isWithinDistanceSquared(lab, myType.actionRadiusSquared) &&
+                    friendlySagesNearby() < 3 && rc.senseRubble(rc.getLocation()) <= 30
+            ) {
                 return;
             }
             MovementHelper.moveBellmanFord(lab);
@@ -136,13 +149,13 @@ public class LabHunter {
 
         alongEdge = Functions.getDirectionAlongEdge(Sage.isClockWise, 3, true);
         if (alongEdge != null) {
-            MovementHelper.tryMove(alongEdge, false);
+            MovementHelper.moveBellmanFord(alongEdge);
             lastAlongEdge = alongEdge;
             return;
         }
 
         if (distanceFromEdge() < getExitDistance() && lastAlongEdge != null) {
-            MovementHelper.tryMove(lastAlongEdge, false);
+            MovementHelper.moveBellmanFord(lastAlongEdge);
             return;
         }
 

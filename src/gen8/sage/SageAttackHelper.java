@@ -134,10 +134,6 @@ public class SageAttackHelper {
 
         Direction bestDirection = Direction.CENTER;
 
-        if (rc.getID() == 11951 && rc.getRoundNum() > 605) {
-            int a = 0;
-        }
-
         AttackInfo current = bestDamageFrom(rn, robots);
         double bestFactor = 0;
         if (current != null) {
