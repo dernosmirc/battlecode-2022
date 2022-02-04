@@ -222,6 +222,8 @@ public class LeadMiningHelper {
         MapLocation[] mps = rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared);
         for (int i = mps.length; --i >= 0;) {
             MapLocation mp = mps[i];
+            RobotInfo ri = rc.senseRobotAtLocation(mp);
+            if (ri != null && !ri.mode.canMove) continue;
             int factor = rc.senseLead(mp) - 1;
             if (factor > bestFactor) {
                 lead = new GridInfo(factor, mp);
