@@ -7,6 +7,7 @@ import gen8.common.MovementHelper;
 import gen8.common.bellmanford.BellmanFord;
 import gen8.miner.GoldMiningHelper;
 import gen8.miner.LeadMiningHelper;
+import gen8.sage.LabHunter;
 import gen8.sage.SageAttackHelper;
 import gen8.sage.SageMovementHelper;
 import gen8.soldier.SoldierDensity;
@@ -20,7 +21,7 @@ import static gen8.common.Functions.getBits;
 
 public strictfp class Sage {
 
-	private static double LAB_HUNTER_RATIO = 0.05;
+	private static final double LAB_HUNTER_RATIO = 0.075;
 
 	public static MapLocation myArchonLocation;
 	public static int myArchonIndex;
@@ -31,7 +32,7 @@ public strictfp class Sage {
 	public static void run() throws GameActionException {
 		int round = rc.getRoundNum();
 		// Update Sage count
-		if (round%2 == 1){
+		if (round%2 == 1) {
 			rc.writeSharedArray(9, rc.readSharedArray(9) + 1);
 		}
 		attackedThisRound = false;
@@ -46,7 +47,7 @@ public strictfp class Sage {
 		}
 		if (rc.isMovementReady()) {
 			if (isLabHunter) {
-				SageMovementHelper.moveToHuntLabs();
+				LabHunter.move();
 			} else {
 				SageMovementHelper.move();
 			}
