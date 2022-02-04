@@ -36,12 +36,16 @@ public class LabHunter {
 
     private static MapLocation spotEnemyLab() {
         RobotInfo[] ris = rc.senseNearbyRobots(myType.visionRadiusSquared, enemyTeam);
+        MapLocation closest = null, rn = rc.getLocation();
         for (int i = ris.length; --i >= 0; ) {
             if (ris[i].type == RobotType.LABORATORY) {
-                return ris[i].location;
+                MapLocation ml = ris[i].location;
+                if (closest == null || rn.distanceSquaredTo(closest) > rn.distanceSquaredTo(ml)) {
+                    closest = ml;
+                }
             }
         }
-        return null;
+        return closest;
     }
 
     private static int distanceFromEdge() {
@@ -123,6 +127,9 @@ public class LabHunter {
 
         MapLocation lab = spotEnemyLab();
         if (lab != null) {
+            if (rc.getLocation().isWithinDistanceSquared(lab, myType.actionRadiusSquared)) {
+                return;
+            }
             MovementHelper.moveBellmanFord(lab);
             return;
         }
