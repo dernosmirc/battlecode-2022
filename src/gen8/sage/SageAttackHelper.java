@@ -101,6 +101,18 @@ public class SageAttackHelper {
             }
         }
 
+        if (maxPriority != -1 && attackDamage > 0) {
+            if (robotToAttack45 != null && robotToAttack != null) {
+                if (priority[robotToAttack.type.ordinal()] > priority[robotToAttack45.type.ordinal()]) {
+                    robotToAttack45 = null;
+                }
+            }
+            if (robotToAttack45 != null) {
+                robotToAttack = robotToAttack45;
+                attackDamage = maxHp45;
+            }
+        }
+
         if (furyDamage > 0 && furyDamage >= attackDamage && furyDamage >= chargeDamage) {
             return new AttackInfo(AttackType.Fury, furyDamage);
         }
@@ -110,16 +122,7 @@ public class SageAttackHelper {
         }
 
         if (maxPriority != -1 && attackDamage > 0) {
-            if (robotToAttack45 != null && robotToAttack != null) {
-                if (priority[robotToAttack.type.ordinal()] > priority[robotToAttack45.type.ordinal()]) {
-                    robotToAttack45 = null;
-                }
-            }
-            if (robotToAttack45 != null) {
-                return new AttackInfo(AttackType.Attack, attackDamage, robotToAttack45.location);
-            } else {
-                return new AttackInfo(AttackType.Attack, attackDamage, robotToAttack.location);
-            }
+            return new AttackInfo(AttackType.Attack, attackDamage, robotToAttack.location);
         }
 
         return null;
@@ -130,6 +133,11 @@ public class SageAttackHelper {
         MapLocation rn = rc.getLocation();
 
         Direction bestDirection = Direction.CENTER;
+
+        if (rc.getID() == 11951 && rc.getRoundNum() > 605) {
+            int a = 0;
+        }
+
         AttackInfo current = bestDamageFrom(rn, robots);
         double bestFactor = 0;
         if (current != null) {
