@@ -102,6 +102,9 @@ public strictfp class Miner {
 		}
 
 		GridInfo leadFar = LeadMiningHelper.spotLeadOnGrid();
+		if (leadFar != null && leadFar.location.isWithinDistanceSquared(rc.getLocation(), 13)) {
+			leadFar = null;
+		}
 		MapLocation lead = null;
 		boolean beLazy = false;
 		if (leadNear != null && leadFar != null) {
