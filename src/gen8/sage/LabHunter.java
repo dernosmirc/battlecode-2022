@@ -60,7 +60,7 @@ public class LabHunter {
     private static int getExitDistance() {
         int width = rc.getMapWidth();
         int height = rc.getMapHeight();
-        return (int) Math.ceil(Math.sqrt(width * height) / 20) + 3;
+        return (int) Math.ceil(Math.sqrt(width * height) / 13) + 3;
     }
 
     private static Direction getSoldierDirection() {
