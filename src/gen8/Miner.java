@@ -98,7 +98,6 @@ public strictfp class Miner {
 			leadNearCount = leadNear.count;
 		}
 		if (leadNearCount <= 6 && isExplorer && myTargetLocation != null) {
-			rc.setIndicatorString(myTargetLocation.toString());
 			return MovementHelper.moveBellmanFord(myTargetLocation);
 		}
 
@@ -107,19 +106,15 @@ public strictfp class Miner {
 		boolean beLazy = false;
 		if (leadNear != null && leadFar != null) {
 			if (leadNear.count >= leadFar.count) {
-				rc.setIndicatorString("lead near");
 				lead = leadNear.location;
 				beLazy = true;
 			} else {
-				rc.setIndicatorString("lead far");
 				lead = leadFar.location;
 			}
 		} else if (leadNear != null) {
-			rc.setIndicatorString("lead near");
 			lead = leadNear.location;
 			beLazy = true;
 		} else if (leadFar != null) {
-			rc.setIndicatorString("lead far");
 			lead = leadFar.location;
 		}
 
@@ -138,7 +133,6 @@ public strictfp class Miner {
 	private static boolean move() throws GameActionException {
 		Direction antiSoldier = getAntiSoldierDirection();
 		if (antiSoldier != null) {
-			rc.setIndicatorString("anti soldier");
 			myTargetLocation = null;
 			myDirection = null;
 			return MovementHelper.moveBellmanFord(antiSoldier);
@@ -146,13 +140,11 @@ public strictfp class Miner {
 
 		MapLocation gold = GoldMiningHelper.spotGold();
 		if (gold != null) {
-			rc.setIndicatorString("gold near");
 			return MovementHelper.moveBellmanFord(gold);
 		}
 		if (!isExplorer && isGoldMiner) {
 			gold = GoldMiningHelper.spotGoldOnGrid();
 			if (gold != null) {
-				rc.setIndicatorString("gold far");
 				return MovementHelper.moveBellmanFord(gold);
 			}
 		}

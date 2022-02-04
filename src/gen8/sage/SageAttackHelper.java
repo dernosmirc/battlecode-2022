@@ -132,11 +132,9 @@ public class SageAttackHelper {
         Direction bestDirection = Direction.CENTER;
         AttackInfo current = bestDamageFrom(rn, robots);
         double bestFactor = 0;
-        AttackInfo best = null;
         if (current != null) {
             bestFactor = Math.pow(current.totalMaxDamage, EXP_DAMAGE_FACTOR) /
                     Math.pow(1 + rc.senseRubble(rn), EXP_RUBBLE_FACTOR);
-            best = current;
         }
 
         if (rc.isMovementReady()) {
@@ -150,12 +148,12 @@ public class SageAttackHelper {
                 if (bestFactor < factor) {
                     bestFactor = factor;
                     bestDirection = d;
-                    best = info;
                 }
             }
         }
 
         if (bestFactor > 0) {
+            AttackInfo best;
             if (MovementHelper.tryMove(bestDirection, true)) {
                 best = bestDamageFrom(rc.getLocation(), rc.senseNearbyRobots(myType.actionRadiusSquared));
             } else {
