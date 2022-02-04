@@ -104,10 +104,12 @@ public strictfp class Miner {
 
 		GridInfo leadFar = LeadMiningHelper.spotLeadOnGrid();
 		MapLocation lead = null;
+		boolean beLazy = false;
 		if (leadNear != null && leadFar != null) {
 			if (leadNear.count >= leadFar.count) {
 				rc.setIndicatorString("lead near");
 				lead = leadNear.location;
+				beLazy = true;
 			} else {
 				rc.setIndicatorString("lead far");
 				lead = leadFar.location;
@@ -115,13 +117,14 @@ public strictfp class Miner {
 		} else if (leadNear != null) {
 			rc.setIndicatorString("lead near");
 			lead = leadNear.location;
+			beLazy = true;
 		} else if (leadFar != null) {
 			rc.setIndicatorString("lead far");
 			lead = leadFar.location;
 		}
 
 		if (lead != null) {
-			if (rc.getLocation().isWithinDistanceSquared(lead, myType.actionRadiusSquared)) {
+			if (rc.getLocation().isWithinDistanceSquared(lead, myType.actionRadiusSquared) && beLazy) {
 				MovementHelper.lazyMove(lead);
 				return true;
 			}

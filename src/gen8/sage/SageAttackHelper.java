@@ -18,7 +18,6 @@ public class SageAttackHelper {
     // SAGE
     private static final int[] priority = {3, 1, 4, 0, 2, 5, 6};
 
-    private static final int SAGE_ATTACK_THRESHOLD = 1;
     private static final double EXP_DAMAGE_FACTOR = 1;
     private static final double EXP_RUBBLE_FACTOR = 1;
 
@@ -106,11 +105,11 @@ public class SageAttackHelper {
             return new AttackInfo(AttackType.Fury, furyDamage);
         }
 
-        if (chargeDamage >= SAGE_ATTACK_THRESHOLD && chargeDamage >= attackDamage && chargeDamage >= furyDamage) {
+        if (chargeDamage > attackDamage) {
             return new AttackInfo(AttackType.Charge, chargeDamage);
         }
 
-        if (maxPriority != -1 && attackDamage >= SAGE_ATTACK_THRESHOLD) {
+        if (maxPriority != -1 && attackDamage > 0) {
             if (robotToAttack45 != null && robotToAttack != null) {
                 if (priority[robotToAttack.type.ordinal()] > priority[robotToAttack45.type.ordinal()]) {
                     robotToAttack45 = null;
