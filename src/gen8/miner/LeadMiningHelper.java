@@ -1,9 +1,6 @@
 package gen8.miner;
 
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 import gen8.common.CommsHelper;
 import gen8.common.Functions;
 import gen8.common.GridInfo;
@@ -69,7 +66,7 @@ public class LeadMiningHelper {
 
     private static GridInfo[] getAdjacentLeadInfos() throws GameActionException {
         GridInfo[] infos = new GridInfo[8];
-        MapLocation[] locs = rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared, 2);
+        MapLocation[] locs = rc.senseNearbyLocationsWithLead(myType.visionRadiusSquared, 6);
         MapLocation rn = rc.getLocation();
         int x0 = 3*(rn.x/3) - 3, y0 = 3*(rn.y/3) - 3;
         int x0_1 = x0 + 1, y0_1 = y0 + 1;
@@ -85,7 +82,11 @@ public class LeadMiningHelper {
         }
         for (int i = locs.length; --i >= 0;) {
             MapLocation mp = locs[i];
-            int lead = rc.senseLead(mp) - 1;
+            int lead = 0;
+            RobotInfo yeah = rc.senseRobotAtLocation(mp);
+            if (yeah == null || yeah.mode.canMove) {
+                lead = (int) Math.ceil((rc.senseLead(mp) - 1)/ (rc.senseRubble(mp)/10.0 + 1));
+            }
             int mpx = mp.x, mpy = mp.y, xa = (mpx-x0)/3, ya = (mpy-y0)/3;
             if (xa >= 0 && xa <= 2 && ya >= 0 && ya <= 2) {
                 int ind = 3*xa + ya;
