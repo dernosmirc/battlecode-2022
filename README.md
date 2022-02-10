@@ -1,7 +1,6 @@
 # MIT Battlecode 2022
 All generations of Principia's submission to MIT Battlecode 2022.
 
+Max scrimmaging rank - 16
 
-Max Scrimaging Rank - 16
-
-Final Scrimagin Rank - 20
+Final scrimmaging rank - 20
