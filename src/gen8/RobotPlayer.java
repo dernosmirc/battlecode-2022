@@ -46,10 +46,6 @@ public strictfp class RobotPlayer {
 		myTeam = rc.getTeam();
 		enemyTeam = myTeam.opponent();
 		myType = rc.getType();
-
-		Integer[] arr = {5 ,6 ,2 ,4 ,9, -1, 4, 5,};
-		Vector<Integer> v = new Vector<>(arr);
-		v.sort(Comparator.comparingInt(o -> o));
 		
 		switch (myType) {
 			case MINER:
