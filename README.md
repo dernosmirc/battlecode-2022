@@ -7,3 +7,4 @@ Best scrimmaging rank - 16
 
 Final scrimmaging rank - 20
 
+![image](https://user-images.githubusercontent.com/24735099/187437020-bf3e3f46-5e3e-4d36-bf7d-6a5bea317f7c.png)
